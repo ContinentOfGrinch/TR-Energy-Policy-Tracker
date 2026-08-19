@@ -1,0 +1,72 @@
+{
+  "_comment": "Carbon price scenarios in EUR per tonne CO2e. Read at runtime; never hardcode (SKDM_TURKIYE.md section 7). CBAM certificate prices update quarterly, so this file is expected to change often — that is the point of keeping it out of R source.",
+
+  "meta": {
+    "parameter_set": "carbon_price_scenarios",
+    "regime_id": "EU_CBAM",
+    "version": "2026-08-19",
+    "retrieved_date": "2026-08-19",
+    "unit": "EUR/tCO2e",
+    "currency": "EUR",
+    "comment": "No exchange rate is applied anywhere in this project. Exposure is reported in EUR because CBAM certificates are denominated in EUR. Converting to TRY would import currency risk into a figure that does not carry it, and would make the number unstable for reasons unrelated to carbon."
+  },
+
+  "scenarios": {
+
+    "observed": {
+      "label_tr": "Gerçekleşen",
+      "value_type": "observed",
+      "description": "Actual published CBAM certificate prices. The Commission calculates each quarterly price as the weighted average of EU ETS auction clearing prices, published in the first calendar week after the quarter ends.",
+      "source_url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/price-cbam-certificates_en",
+      "retrieved_date": "2026-08-19",
+      "granularity": "quarter",
+      "quarterly": [
+        { "year": 2026, "quarter": 1, "price_eur_t": 75.36, "published": "2026-04-07" },
+        { "year": 2026, "quarter": 2, "price_eur_t": 75.28, "published": "2026-07-06" }
+      ],
+      "pending": [
+        { "year": 2026, "quarter": 3, "scheduled_publication": "2026-10-05" },
+        { "year": 2026, "quarter": 4, "scheduled_publication": "2027-01-04" }
+      ],
+      "annual": [],
+      "annual_comment": "DELIBERATELY EMPTY. Only two of four 2026 quarters are published, so no annual figure exists yet. Averaging the two available quarters into an annual price would be a fabrication (section 8.1). Populate `annual` only once all four quarters are published, and record the aggregation rule used."
+    },
+
+    "low": {
+      "label_tr": "Düşük senaryo",
+      "value_type": "scenario",
+      "description": "Lower carbon price assumption.",
+      "flat_price_eur_t": 75,
+      "applies_from": 2026,
+      "applies_to": 2034,
+      "source_url": null,
+      "citation_required": true,
+      "citation_note": "SKDM_TURKIYE.md section 7 attributes this to an EBRD / Directorate of Climate Change study but gives no URL. Section 7 also states that a regulatory number without a citation is not usable in this project. FIND THE STUDY, record its title, author, year and URL here, or replace the scenario with one that can be cited."
+    },
+
+    "high": {
+      "label_tr": "Yüksek senaryo",
+      "value_type": "scenario",
+      "description": "Upper carbon price assumption.",
+      "flat_price_eur_t": 150,
+      "applies_from": 2026,
+      "applies_to": 2034,
+      "source_url": null,
+      "citation_required": true,
+      "citation_note": "Same study as `low`. Same requirement."
+    },
+
+    "custom": {
+      "label_tr": "Özel senaryo",
+      "value_type": "scenario",
+      "description": "User-defined price set through the UI slider. Carries no source because it is the user's own assumption; the interface must label it as such and must not let it be mistaken for an observed or legislated value.",
+      "flat_price_eur_t": null,
+      "ui_min_eur_t": 0,
+      "ui_max_eur_t": 300,
+      "ui_default_eur_t": 100,
+      "ui_step_eur_t": 5,
+      "source_url": null,
+      "citation_required": false
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "_comment": "Turkish Emissions Trading System parameters. POPULATED BUT NOT WIRED INTO ANY CALCULATION IN v1 (SKDM_TURKIYE.md section 7). Kept here so that v2 can switch it on without a schema change, and so the deferral is documented rather than invisible.",
+
+  "meta": {
+    "parameter_set": "tr_ets",
+    "regime_id": "TR_ETS",
+    "version": "2026-08-19",
+    "retrieved_date": "2026-08-19",
+    "status_in_v1": "not_applied",
+    "legal_basis": "İklim Kanunu (Climate Law) No. 7552, and the Türkiye Emisyon Ticaret Sistemi Yönetmeliği",
+    "administrator": "İklim Değişikliği Başkanlığı (Directorate of Climate Change)",
+    "market_operator": "EPİAŞ / EXIST",
+    "source_url": "https://iklim.gov.tr/turkiye-emisyon-ticaret-sistemi-yonetmeligi-taslagi-yayimlandi-haber-4519",
+    "source_note": "Secondary sources were used for the figures below. Secondary legislation was still being finalised through mid-2026. VERIFY every value against the Resmî Gazete text before any of it enters a calculation.",
+    "verification_status": "secondary_source_verified_primary_pending"
+  },
+
+  "why_deferred": {
+    "summary": "CBAM permits deduction of a carbon price EFFECTIVELY PAID in the country of origin. During the TR-ETS pilot, allocation is 100% free under a benchmark method and no financial obligation applies, so the deductible amount is approximately zero.",
+    "implication": "Omitting the TR-ETS offset in v1 is the CORRECT treatment for the pilot period, not a simplification. It becomes material from the first compliance period, when allocation is no longer wholly free.",
+    "becomes_material_from": 2028
+  },
+
+  "pilot_period": {
+    "start_year": 2026,
+    "end_year": 2027,
+    "compliance_deadline": "2029-04-30",
+    "free_allocation_share": 1.0,
+    "allocation_method": "benchmark",
+    "financial_obligation": false,
+    "purpose": "Test the MRV infrastructure and establish market mechanisms."
+  },
+
+  "first_compliance_period": {
+    "start_year": 2028,
+    "end_year": 2035,
+    "free_allocation_share": null,
+    "free_allocation_note": "Not yet determined in published secondary legislation as of the retrieval date. Left null rather than guessed (section 8.1). This is the value that will drive the CBAM offset in v2."
+  },
+
+  "scope": {
+    "threshold_tco2e_per_year": 50000,
+    "threshold_basis": "annual emission capacity of the installation",
+    "sectors": [
+      "cement",
+      "iron-and-steel",
+      "aluminum",
+      "fertiliser"
+    ],
+    "sector_note": "TR-ETS covers fertiliser production, which this project does NOT cover — Climate TRACE publishes no fertiliser-production subsector. The two scopes are therefore not identical, and that mismatch must be stated in METHODOLOGY before any TR-ETS comparison is drawn."
+  },
+
+  "coverage_check_against_this_project": {
+    "comment": "The 50,000 tCO2e threshold means not every facility in facilities.rds is necessarily inside TR-ETS. Once the panel exists, compute how many of the 88 fall above and below the threshold and report it — a facility outside TR-ETS has no domestic carbon price to deduct, which changes its net CBAM position in v2.",
+    "computed": false
+  }
+}

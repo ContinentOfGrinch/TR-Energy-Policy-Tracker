@@ -1,0 +1,63 @@
+{
+  "_comment": "Customs codes used to measure EU-bound trade in CBAM goods. Feeds eu_export_share. Read at runtime; never hardcode (SKDM_TURKIYE.md section 7).",
+
+  "meta": {
+    "parameter_set": "cbam_goods_cn_codes",
+    "version": "2026-08-19",
+    "retrieved_date": "2026-08-19",
+    "authoritative_source": "Regulation (EU) 2023/956, ANNEX I — Goods and greenhouse gases covered",
+    "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023R0956",
+
+    "scope_status": "PROVISIONAL_AGGREGATE",
+    "scope_warning": "The codes below are HS2/HS4 AGGREGATES, not the CN8 list in Annex I. Annex I could not be retrieved in machine-readable form at the retrieval date. Aggregates OVERSTATE CBAM scope: HS chapter 72 contains steel products that Annex I does not list, and chapter 76 likewise for aluminium. Any eu_export_share computed from these codes is an UPPER BOUND on the true CBAM-covered share.",
+    "action_required": "Transcribe the CN8 codes from ANNEX I of the Official Journal text, replace the `codes` arrays below, and set scope_status to `annex_i_verified`. Until then no figure derived from this file may be published.",
+
+    "trade_source": {
+      "provider": "Eurostat Comext",
+      "dataset": "DS-045409 — EU trade since 1988 by HS2-4-6 and CN8",
+      "endpoint": "https://ec.europa.eu/eurostat/api/comext/dissemination/statistics/1.0/data/DS-045409",
+      "verified_working": "2026-08-19",
+      "dimension_codes": {
+        "freq": "A",
+        "reporter": "EU27_2020",
+        "partner": "TR",
+        "flow": "1 (IMPORT — i.e. EU imports FROM Türkiye, which is Türkiye's export TO the EU)",
+        "indicators": ["VALUE_IN_EUROS", "QUANTITY_IN_100KG", "SUPPLEMENTARY_QUANTITY"]
+      },
+      "unit_note": "QUANTITY_IN_100KG is in hundreds of kilograms. Divide by 10 to obtain tonnes."
+    }
+  },
+
+  "sectors": {
+
+    "cement": {
+      "label_tr": "Çimento",
+      "codes": ["2523"],
+      "code_level": "HS4",
+      "description": "Portland cement, aluminous cement, slag cement and clinkers.",
+      "annex_i_note": "Annex I also lists 2507 00 80 (kaolinic clays). Not included in this provisional aggregate."
+    },
+
+    "iron-and-steel": {
+      "label_tr": "Demir-Çelik",
+      "codes": ["72", "7301", "7302", "7303", "7304", "7305", "7306", "7307", "7308", "7309", "7310", "7311", "7318", "7326"],
+      "code_level": "mixed HS2/HS4",
+      "description": "Chapter 72 (iron and steel) plus the chapter 73 headings for downstream articles that Annex I brings into scope.",
+      "annex_i_note": "Chapter 72 as a whole overstates scope: Annex I excludes certain ferro-alloys and scrap. Narrow this to CN8 before publication."
+    },
+
+    "aluminum": {
+      "label_tr": "Alüminyum",
+      "codes": ["76"],
+      "code_level": "HS2",
+      "description": "Chapter 76 (aluminium and articles thereof).",
+      "annex_i_note": "Annex I lists specific 7601/7603-7616 headings rather than the whole chapter. Narrow before publication."
+    }
+  },
+
+  "out_of_scope": {
+    "fertilisers": "Covered by CBAM (Annex I) but excluded from this project: no open source publishes Turkish fertiliser-production facilities. See ROADMAP.md.",
+    "electricity": "Covered by CBAM. Excluded by choice: Turkish electricity exports to the EU are marginal.",
+    "hydrogen": "Covered by CBAM. Excluded by choice: negligible volume."
+  }
+}

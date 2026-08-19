@@ -1,0 +1,53 @@
+cff-version: 1.2.0
+message: "If you use this software or its derived data, please cite it as below."
+title: "skdm-turkiye: Facility-level EU CBAM exposure for Türkiye"
+abstract: >-
+  An open-source R Shiny dashboard that maps individual carbon-intensive
+  industrial installations in Türkiye and estimates their exposure to the EU
+  Carbon Border Adjustment Mechanism (CBAM / Sınırda Karbon Düzenleme
+  Mekanizması) under user-defined carbon price scenarios. Existing analyses
+  treat Turkish CBAM exposure at national or sectoral resolution; this project
+  provides a facility-level, spatially explicit, open-source treatment with a
+  full audit trail from displayed figure back to source data.
+type: software
+authors:
+  - family-names: "İlhan"
+    given-names: "Selahattin"
+    email: "selahattinilkhan@gmail.com"
+    orcid: "https://orcid.org/0009-0007-4824-752X"
+repository-code: "https://github.com/selahattinilhan/skdm-turkiye"
+license: MIT
+version: "0.1.0-dev"
+date-released: "2026-08-19"
+keywords:
+  - CBAM
+  - carbon border adjustment mechanism
+  - SKDM
+  - Türkiye
+  - Turkey
+  - carbon pricing
+  - industrial emissions
+  - iron and steel
+  - cement
+  - aluminium
+  - R
+  - Shiny
+  - open data
+
+references:
+  - type: data
+    title: "Climate TRACE emissions inventory"
+    abstract: "Facility-level greenhouse gas emission estimates, Türkiye country package, release v5_9_0."
+    authors:
+      - name: "Climate TRACE"
+    url: "https://climatetrace.org"
+    license: CC-BY-4.0
+    notes: >-
+      Attribution is a condition of the CC BY 4.0 licence, not a courtesy.
+      Any redistribution of data derived from this project must carry it forward.
+  - type: data
+    title: "Natural Earth 10m Admin 1 - States, Provinces"
+    authors:
+      - name: "Natural Earth"
+    url: "https://www.naturalearthdata.com"
+    notes: "Public domain. Used to derive province and İBBS-2 region from facility coordinates."

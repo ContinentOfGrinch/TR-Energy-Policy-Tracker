@@ -236,7 +236,53 @@ These are live risks. Each will be closed by a specific artefact, not by discuss
    corrected by hand without a better boundary source.
    *Closed by:* a higher-resolution boundary check or the operator's own address
 
-5. **How far do GEM and Climate TRACE disagree?**
+5. **Aluminium breaks the export-share ratio. What replaces it?**
+   *Surfaced 2026-08-19 by `scripts/01b_fetch_eu_trade.R`.*
+
+   The diagnostic ratio of EU imports to Turkish production comes out plausible
+   for two sectors and impossible for the third:
+
+   | sector | EU imports ÷ production, 2021–2025 |
+   |---|---|
+   | iron & steel | 0.14 – 0.20 |
+   | cement | 0.05 – 0.10 |
+   | **aluminium** | **2.79 – 3.34** |
+
+   A share above 1 cannot be an export share. The cause is structural, not a
+   coding error: Türkiye has essentially one primary aluminium producer
+   (Seydişehir) but a large extrusion and rolling industry running on imported
+   ingot. Chapter 76 exports therefore exceed domestic primary output several
+   times over, and Climate TRACE's facility register — which covers primary
+   production — cannot see the downstream processors that generate most of the
+   trade.
+
+   This is a real limitation of facility-level CBAM modelling for aluminium and
+   belongs in METHODOLOGY regardless of how it is handled. The options are to
+   restrict aluminium to primary-metal customs codes only, to report aluminium
+   exposure without an export share and label it a ceiling, or to drop the
+   sector. All three are defensible; none may be chosen silently.
+   *Closed by:* the author, alongside the `eu_export_share` definition
+
+6. **What is `eu_export_share` actually a ratio of?**
+   The numerator from Comext counts finished goods in tonnes of product; the
+   denominator from Climate TRACE counts crude steel, cement and primary
+   aluminium. These are different physical quantities — there is yield loss
+   between crude and finished steel, and Annex I does not cover every steel
+   product. `01b_fetch_eu_trade.R` therefore emits the two series side by side
+   and a ratio explicitly labelled `diagnostic_not_for_use`; it does not decide
+   the conversion.
+   *Closed by:* the author, in METHODOLOGY and `03_build_panel.R`
+
+7. **Customs codes are provisional aggregates, not Annex I.**
+   `policies/cbam_goods_cn_codes.json` currently holds HS2/HS4 aggregates
+   because Annex I of Regulation (EU) 2023/956 could not be retrieved in
+   machine-readable form. Chapter 72 contains steel products Annex I does not
+   list, and chapter 76 likewise, so every share derived from them is an upper
+   bound. The file carries `scope_status: PROVISIONAL_AGGREGATE` and the fetch
+   script raises a warning until it is set to `annex_i_verified`.
+   *Closed by:* transcribing the CN8 list from the Official Journal
+
+8. **How far do GEM and Climate TRACE disagree?**
    GEM is a cross-check, not an input, so a disagreement does not have to be reconciled —
    but it does have to be measured and published. A large divergence in capacity or
    commissioning year is a finding about source reliability that readers need.

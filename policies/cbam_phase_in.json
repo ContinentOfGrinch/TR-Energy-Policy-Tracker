@@ -1,0 +1,48 @@
+{
+  "_comment": "CBAM phase-in factors. Read at runtime; never hardcode these in R (SKDM_TURKIYE.md section 7). The cbam_factor is the share of embedded emissions on which CBAM certificates must be surrendered in a given year. It mirrors the EU ETS free-allocation phase-out for CBAM sectors, reaching full application in 2034.",
+
+  "meta": {
+    "parameter_set": "cbam_phase_in",
+    "regime_id": "EU_CBAM",
+    "version": "2026-08-19",
+    "retrieved_date": "2026-08-19",
+    "unit": "share of embedded emissions, 0-1",
+    "value_type": "legislated",
+    "primary_legal_source": "Directive 2003/87/EC Article 10a(1a), as amended by Directive (EU) 2023/959; Regulation (EU) 2023/956 (CBAM Regulation)",
+    "source_url": "https://www.europarl.europa.eu/legislative-train/package-fit-for-55/file-carbon-border-adjustment-mechanism",
+    "source_note": "Figures transcribed from the European Parliament Legislative Train summary of the CBAM file. VERIFY against the Official Journal text of Directive 2003/87/EC Article 10a(1a) before publication; a secondary summary is adequate for development but not for a citation in METHODOLOGY.",
+    "verification_status": "secondary_source_verified_primary_pending"
+  },
+
+  "notes": {
+    "definitive_regime_start": "2026-01-01",
+    "transitional_period": "2023-10-01 to 2025-12-31, reporting only, no financial obligation",
+    "full_application_year": 2034,
+    "de_minimis": {
+      "threshold_tonnes_per_importer_per_year": 50,
+      "basis": "mass-based, per importer per calendar year",
+      "source_url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-definitive-regime_en",
+      "comment": "Importers below this threshold are exempt. This project models facility-level exposure, not importer-level liability, so the threshold is recorded for context but is NOT applied in the calculation. Stating this in METHODOLOGY matters: it is one reason estimated exposure is an upper bound on what is actually surrendered."
+    }
+  },
+
+  "phase_in": [
+    { "year": 2026, "cbam_factor": 0.025, "free_allocation_share": 0.975 },
+    { "year": 2027, "cbam_factor": 0.050, "free_allocation_share": 0.950 },
+    { "year": 2028, "cbam_factor": 0.100, "free_allocation_share": 0.900 },
+    { "year": 2029, "cbam_factor": 0.225, "free_allocation_share": 0.775 },
+    { "year": 2030, "cbam_factor": 0.485, "free_allocation_share": 0.515 },
+    { "year": 2031, "cbam_factor": 0.610, "free_allocation_share": 0.390 },
+    { "year": 2032, "cbam_factor": 0.735, "free_allocation_share": 0.265 },
+    { "year": 2033, "cbam_factor": 0.860, "free_allocation_share": 0.140 },
+    { "year": 2034, "cbam_factor": 1.000, "free_allocation_share": 0.000 }
+  ],
+
+  "pre_definitive": [
+    { "year": 2021, "cbam_factor": 0.0, "free_allocation_share": 1.0, "comment": "before CBAM" },
+    { "year": 2022, "cbam_factor": 0.0, "free_allocation_share": 1.0, "comment": "before CBAM" },
+    { "year": 2023, "cbam_factor": 0.0, "free_allocation_share": 1.0, "comment": "transitional period, reporting only" },
+    { "year": 2024, "cbam_factor": 0.0, "free_allocation_share": 1.0, "comment": "transitional period, reporting only" },
+    { "year": 2025, "cbam_factor": 0.0, "free_allocation_share": 1.0, "comment": "transitional period, reporting only" }
+  ]
+}

@@ -1,0 +1,28 @@
+# Line-ending normalisation.
+# Development is on Windows (CRLF) but contributors and CI may be on Linux/macOS.
+# Storing LF in the repository and checking out native endings keeps diffs clean
+# and prevents whole-file churn when the project is cloned on another platform.
+* text=auto
+
+# Explicit: these must always be LF in the repository.
+*.R      text eol=lf
+*.Rmd    text eol=lf
+*.json   text eol=lf
+*.md     text eol=lf
+*.cff    text eol=lf
+*.csv    text eol=lf
+.gitignore     text eol=lf
+.gitattributes text eol=lf
+LICENSE        text eol=lf
+
+# Binary — never normalise, never diff as text.
+*.rds    binary
+*.RData  binary
+*.png    binary
+*.jpg    binary
+*.gpkg   binary
+*.shp    binary
+*.dbf    binary
+*.shx    binary
+*.zip    binary
+*.xlsx   binary

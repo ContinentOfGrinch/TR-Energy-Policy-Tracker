@@ -1,129 +1,147 @@
 # =============================================================================
-# TR Energy Policy Tracker - Module 3: User Interface
+# ui.R — interface definition
 # -----------------------------------------------------------------------------
-# This file defines the layout only. All reactivity lives in server.R.
-# Libraries (shiny, shinydashboard, leaflet, plotly) are loaded by global.R,
-# which Shiny sources before this file.
+# Turkish labels throughout; English code and identifiers (SKDM_TURKIYE.md §2).
 #
-# The whole dashboard is driven by ONE state variable: input$year.
+# This file replaces an earlier ui.R written against a superseded brief (an
+# energy-policy tracker with English labels). §11 required a rewrite rather than
+# an extension; the old version remains in git history.
+#
+# SCOPE: facility map only. No time slider yet — facility_panel.rds does not
+# exist, so a slider would have nothing to move. It is added when the panel is.
 # =============================================================================
 
+dashboardPage(
+  skin = "black",
 
-# --- 1. HEADER ---------------------------------------------------------------
-header <- dashboardHeader(
-  title = "TR Energy Policy Tracker",
-  titleWidth = 300
-)
+  # --- HEADER ---------------------------------------------------------------
+  dashboardHeader(
+    title = "SKDM Türkiye",
+    titleWidth = 300
+  ),
 
+  # --- SIDEBAR --------------------------------------------------------------
+  dashboardSidebar(
+    width = 300,
 
-# --- 2. SIDEBAR --------------------------------------------------------------
-# The single control surface of the app: the timeline slider.
-sidebar <- dashboardSidebar(
-  width = 300,
+    sidebarMenu(
+      id = "tab",
+      menuItem("Tesis Haritası", tabName = "map",     icon = icon("map-location-dot")),
+      menuItem("Veri Kaynakları", tabName = "sources", icon = icon("book"))
+    ),
 
-  # Contextual heading for the control below.
-  tags$div(
-    style = "padding: 15px 15px 0 15px; color: #b8c7ce;",
-    tags$h4("Timeline", style = "margin-top: 0; font-weight: 600;"),
-    tags$p(
-      "Move the slider to filter power plants by commissioning year and to ",
-      "load the policy landscape of that year.",
-      style = "font-size: 12px; line-height: 1.4;"
+    tags$hr(style = "border-color: #4b5c66; margin: 10px 15px;"),
+
+    # Filters. These are the only controls in this version; the time slider
+    # takes the prominent position here once the panel exists.
+    tags$div(
+      style = "padding: 0 15px;",
+
+      checkboxGroupInput(
+        inputId  = "sectors",
+        label    = "Sektör",
+        choices  = SECTOR_CHOICES,
+        selected = names(SECTOR_LABELS)
+      ),
+
+      selectizeInput(
+        inputId  = "provinces",
+        label    = "İl",
+        choices  = PROVINCE_CHOICES,
+        selected = NULL,
+        multiple = TRUE,
+        options  = list(placeholder = "Tüm iller")
+      ),
+
+      checkboxInput(
+        inputId = "flag_uncertain",
+        label   = "Konum ataması belirsiz olanları vurgula",
+        value   = FALSE
+      )
     )
   ),
 
-  # THE master state variable. Everything downstream reacts to this.
-  #  - sep = "" prevents the label rendering as "2,026"
-  #  - animate lets the user "play" Turkey's energy build-out over time
-  sliderInput(
-    inputId = "year",
-    label   = "Select Year:",
-    min     = 2000,
-    max     = 2026,
-    value   = 2026,      # default: present day / full dataset
-    step    = 1,
-    sep     = "",
-    ticks   = FALSE,
-    width   = "90%",
-    animate = animationOptions(interval = 900, loop = FALSE)
-  ),
+  # --- BODY -----------------------------------------------------------------
+  dashboardBody(
 
-  # Small legend so the map colours are interpretable without a click.
-  tags$div(
-    style = "padding: 10px 15px; color: #b8c7ce; font-size: 12px;",
-    tags$hr(style = "border-color: #4b5c66;"),
-    tags$p("Map shows all plants commissioned on or before the selected year.")
-  )
-)
-
-
-# --- 3. BODY -----------------------------------------------------------------
-body <- dashboardBody(
-
-  # Minor styling: keep box headers readable and give the map a clean frame.
-  tags$head(
-    tags$style(HTML("
-      .content-wrapper { background-color: #f4f6f9; }
-      .box { border-top-width: 3px; }
-      .policy-scroll { max-height: 260px; overflow-y: auto; }
-    "))
-  ),
-
-  fluidRow(
-
-    # -- LEFT COLUMN (8/12): the interactive map --------------------------
-    column(
-      width = 8,
-
-      box(
-        # width = NULL makes the box fill its parent column.
-        width       = NULL,
-        title       = textOutput("map_title", inline = TRUE),
-        status      = "primary",
-        solidHeader = TRUE,
-        # Spinner-free simple output; server renders the leaflet proxy on year change.
-        leafletOutput(outputId = "map", height = 620)
-      )
+    # charset must be declared explicitly or Turkish characters can render as
+    # mojibake regardless of the file's own encoding (§2).
+    tags$head(
+      tags$meta(charset = "UTF-8"),
+      tags$style(HTML("
+        .content-wrapper { background-color: #f4f6f9; }
+        .small-box h3 { font-size: 28px; }
+        .estimate-note {
+          background: #FFF8E1; border-left: 4px solid #E8A33D;
+          padding: 10px 14px; margin-bottom: 12px; font-size: 13px;
+        }
+        .leaflet-container { background: #f4f6f9; }
+      "))
     ),
 
-    # -- RIGHT COLUMN (4/12): policy text + emissions chart ----------------
-    column(
-      width = 4,
+    tabItems(
 
-      # 3a. Domestic policy insight panel for the selected year.
-      box(
-        width       = NULL,
-        title       = "Domestic Policy Insights",
-        status      = "warning",
-        solidHeader = TRUE,
-        collapsible = TRUE,
+      # ---- TAB: MAP --------------------------------------------------------
+      tabItem(
+        tabName = "map",
+
+        # Every emissions figure in this project is a modelled estimate, and the
+        # interface has to say so where the user can see it, not in a footnote
+        # (§8.3). It appears above the map deliberately.
         tags$div(
-          class = "policy-scroll",
-          # Rendered server-side (renderUI) so we can emit formatted HTML
-          # from policies/domestic_policy.json rather than a flat string.
-          uiOutput(outputId = "policy_panel")
+          class = "estimate-note",
+          tags$strong("Bu veriler modellenmiş tahmindir."),
+          " Tesis düzeyinde doğrulanmış sera gazı raporları Türkiye'de kamuya",
+          " açık değildir. Konumlar ve tesis bilgileri Climate TRACE",
+          " kestirimlerine dayanır ve ölçüm değildir."
+        ),
+
+        fluidRow(
+          valueBoxOutput("box_total",    width = 3),
+          valueBoxOutput("box_steel",    width = 3),
+          valueBoxOutput("box_cement",   width = 3),
+          valueBoxOutput("box_aluminum", width = 3)
+        ),
+
+        fluidRow(
+          column(
+            width = 8,
+            box(
+              width = NULL, status = "primary", solidHeader = TRUE,
+              title = textOutput("map_title", inline = TRUE),
+              leafletOutput("map", height = 600)
+            )
+          ),
+          column(
+            width = 4,
+            box(
+              width = NULL, status = "warning", solidHeader = TRUE,
+              title = "Seçili Tesis",
+              uiOutput("facility_detail")
+            ),
+            box(
+              width = NULL, status = "info", solidHeader = TRUE,
+              title = "Konum Ataması Güvenilirliği",
+              collapsible = TRUE,
+              uiOutput("geocode_summary")
+            )
+          )
         )
       ),
 
-      # 3b. NDC target vs. actual GHG emissions, with a marker on input$year.
-      box(
-        width       = NULL,
-        title       = "Emissions: Target vs. Actual",
-        status      = "danger",
-        solidHeader = TRUE,
-        collapsible = TRUE,
-        plotlyOutput(outputId = "emissions_chart", height = 300)
+      # ---- TAB: SOURCES ----------------------------------------------------
+      # Climate TRACE is CC BY 4.0 — attribution is a licence condition, so this
+      # tab is required, not decorative (§8.6).
+      tabItem(
+        tabName = "sources",
+        fluidRow(
+          box(
+            width = 12, status = "primary", solidHeader = TRUE,
+            title = "Veri Kaynakları ve Atıf",
+            uiOutput("sources_panel")
+          )
+        )
       )
     )
   )
-)
-
-
-# --- 4. ASSEMBLE -------------------------------------------------------------
-# The final expression in ui.R is what Shiny uses as the UI object.
-dashboardPage(
-  skin   = "blue",
-  header = header,
-  sidebar = sidebar,
-  body   = body
 )

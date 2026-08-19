@@ -7,6 +7,10 @@ This file is loaded automatically via a one-line `CLAUDE.md` pointer in the repo
 Do not delete that pointer — without it these instructions are not loaded into new sessions.
 
 Companion documents:
+- **`STATUS.md` — READ THIS SECOND, immediately after this file.** Where the project
+  actually got to: what runs, what is blocked and on whom, the facts already established
+  (so they are not re-derived), and the traps already paid for. Keep it current in the
+  same commit as the work it describes.
 - `ROADMAP.md` — the authoritative record of scope decisions and deferred features
 - `METHODOLOGY.md` — written by the author; do not generate its prose
 
@@ -79,8 +83,9 @@ scripts/
   03_build_panel.R
 ```
 
-Root files: `README.md`, `SKDM_TURKIYE.md`, `CLAUDE.md` (pointer only), `METHODOLOGY.md`,
-`ROADMAP.md`, `CITATION.cff`, `LICENSE`, `renv.lock`, `.gitignore`.
+Root files: `README.md`, `SKDM_TURKIYE.md`, `CLAUDE.md` (pointer only), `STATUS.md`,
+`METHODOLOGY.md`, `ROADMAP.md`, `CITATION.cff`, `LICENSE`, `renv.lock`, `.gitignore`,
+`.gitattributes`.
 
 **Hard rules:**
 - Never create new top-level directories without asking.

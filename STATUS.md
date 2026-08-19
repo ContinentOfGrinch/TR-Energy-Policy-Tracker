@@ -1,0 +1,300 @@
+# STATUS.md — where this project stands
+
+**Read this first when resuming work.** `SKDM_TURKIYE.md` says what the project *is*;
+this file says where it *got to*, what runs, what is blocked, and which traps have already
+been paid for.
+
+Last updated: **2026-08-19** · 10 commits · working tree clean · **~53% complete**
+
+> Keep this file current. When a milestone lands or a decision changes, update the
+> relevant section here in the same commit. A stale STATUS.md is worse than none, because
+> it will be trusted.
+
+---
+
+## 1. What this is, in one paragraph
+
+`skdm-turkiye` maps individual carbon-intensive industrial installations in Türkiye and
+estimates their exposure to the EU Carbon Border Adjustment Mechanism (CBAM / SKDM) under
+user-defined carbon price scenarios. R Shiny, `shinydashboard`, `leaflet`, `sf`. Author:
+Selahattin İlhan, ORCID 0009-0007-4824-752X. Destination: Zenodo DOI, then JOSS.
+
+The contribution is facility-level, spatially explicit, open-source treatment with a full
+audit trail — not the arithmetic, which is commodity.
+
+---
+
+## 2. Current state
+
+### What works end to end
+
+- Acquisition, provenance and integrity checks for all raw sources
+- Coverage audit that establishes `t₀` from evidence rather than assumption
+- `facilities.rds` — 88 facilities with province and İBBS-2 assignment, verified
+- Policy parameters as JSON, all carrying `source_url` and retrieval date
+- EU trade fetch from Eurostat Comext
+- Shiny app: facility map, sector and province filters, geocode-quality panel, sources tab
+
+### What does not exist yet
+
+| Missing | Blocked on |
+|---|---|
+| `facility_panel.rds` | Author decisions **B1** (direct/indirect split) and **B2** (annual aggregation) |
+| CBAM liability figure | Author decisions **B7** (`eu_export_share`) and **B9** (the calculation) |
+| Time slider, cost layer, audit-trail panel | the panel above |
+| `METHODOLOGY.md` | author writes the prose (§9) |
+| `tests/` | **author's permission still outstanding** — §3 forbids new top-level directories |
+
+### Progress by component
+
+| Component | Weight | Done |
+|---|---|---|
+| Scaffolding, licence, instructions, roadmap | 5 | ✅ |
+| renv / reproducible environment | 4 | ✅ |
+| Coverage audit + t₀ | 9 | ✅ |
+| Fetch + provenance chain | 9 | ✅ |
+| `facilities.rds` | 9 | ✅ 95% |
+| App shell + map | 7 | ✅ |
+| `policies/*.json` | 5 | ✅ |
+| README + CITATION.cff | 3 | ✅ |
+| `eu_export_share` | 6 | ◐ 50% — fetch works, definition pending |
+| `facility_panel.rds` | 11 | ❌ |
+| CBAM calculation core | 11 | ❌ |
+| App phase 2 (slider, cost, scenarios, audit trail) | 11 | ❌ |
+| `METHODOLOGY.md` | 5 | ❌ |
+| `tests/` | 3 | ❌ |
+| Zenodo / JOSS packaging | 2 | ❌ |
+
+Of the remaining ~47 points, **16 are explicitly the author's own work** under §9.
+
+---
+
+## 3. How to run everything
+
+Requires R 4.5.1. On Windows use `Rscript`, never `R` — see the traps section.
+
+```bash
+# environment
+Rscript -e "renv::restore()"
+
+# pipeline, in order
+Rscript scripts/00_coverage_audit.R       # optional; regenerates the t0 evidence
+Rscript scripts/01_fetch_climate_trace.R  # all raw acquisition + SOURCES.md
+Rscript scripts/01b_fetch_eu_trade.R      # Eurostat Comext trade quantities
+Rscript scripts/02_build_facilities.R     # -> facilities.rds
+# scripts/03_build_panel.R                # DOES NOT EXIST YET (blocked on B1/B2)
+
+# app
+Rscript -e "shiny::runApp('app', port=3838, launch.browser=TRUE)"
+```
+
+`data/raw/` is gitignored. Reproducibility comes from re-running `01`, not from committed
+binaries. First run downloads ~60 MB and takes a few minutes; afterwards everything is
+cached and re-runs take seconds.
+
+---
+
+## 4. Established facts — do not re-derive these
+
+| Fact | Value | Evidence |
+|---|---|---|
+| `t₀` | **2021** | `data/processed/coverage_audit_summary.md` |
+| Last complete year | 2025 | same |
+| 2026 | partial, **5 of 12 months** | same |
+| Facilities | **88** — cement 58, iron & steel 27, aluminium 3 | `facilities.rds` |
+| Source release | Climate TRACE **v5_9_0** | `SOURCES.md` |
+| CBAM phase-in | 2026 **2.5%** → 2034 **100%** | `policies/cbam_phase_in.json` |
+| CBAM certificate price | Q1 2026 **€75.36**, Q2 2026 **€75.28** | verified against the Commission price page |
+| CBAM de minimis | 50 t per importer per year | recorded, deliberately **not applied** |
+| TR-ETS | Law 7552, pilot 2026–27, 50,000 tCO₂e threshold, 100% free allocation | `policies/tr_ets.json` |
+| Geocode quality | 66 within province, 18 near a border, 4 snapped from offshore (max 1,087 m) | `facilities_geocode_report.csv` |
+| Verification | 34 checks pass, 0 fail, 3 flagged | run 2026-08-19 |
+
+---
+
+## 5. Decisions already taken
+
+Full reasoning in `ROADMAP.md`. Compressed here so a resuming session does not reopen them.
+
+1. **Three of six CBAM goods categories.** Electricity and hydrogen excluded *by choice*
+   (marginal Turkish volumes). **Fertilisers excluded on evidence** — Climate TRACE has no
+   fertiliser-*production* subsector; `synthetic-fertilizer-application` is agricultural
+   N₂O and is a different emission source entirely. Never substitute it.
+2. **Climate TRACE is the sole panel source.** GEM was demoted to cross-validation once
+   reconnaissance showed Climate TRACE already carries `AssetType`, `Capacity` and
+   `Activity`. The merge would have bought entity-resolution error for fields already
+   present.
+3. **The REST API cannot build a panel.** `/v6/assets/{id}` returns one year and ignores
+   every year parameter. The bulk country package is the only viable source.
+4. **Natural Earth, not geoBoundaries, for boundaries.** geoBoundaries' Turkey ADM1 layer
+   is CC BY-SA 2.0; ShareAlike would propagate to this project's CC BY 4.0 derived data
+   once polygons were redistributed for the province choropleths the scope requires.
+5. **EU export share is modelled at sector level**, user-adjustable, `value_type =
+   assumption`. Never assumed to be 100%.
+6. **Forward years kept but never rendered as observations** — `value_type = projected`,
+   dashed and badged.
+7. **2026 enters partial, never annualised by scaling.** Cement output is seasonal, so a
+   12/5 multiplier biases systematically rather than randomly.
+8. **Exposure is not a tax bill.** The importer surrenders certificates. UI wording:
+   *maruziyet*, *maliyet baskısı* — never *vergi* or *ödeyeceği tutar*.
+
+---
+
+## 6. Open — and who owns it
+
+Numbered as in `ROADMAP.md`. The author-facing task list is published at
+<https://claude.ai/code/artifact/3934ba71-177d-484b-800e-01f4ee3786aa> (B1–B10).
+
+**Blocking the pipeline** — nothing downstream can be built until these land:
+
+- **B1** Direct/indirect decomposition, *per sector*. The `other1`–`other10` slots carry
+  different meanings in each sector: iron & steel `other2` is a direct-plus-indirect
+  *quantity*, cement `other2` is a calcination *factor*, aluminium `other2` is a total
+  *quantity*. Any parser must key on the `_def` label, never the slot number.
+- **B2** Monthly → annual aggregation rule. Flows sum; `capacity` is a stock and summing
+  it gives a figure twelve times too large; ratios need a weighting decision.
+
+**Blocking the cost figure:**
+
+- **B6** Narrow `policies/cbam_goods_cn_codes.json` from HS2/HS4 aggregates to the Annex I
+  CN8 list. Currently `scope_status: PROVISIONAL_AGGREGATE`; the fetch script warns until
+  fixed. Every share derived from aggregates is an upper bound.
+- **B7** Define `eu_export_share`. Numerator counts finished goods, denominator counts
+  crude production — different physical quantities. **Aluminium breaks the ratio
+  entirely** (see §7 below).
+- **B9** Write the liability calculation, retaining every intermediate for the audit trail.
+
+**Blocking publication only** — short tasks, but v0.1 cannot be tagged with any outstanding:
+
+- **B3** Resolve the Kars possible-duplicate and the Toprakkale province assignment.
+- **B4** Verify the İBBS-2 mapping against TÜİK's official classification. The table in
+  `02_build_facilities.R` carries a `>>> VERIFY BEFORE PUBLICATION <<<` marker.
+- **B5** Determine which years are observed versus nowcast. Answer is in
+  `data/raw/climate_trace/about_the_data.pdf`, already downloaded, not yet read.
+- **B8** Find the citation for the €75 / €150 scenarios. They currently sit in
+  `carbon_price_scenarios.json` with `citation_required: true` and `source_url: null` —
+  §7 forbids using a regulatory number without a citation, so the project currently
+  violates its own rule.
+
+---
+
+## 7. Known data-quality issues
+
+Published rather than hidden. A tool showing 88 confident dots while knowing some are
+uncertain overstates what it knows.
+
+- **Possible double count in Kars.** `Bozkale Cement Plant` (source_id 1897859) and
+  `Kars Cement Plant` (42547309) sit **71 m apart**, both `integrated dry`, both with full
+  independent 2021–2026 series, capacities 49,167 vs 50,000 t/month, operators *Kars
+  Çimento AŞ* and *Çimentaş İzmir AŞ* — consistent with one plant recorded twice across an
+  ownership change. If so, national cement CO₂ is overstated by ~236 kt in 2024 (0.49%)
+  and Kars province by 100%. **Neither record has been dropped on suspicion.**
+- **One probable province misassignment.** Koç Metalurji Toprakkale → Hatay while Tosçelik
+  and Tosyalı Toprakkale, within 600 m, → Osmaniye. Toprakkale is an Osmaniye district.
+  Both provinces are İBBS-2 TR63, so regional aggregation is unaffected.
+- **Aluminium export ratio is impossible.** EU imports ÷ Turkish production runs 0.14–0.20
+  for steel and 0.05–0.10 for cement, but **2.79–3.34 for aluminium**. Structural, not a
+  bug: Türkiye has essentially one primary smelter (Seydişehir) but a large extrusion
+  industry on imported ingot, and Climate TRACE's register cannot see the processors
+  generating the trade. A real limitation of facility-level CBAM modelling for aluminium.
+- **6.2% of iron-and-steel rows** fail `activity × emissions_factor = emissions_quantity`
+  (~109 of 1,755). Cement and aluminium are at 100%. Cause not investigated.
+- **Aluminium PFCs unavailable.** CBAM covers CO₂ *and* PFCs for aluminium; no `pfc`
+  country package is published. Exposure is an underestimate, flagged not filled.
+- **Two `Elmadağ Cement Plant` records in Ankara are NOT a duplicate** — checked; 4.4 km
+  apart, different operators (Baştaş Başkent, Votorantim).
+
+---
+
+## 8. Traps already paid for
+
+Every one of these cost real time. Do not rediscover them.
+
+### Windows and PowerShell
+
+- **`R` is not `R`.** PowerShell aliases `r` to `Invoke-History`. Always `Rscript`.
+- **`Out-File -Encoding utf8` and `Set-Content -Encoding utf8` write a BOM** in Windows
+  PowerShell 5.1, and R fails to parse a BOM'd script with `unexpected input`. Write files
+  with the editor tooling, or `[System.IO.File]::WriteAllText` with `UTF8Encoding($false)`.
+- **`Get-Content` displays valid UTF-8 as mojibake** (`Â§` for `§`) because it defaults to
+  the ANSI codepage. The *file* is fine. Verify with
+  `[System.IO.File]::ReadAllText($p, [System.Text.Encoding]::UTF8)` before "fixing"
+  anything.
+- **`Rscript … | Select-Object -First N` closes the pipe early**, and the native command
+  reports **exit 255** even though R succeeded. Capture to a variable, then filter.
+
+### R
+
+- **Column shadowing in `mutate()`.** The Climate TRACE CSVs have their own `sector`
+  column valued `"manufacturing"`; the useful split is in `subsector`. Inside
+  `imap(function(path, sector) …)`, `mutate(sector = sector)` resolves to the *column*,
+  silently collapsing all three sectors into one and inflating a denominator threefold.
+  Use a distinct argument name and `.env$`.
+- **`renv` drops packages when the last script referencing them stops.** Refactoring
+  `httr2` out of `00_coverage_audit.R` removed it from the lockfile and broke
+  `01b_fetch_eu_trade.R`. Re-snapshot after refactors and check the pipeline still runs.
+- **`runApp()` changes the working directory to the app folder**, so root-relative data
+  paths resolve to `app/data/…`. `global.R` locates the project root by marker file.
+- **`pivot_longer(names_to = c("slot", ".value"))` cannot produce an empty column name.**
+  For `other1` / `other1_def` pairs, rename the unsuffixed half first.
+
+### External services
+
+- **Climate TRACE `/v6/assets/{id}` returns one year only** and silently ignores `year`,
+  `years`, `since`/`to`, `startDate`/`endDate`. Use the bulk country package.
+- **Natural Earth's Turkish province `name` field is corrupted at source** — "Kinkkale",
+  "Zinguldak", "K. Maras", plus double-encoded characters no `ENCODING=` repairs. Key on
+  `iso_3166_2`, which is clean and equals the vehicle plate codes (verified at 11 points).
+- **Eurostat Comext returns HTTP 413** on unfiltered queries. Filter to one product code
+  and one year per request. Indicator codes are `VALUE_IN_EUROS`, `QUANTITY_IN_100KG`
+  (hundreds of kg — divide by 10 for tonnes), `SUPPLEMENTARY_QUANTITY`.
+- **EUR-Lex HTML fetches return empty content.** Annex I could not be retrieved
+  machine-readably; hence the provisional CN codes.
+- **Chapter and heading customs codes overlap.** `"72"` already contains every `72xx`
+  heading; summing both double counts. `01b_fetch_eu_trade.R` has a guard.
+
+---
+
+## 9. Where things live
+
+```
+CLAUDE.md              one-line pointer -> SKDM_TURKIYE.md. DO NOT DELETE:
+                       without it the instructions are not auto-loaded.
+SKDM_TURKIYE.md        project instructions — scope, data model, rules, API endpoints
+STATUS.md              this file
+ROADMAP.md             decisions with reasoning, open questions 1-8, deferred features
+README.md              public-facing; Turkish summary block
+METHODOLOGY.md         NOT YET WRITTEN — author's prose only (§9)
+CITATION.cff           ORCID recorded
+
+app/global.R           data loading, Turkish label vocabulary, sector colours
+app/ui.R               dashboard layout. Rewritten 2026-08-19; the pre-pivot
+                       energy-tracker version is in commit f6b4038
+app/server.R           selected_facilities() is the single filter reactive —
+                       the time slider plugs in there and nothing else changes
+
+scripts/_sources.R     shared acquisition, SHA-256, archive inspection.
+                       Approved exception to the numbering convention (§3)
+scripts/00_…           coverage audit -> t0
+scripts/01_…           all raw acquisition -> SOURCES.md
+scripts/01b_…          Eurostat Comext trade
+scripts/02_…           facilities.rds
+scripts/03_…           DOES NOT EXIST — the panel, blocked on B1/B2
+
+policies/*.json        4 files, all with source_url + retrieval date
+data/processed/        facilities.rds, coverage matrices, SOURCES.md, geocode report
+data/raw/              gitignored
+```
+
+---
+
+## 10. Resuming
+
+1. `SKDM_TURKIYE.md` loads automatically via the `CLAUDE.md` pointer.
+2. Read this file, then `ROADMAP.md` open questions.
+3. `git log --oneline` — commit messages carry the reasoning for each decision.
+4. Ask the author what changed on the B track; work done in his head is not on disk.
+
+The verification suite that produced the 34 checks in §4 was written in a scratch
+directory and **was not kept** — it needs `tests/`, which requires the author's permission
+under §3. Recreating it is a known cost.

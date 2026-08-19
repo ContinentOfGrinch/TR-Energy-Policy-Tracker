@@ -52,6 +52,7 @@ CT_DOCS <- c("about_the_data.pdf", "detailed_data_schema.csv")
 
 DIR_RAW       <- file.path("data", "raw", "climate_trace")
 DIR_EXTRACT   <- file.path(DIR_RAW, "extracted")
+DIR_NE        <- file.path("data", "raw", "natural_earth")
 DIR_PROCESSED <- file.path("data", "processed")
 
 dir.create(DIR_PROCESSED, recursive = TRUE, showWarnings = FALSE)
@@ -77,13 +78,20 @@ message("      release: ", release_tag)
 extracted <- ct_extract(pkg$path, sector_members, DIR_EXTRACT)
 
 
-message("[2/3] Fetching upstream documentation")
+message("[2/3] Fetching upstream documentation and boundaries")
 
 docs <- CT_DOCS |>
   lapply(function(f) ct_download_doc(f, DIR_RAW)) |>
   Filter(f = Negate(is.null))
 
-message("      ", length(docs), " of ", length(CT_DOCS), " retrieved")
+message("      ", length(docs), " of ", length(CT_DOCS), " docs retrieved")
+
+# Administrative boundaries are fetched here rather than in 02_build_facilities
+# so that ALL raw acquisition — and therefore the whole attribution chain — sits
+# in one step. The script name says "climate_trace" because §3 fixes it; the
+# step's actual job is "acquire every raw input".
+ne <- ne_download_admin1(DIR_NE)
+message("      Natural Earth admin-1: ", round(ne$bytes / 1024^2, 1), " MB")
 
 
 # =============================================================================
@@ -155,6 +163,49 @@ if (length(docs) > 0) {
 }
 
 lines <- c(lines,
+  "---",
+  "",
+  "## Natural Earth — administrative boundaries",
+  "",
+  "> Made with Natural Earth (naturalearthdata.com). Public domain.",
+  "",
+  "Used to assign each facility to a province and İBBS-2 (NUTS-2) region from",
+  "its coordinates. Climate TRACE supplies latitude and longitude but no",
+  "administrative geography.",
+  "",
+  "| field | value |",
+  "|---|---|",
+  fmt_row("Dataset", ne$dataset),
+  fmt_row("URL", paste0("`", ne$url, "`")),
+  fmt_row("Retrieved", ne$retrieved_at),
+  fmt_row("Size", paste0(round(ne$bytes / 1024^2, 2), " MB")),
+  fmt_row("SHA-256", paste0("`", ne$sha256, "`")),
+  fmt_row("Licence", ne$licence),
+  "",
+  "### Why not geoBoundaries",
+  "",
+  "geoBoundaries' Turkey ADM1 layer is CC BY-SA 2.0, derived from OpenStreetMap.",
+  "ShareAlike would propagate to this project's derived data — published CC BY",
+  "4.0 — as soon as the polygons were redistributed for province-level",
+  "choropleths, which the scope requires. Natural Earth is public domain, so",
+  "both the lookup and the rendering are unencumbered.",
+  "",
+  "### Known defect in this layer",
+  "",
+  "Natural Earth's `name` field for Turkish provinces is corrupted at source:",
+  "\"Kinkkale\" for Kırıkkale, \"Zinguldak\" for Zonguldak, \"K. Maras\" for",
+  "Kahramanmaraş, plus double-encoded characters that no `ENCODING=` option",
+  "repairs. The field is therefore discarded. Province identity is taken from",
+  "`iso_3166_2`, which was verified against vehicle plate codes at eleven points",
+  "and is clean; Turkish names come from a reference table in",
+  "`scripts/02_build_facilities.R`.",
+  "",
+  "The 10m geometry is also too coarse to adjudicate facilities sitting on a",
+  "province border or on a reclaimed coastline. Rather than hide this, every",
+  "facility carries a `geocode_quality` flag and its distance to the assigned",
+  "province's boundary is published in",
+  "`data/processed/facilities_geocode_report.csv`.",
+  "",
   "---",
   "",
   "## Known source gaps",

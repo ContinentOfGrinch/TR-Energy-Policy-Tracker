@@ -1,0 +1,89 @@
+facility_id,facility_name_tr,sector,lat,lon,province_code,province_name_tr,nuts2_code,boundary_distance_m,snap_distance_m,geocode_quality
+CT1897887,Körfez Cement Plant,cement,40.7820049734054,29.6018683802237,41,Kocaeli,TR42,51,NA,boundary_proximate
+CT1567074,Koc Metallurgical Toprakkale steel plant,iron-and-steel,37.0140274095328,36.1063625862528,31,Hatay,TR63,129,NA,boundary_proximate
+CT1567082,Yesilyurt Iron and Steel Tekkekoy plant,iron-and-steel,41.2403516954097,36.4404842723864,55,Samsun,TR83,347,NA,boundary_proximate
+CT1567189,Toscelik Iskenderun steel plant,iron-and-steel,36.6865157946304,36.2136191348841,31,Hatay,TR63,470,NA,boundary_proximate
+CT1567064,Diler Iron and Steel Dilovasi plant,iron-and-steel,40.7839434675694,29.5330798467728,41,Kocaeli,TR42,505,NA,boundary_proximate
+CT32439191,Büyükçekmece Cement Plant,cement,41.0222474864885,28.5558084041902,34,İstanbul,TR10,520,NA,boundary_proximate
+CT1567083,Tosyali Toprakkale steel plant,iron-and-steel,37.0188279969216,36.0940099999736,80,Osmaniye,TR63,533,NA,boundary_proximate
+CT1567076,MMK Türkiye Metallurgical Payas steel plant,iron-and-steel,36.7814103000801,36.2056452039363,31,Hatay,TR63,536,NA,boundary_proximate
+CT1567080,Toscelik Toprakkale steel plant,iron-and-steel,37.0197246117158,36.1101864309013,80,Osmaniye,TR63,572,NA,boundary_proximate
+CT1897902,Soma Manisa Cement Plant,cement,39.1819839914652,27.49986261921,45,Manisa,TR33,596,NA,boundary_proximate
+CT1567071,Isdemir Payas steel plant,iron-and-steel,36.735732350892,36.2094834824266,31,Hatay,TR63,651,NA,boundary_proximate
+CT1567067,Erdemir Eregli steel plant,iron-and-steel,41.261467963656,31.4258724870855,67,Zonguldak,TR81,915,NA,boundary_proximate
+CT1567069,İÇDAŞ Biga steel plant,iron-and-steel,40.4431217826032,27.1378719691625,17,Çanakkale,TR22,1180,NA,boundary_proximate
+CT32439216,Sarımazı Cement Plant,cement,36.9330102756753,36.0039876388797,31,Hatay,TR63,1209,NA,boundary_proximate
+CT1567072,Kaptan Ereglisi steel plant,iron-and-steel,41.0152185914845,27.9598477255557,59,Tekirdağ,TR21,1422,NA,boundary_proximate
+CT32439210,Ünye Ordu Cement Plant,cement,41.1079404660109,37.3242468358019,52,Ordu,TR90,1484,NA,boundary_proximate
+CT1567070,İDÇ Izdemir Aliaga steel plant,iron-and-steel,38.7400416920799,26.9290116293903,35,İzmir,TR31,1684,NA,boundary_proximate
+CT1567068,Habas Aliaga steel plant,iron-and-steel,38.7507940801235,26.9503193645367,35,İzmir,TR31,1708,NA,boundary_proximate
+CT1567066,Ekinciler Iron and Steel Iskenderun plant,iron-and-steel,36.6908852919788,36.2048446538149,31,Hatay,TR63,75,75,snapped_to_nearest
+CT1567081,Yazici Iron and Steel Iskenderun plant,iron-and-steel,36.6856423936233,36.2071282983028,31,Hatay,TR63,96,96,snapped_to_nearest
+CT1897889,Aslan Darıca Cement Plant,cement,40.7589222000772,29.3611229444017,41,Kocaeli,TR42,240,240,snapped_to_nearest
+CT1567063,Colakoglu Metallurgical Dilovasi steel plant,iron-and-steel,40.7695296150915,29.530363436516,41,Kocaeli,TR42,1087,1087,snapped_to_nearest
+CT1567190,Aba Iron and Steel Payas plant,iron-and-steel,36.7486638639711,36.2258341220088,31,Hatay,TR63,2097,NA,within_province
+CT1567078,Ozkan Iron and Steel Aliaga plant,iron-and-steel,38.7376046992084,26.942784337747,35,İzmir,TR31,2179,NA,within_province
+CT1897849,ASCim Korkuteli Cement Plant,cement,37.2536746098047,30.4444316176981,15,Burdur,TR61,2470,NA,within_province
+CT1567085,Cebitas steel plant,iron-and-steel,38.7396881061245,26.9519644023287,35,İzmir,TR31,2471,NA,within_province
+CT32439194,Pazarcık Cement Plant,cement,37.2938679776202,37.157814695598,27,Gaziantep,TRC1,2496,NA,within_province
+CT1567079,Siddik Kardesler Dilovasi steel plant,iron-and-steel,40.8015545433451,29.509139484140398,41,Kocaeli,TR42,2545,NA,within_province
+CT1567075,Kroman Steel Darica plant,iron-and-steel,40.8010537127119,29.3743248450085,41,Kocaeli,TR42,2625,NA,within_province
+CT55793501,Vertra Celik Sarımazı steel plant,iron-and-steel,36.945926,36.001643,31,Hatay,TR63,2625,NA,within_province
+CT1567086,Kardemir Celik Sanayi Izmir steel plant,iron-and-steel,38.7424970005737,26.961168735701,35,İzmir,TR31,2935,NA,within_province
+CT32439214,Cimko Pazarcık Cement Plant,cement,37.3504390358877,37.1620398121625,46,Kahramanmaraş,TR63,2990,NA,within_province
+CT1567065,Ege Steel Aliaga plant,iron-and-steel,38.7278344582328,26.9399494141561,35,İzmir,TR31,3118,NA,within_province
+CT32439211,SEZA Baskil Cement Plant,cement,38.4544335282813,38.7269853576352,23,Elazığ,TRB1,3430,NA,within_province
+CT32439186,Tepebaşı Cement Plant,cement,39.8373616727475,30.2997425766868,26,Eskişehir,TR41,4016,NA,within_province
+CT32439183,Cimentas Bornova Cement Plant,cement,38.4266767746672,27.2174057954796,35,İzmir,TR31,5134,NA,within_province
+CT1897886,Silifke Cement Plant,cement,36.2630234976574,33.7299238803563,33,Mersin,TR62,5536,NA,within_province
+CT1897865,Akdeniz Cement Plant,cement,36.8686612705993,34.7619062344916,33,Mersin,TR62,5715,NA,within_province
+CT1897869,Ladik Cement Plant,cement,40.9359209889983,35.8842489264263,55,Samsun,TR83,6596,NA,within_province
+CT42547024,Kilis Merkez Cement Plant,cement,36.7975552818761,37.019098642858,79,Kilis,TRC1,6861,NA,within_province
+CT32439173,Doğubayazıt Cement Plant,cement,39.5857378292495,43.9011886572011,4,Ağrı,TRA2,7305,NA,within_province
+CT32439212,Sanko Bartin Cement Plant,cement,41.6404482650459,32.3041861072343,74,Bartın,TR81,7638,NA,within_province
+CT1897871,Ezine Cement Plant,cement,39.8638011379185,26.2445980770296,17,Çanakkale,TR22,8181,NA,within_province
+CT32439179,Batıçim Bornova Cement Plant,cement,38.4563347262105,27.2634323215444,35,İzmir,TR31,8644,NA,within_province
+CT1897852,Taşçılar Cement Plant,cement,40.2412442448696,29.9256265591767,11,Bilecik,TR41,9568,NA,within_province
+CT1897873,Askale Kavak Cement Plant,cement,41.0253039176168,36.0992754266868,55,Samsun,TR83,9660,NA,within_province
+CT1567084,Asil Celik Orhangazi steel plant,iron-and-steel,40.4272815024238,29.270123608243,16,Bursa,TR41,9874,NA,within_province
+CT32439198,Ergani Cement Plant,cement,38.2791540095865,39.7425987838833,21,Diyarbakır,TRC2,11135,NA,within_province
+CT42547292,Marmara Hoşafoğlu Cement Plant,cement,40.9443530791637,31.3954211680389,81,Düzce,TR42,11769,NA,within_province
+CT1897907,Elmadağ Cement Plant,cement,39.9437669530942,33.1920167595835,6,Ankara,TR51,12697,NA,within_province
+CT1897868,Gönen Cement Plant,cement,37.8991045019392,30.4913003287613,32,Isparta,TR61,12878,NA,within_province
+CT1897862,Cimentas Lalapaşa Cement Plant,cement,41.7977629983033,26.7002241742094,22,Edirne,TR21,14047,NA,within_province
+CT32439176,Askale Erzurum Cement Plant,cement,39.9248910796493,40.6724214387117,25,Erzurum,TRA1,14828,NA,within_province
+CT42547261,Bilecik Cement Plant,cement,40.2598380827433,30.0439554053492,11,Bilecik,TR41,14914,NA,within_province
+CT1567077,Mescier Iron and Steel Bartin plant,iron-and-steel,41.5656427206916,32.4292890647179,74,Bartın,TR81,15170,NA,within_province
+CT32439178,Söke Cement Plant,cement,37.7705316021886,27.4372135011911,9,Aydın,TR32,15582,NA,within_province
+CT54502850,Eti Alüminyum Seydişehir Refinery,aluminum,37.4191,31.9056,42,Konya,TR52,15603,NA,within_province
+CT1897881,Kurtalan Cement Plant,cement,37.9617779381058,41.703090101208,56,Siirt,TRC3,15626,NA,within_province
+CT1897904,Artova Cement Plant,cement,40.104795622506,36.2928755861641,60,Tokat,TR83,16326,NA,within_province
+CT43765125,Seydisehir Eti Aluminum Smelter,aluminum,37.445228,31.843345,42,Konya,TR52,16477,NA,within_province
+CT1897909,Elmadağ Cement Plant,cement,39.9595536515921,33.1438524098499,6,Ankara,TR51,17161,NA,within_province
+CT32439174,Gümüşhane Merkez Cement Plant,cement,40.4118876190614,39.657978599108,29,Gümüşhane,TR90,17499,NA,within_province
+CT1897890,Bolu Merkez Cement Plant,cement,40.7566167537678,31.7843514969257,14,Bolu,TR42,17640,NA,within_province
+CT32439182,Cimentas Baskil Cement Plant,cement,38.6634215450718,39.2356227315797,23,Elazığ,TRB1,18445,NA,within_province
+CT54502823,Cerkezkoy Aluminum Billet & Slab Plant,aluminum,41.22425,27.92025,59,Tekirdağ,TR21,19200,NA,within_province
+CT32439222,Saray Cement Plant,cement,39.6953709714074,34.6739167927202,66,Yozgat,TR72,19986,NA,within_province
+CT1897906,Evrencik Cement Plant,cement,41.6300775200123,27.6867991734526,39,Kırklareli,TR21,20575,NA,within_province
+CT42547309,Kars Cement Plant,cement,40.575810790005,43.0082860136899,36,Kars,TRA2,20702,NA,within_province
+CT1897859,Bozkale Cement Plant,cement,40.5754840531073,43.0090044457683,36,Kars,TRA2,20770,NA,within_province
+CT1567073,Kardemir Merkez steel plant,iron-and-steel,41.1853066102838,32.6308377888502,78,Karabük,TR81,20985,NA,within_province
+CT1897899,Adıyaman Merkez Cement Plant,cement,37.6946575828829,38.0864870094278,2,Adıyaman,TRC1,21167,NA,within_province
+CT32439209,Artuklu Cement Plant,cement,37.3384742409151,40.8025385278495,47,Mardin,TRC3,24953,NA,within_province
+CT1897858,Kestel Cement Plant,cement,40.1860720237589,29.2250957086303,16,Bursa,TR41,24957,NA,within_province
+CT1897878,Pınarhisar Cement Plant,cement,41.6354900725661,27.5056233816446,39,Kırklareli,TR21,25287,NA,within_province
+CT1897892,Belevi Cement Plant,cement,37.86241803582,29.3725154380509,20,Denizli,TR32,25599,NA,within_province
+CT1897888,Yüreğir Cement Plant,cement,36.9643325445559,35.4522289335493,1,Adana,TR62,28443,NA,within_province
+CT32439195,Altıeylül Cement Plant,cement,39.6077412963933,27.878929567346,10,Balıkesir,TR22,29247,NA,within_province
+CT32439188,Niğde Merkez Cement Plant,cement,37.9474421986972,34.6840601349607,51,Niğde,TR71,29946,NA,within_province
+CT32439224,Erkan Cement Plant,cement,38.8914373171245,41.5690125411962,49,Muş,TRB2,30599,NA,within_province
+CT32439199,Şehitkamil Cement Plant,cement,37.0686473775536,37.4297960622884,27,Gaziantep,TRC1,32292,NA,within_province
+CT32439201,Karaköprü Cement Plant,cement,37.2761984487296,38.7321997312191,63,Şanlıurfa,TRC2,32386,NA,within_province
+CT1897854,Askale Edremit Cement Plant,cement,38.4178502224606,43.2375565152249,65,Van,TRB2,34276,NA,within_province
+CT1897863,Melikgazi Cement Plant,cement,38.857551503599,35.7658933196682,38,Kayseri,TR72,37500,NA,within_province
+CT42547357,Halımoru Cement Plant,cement,38.6553205337458,30.6195867176922,3,Afyonkarahisar,TR33,39410,NA,within_province
+CT1897911,Sivas Merkez Cement Plant,cement,39.7240558058946,36.936105037049,58,Sivas,TR72,40862,NA,within_province
+CT55296418,Etimesgut Cement Plant,cement,39.9285001273122,32.7527693023024,6,Ankara,TR51,48644,NA,within_province
+CT32439207,Kahramankazan Cement Plant,cement,40.0495744725573,32.6504073543139,6,Ankara,TR51,49271,NA,within_province
+CT32439220,Selçuklu Cement Plant,cement,37.9396483907896,32.5357056396124,42,Konya,TR52,68019,NA,within_province

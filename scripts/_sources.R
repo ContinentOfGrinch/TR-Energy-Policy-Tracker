@@ -181,3 +181,78 @@ ct_extract <- function(zip_path, members, exdir) {
   unzip(zip_path, files = unname(members), exdir = exdir, overwrite = TRUE)
   set_names(file.path(exdir, unname(members)), names(members))
 }
+
+
+#' Locate the ownership CSV for a subsector inside the archive.
+#'
+#' Separate from ct_sector_files() because ownership is an optional enrichment:
+#' the pipeline still works without it, it just loses `operator_name`.
+ct_ownership_files <- function(zip_path, subsectors) {
+  index <- unzip(zip_path, list = TRUE)
+
+  find_one <- function(subsector) {
+    hits <- index$Name |>
+      keep(~ str_detect(.x, fixed(paste0(subsector, "_emissions_sources_ownership_"))) &&
+             str_ends(.x, ".csv"))
+    if (length(hits) == 0) NA_character_ else hits[[1]]
+  }
+
+  set_names(map_chr(subsectors, find_one), subsectors)
+}
+
+
+# =============================================================================
+# Natural Earth — administrative boundaries
+# =============================================================================
+# Used to assign each facility to a Turkish province from its coordinates.
+#
+# WHY NATURAL EARTH AND NOT geoBoundaries: geoBoundaries' Turkey ADM1 layer is
+# CC BY-SA 2.0 (derived from OpenStreetMap). ShareAlike would propagate to this
+# project's derived data, which is published CC BY 4.0, and would attach as soon
+# as the polygons were redistributed for province-level choropleths — which the
+# scope requires. Natural Earth is public domain, so both the lookup and the
+# rendering are unencumbered. The trade is coarser geometry; see the
+# border-proximity diagnostic in 02_build_facilities.R.
+#
+# WARNING: do NOT use this layer's `name` field. Natural Earth's Turkish
+# province names are corrupted at source — "Kinkkale" for Kırıkkale,
+# "Zinguldak" for Zonguldak, "K. Maras" for Kahramanmaraş, plus double-encoded
+# mojibake that no ENCODING= option repairs. Key on `iso_3166_2` instead, which
+# was verified against plate codes and is clean.
+
+NE_ADM1_URL <- paste0("https://naciscdn.org/naturalearth/10m/cultural/",
+                      "ne_10m_admin_1_states_provinces.zip")
+
+#' Download and unpack the Natural Earth admin-1 layer.
+#'
+#' Returns a provenance record whose `shp` element is the path to the shapefile.
+ne_download_admin1 <- function(dir, force = FALSE) {
+  dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+  zip_path <- file.path(dir, basename(NE_ADM1_URL))
+
+  if (file.exists(zip_path) && !force) {
+    message("      cached: ", zip_path)
+  } else {
+    message("      downloading: ", NE_ADM1_URL)
+    download.file(NE_ADM1_URL, destfile = zip_path, mode = "wb", quiet = TRUE)
+  }
+
+  unzip(zip_path, exdir = dir, overwrite = TRUE)
+  shp <- list.files(dir, pattern = "\\.shp$", full.names = TRUE)
+  if (length(shp) == 0) stop("No .shp found after unpacking ", zip_path)
+
+  info <- file.info(zip_path)
+
+  list(
+    source       = "Natural Earth",
+    dataset      = "10m Admin 1 - States, Provinces",
+    url          = NE_ADM1_URL,
+    path         = zip_path,
+    shp          = shp[[1]],
+    bytes        = as.integer(info$size),
+    sha256       = ct_sha256(zip_path),
+    retrieved_at = format(info$mtime, "%Y-%m-%d %H:%M:%S"),
+    licence      = "Public domain",
+    attribution  = "Made with Natural Earth (naturalearthdata.com), public domain"
+  )
+}

@@ -48,6 +48,49 @@ regenerating.
 
 ---
 
+## Natural Earth — administrative boundaries
+
+> Made with Natural Earth (naturalearthdata.com). Public domain.
+
+Used to assign each facility to a province and İBBS-2 (NUTS-2) region from
+its coordinates. Climate TRACE supplies latitude and longitude but no
+administrative geography.
+
+| field | value |
+|---|---|
+| Dataset | 10m Admin 1 - States, Provinces |
+| URL | `https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_1_states_provinces.zip` |
+| Retrieved | 2026-08-19 13:15:28 |
+| Size | 14.22 MB |
+| SHA-256 | `efc59726337323058f9446210adc96673179cd344e053666ee3d28cb58ba2b05` |
+| Licence | Public domain |
+
+### Why not geoBoundaries
+
+geoBoundaries' Turkey ADM1 layer is CC BY-SA 2.0, derived from OpenStreetMap.
+ShareAlike would propagate to this project's derived data — published CC BY
+4.0 — as soon as the polygons were redistributed for province-level
+choropleths, which the scope requires. Natural Earth is public domain, so
+both the lookup and the rendering are unencumbered.
+
+### Known defect in this layer
+
+Natural Earth's `name` field for Turkish provinces is corrupted at source:
+"Kinkkale" for Kırıkkale, "Zinguldak" for Zonguldak, "K. Maras" for
+Kahramanmaraş, plus double-encoded characters that no `ENCODING=` option
+repairs. The field is therefore discarded. Province identity is taken from
+`iso_3166_2`, which was verified against vehicle plate codes at eleven points
+and is clean; Turkish names come from a reference table in
+`scripts/02_build_facilities.R`.
+
+The 10m geometry is also too coarse to adjudicate facilities sitting on a
+province border or on a reclaimed coastline. Rather than hide this, every
+facility carries a `geocode_quality` flag and its distance to the assigned
+province's boundary is published in
+`data/processed/facilities_geocode_report.csv`.
+
+---
+
 ## Known source gaps
 
 These are properties of the upstream data, not of this pipeline. They are

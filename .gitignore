@@ -1,0 +1,60 @@
+# ---------------------------------------------------------------------------
+# skdm-turkiye — .gitignore
+# ---------------------------------------------------------------------------
+
+# --- Raw source data -------------------------------------------------------
+# Reproducibility comes from the fetch scripts in scripts/, not from committed
+# binaries (CLAUDE.md §8.6). Processed outputs ARE tracked so the app runs on
+# a fresh clone without re-running the full ETL.
+data/raw/
+!data/raw/.gitkeep
+
+# --- R session artefacts ---------------------------------------------------
+.Rhistory
+.Rapp.history
+.RData
+.Rproj.user/
+.Ruserdata/
+*.Rproj
+.Renviron
+.Rprofile.local
+
+# Compiled / knitr side effects
+*.o
+*.so
+*.dll
+*_cache/
+/cache/
+*.utf8.md
+*.knit.md
+
+# --- renv ------------------------------------------------------------------
+# renv.lock and renv/activate.R MUST stay tracked — they are the reproducibility
+# contract. The library itself must not be.
+renv/library/
+renv/local/
+renv/cellar/
+renv/lock/
+renv/python/
+renv/sandbox/
+renv/staging/
+
+# --- Shiny / deployment ----------------------------------------------------
+rsconnect/
+
+# --- Secrets ---------------------------------------------------------------
+# API keys for source platforms must never enter history.
+.env
+*.pem
+*_secret*
+*_token*
+
+# --- OS noise --------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Editors ---------------------------------------------------------------
+.vscode/
+.idea/
+*.swp

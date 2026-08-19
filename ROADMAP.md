@@ -12,11 +12,31 @@ recorded reason is a gap, not a decision.
 
 **Current version:** pre-0.1
 
-**Coverage audit complete** (2026-08-19). `t₀ = 2021`; last complete year `2025`; 2026
-partial at 5 months. 88 facilities: cement 58, iron & steel 27, aluminium 3. Evidence in
-`data/processed/coverage_audit_summary.md`.
+**Data foundation complete** (2026-08-19). Acquisition, provenance, coverage audit and
+the facility table are done and verified; the analytical layer has not been started.
 
-**Next milestone:** `policies/*.json` skeletons, then `scripts/01_fetch_climate_trace.R`.
+| Component | State |
+|---|---|
+| `scripts/_sources.R`, `00`, `01`, `02` | done |
+| `facilities.rds` | 88 facilities, verified |
+| `facility_panel.rds` | **not started** — blocked on the direct/indirect decomposition |
+| `policies/*.json` | not started |
+| CBAM liability calculation | **not started** — author's analytical core (§9) |
+| App | map, filters and sources tab working; no time slider, no liability figure |
+| `README.md`, `CITATION.cff`, `METHODOLOGY.md` | not started |
+
+`t₀ = 2021`; last complete year `2025`; 2026 partial at 5 months. 88 facilities: cement 58,
+iron & steel 27, aluminium 3.
+
+**Verification, 2026-08-19:** 34 checks passed, 0 failed, 3 flagged for human resolution
+(open questions 3 and 4 below, plus two "Elmadağ Cement Plant" records in Ankara confirmed
+as genuinely distinct sites 4.4 km apart under different operators). Sixteen facilities
+were checked against publicly known locations and all sixteen were assigned correctly,
+including the Karadeniz Ereğli / Marmara Ereğlisi pair that a name-based method would
+confuse.
+
+**Next milestone:** `policies/*.json` skeletons — the only remaining piece that needs no
+analytical decision and can proceed in parallel with the author's work on the panel.
 
 ---
 
@@ -186,7 +206,37 @@ These are live risks. Each will be closed by a specific artefact, not by discuss
    *Closed by:* the author, in `scripts/03_build_panel.R`, reviewed against
    `data/processed/coverage_other_fields.csv`
 
-3. **How far do GEM and Climate TRACE disagree?**
+3. **Is the Kars cement plant double-counted?**
+   `Bozkale Cement Plant` (source_id 1897859) and `Kars Cement Plant`
+   (source_id 42547309) sit **71 metres apart** in Kars, both typed
+   `integrated dry`, both carrying full independent 2021–2026 series with
+   similar capacities (49,167 vs 50,000 t/month). Their recorded operators are
+   *Kars Çimento Sanayi ve Ticaret AŞ* and *Çimentaş İzmir Çimento Fabrikası
+   Türk AŞ* — consistent with one physical plant appearing twice, once under a
+   historical owner and once under the acquirer.
+
+   If they are one plant, Kars province is double-counted and national cement
+   CO₂ is overstated by roughly 236,000 t in 2024 (0.49% of the sector). At
+   province level the error is 100%. Neither record may be dropped on suspicion;
+   resolve against an authoritative plant register (TÜRKÇİMENTO membership or
+   the facility's own disclosures) and record the decision.
+   *Closed by:* manual verification, documented in METHODOLOGY
+
+4. **Is the Koç Metalurji Toprakkale plant in Hatay or Osmaniye?**
+   Three steel plants sit within 600 m of one another at Toprakkale. Two —
+   Tosçelik and Tosyalı — were assigned to Osmaniye at 533 m and 572 m from the
+   provincial boundary. The third, Koç Metalurji, was assigned to **Hatay** at
+   129 m. Toprakkale is a district of Osmaniye, so the odd one out is probably a
+   misassignment produced by Natural Earth's 10m geometry rather than a real
+   difference.
+
+   Both provinces fall in NUTS-2 **TR63**, so regional aggregation is unaffected
+   either way; only the province figure is at risk. This is precisely the case
+   the `boundary_proximate` flag exists to surface, and it should not be
+   corrected by hand without a better boundary source.
+   *Closed by:* a higher-resolution boundary check or the operator's own address
+
+5. **How far do GEM and Climate TRACE disagree?**
    GEM is a cross-check, not an input, so a disagreement does not have to be reconciled —
    but it does have to be measured and published. A large divergence in capacity or
    commissioning year is a finding about source reliability that readers need.

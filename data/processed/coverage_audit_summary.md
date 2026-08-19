@@ -7,6 +7,8 @@ This file is generated. Do not edit by hand — re-run the script.
 
 - Package: `https://downloads.climatetrace.org/latest/country_packages/co2/TUR.zip`
 - Release: **v5_9_0**
+- SHA-256: `dd48e8fa862a436e98edb5e939c87593d4060a3981c9a8358c0bb73ba54e0bca`
+- Retrieved: 2026-08-19 10:46:32
 - Gas: `co2`
 - Subsectors: iron-and-steel, cement, aluminum
 - Facilities: 88

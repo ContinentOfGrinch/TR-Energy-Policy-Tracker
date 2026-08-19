@@ -50,6 +50,11 @@ suppressPackageStartupMessages({
   library(stringr)
 })
 
+# Acquisition, integrity and archive inspection live in a shared helper so that
+# this script and 01_fetch_climate_trace.R cannot drift apart. See §3 of
+# SKDM_TURKIYE.md for the approved exception to the numbering convention.
+source(file.path("scripts", "_sources.R"))
+
 
 # =============================================================================
 # 1. CONFIGURATION
@@ -65,8 +70,6 @@ suppressPackageStartupMessages({
 # never silently filled (§8.1).
 CT_GAS      <- "co2"
 CT_COUNTRY  <- "TUR"
-CT_URL      <- sprintf("https://downloads.climatetrace.org/latest/country_packages/%s/%s.zip",
-                       CT_GAS, CT_COUNTRY)
 
 # Subsectors retained for v0.1. Note the US spelling of "aluminum" — this is
 # Climate TRACE's vocabulary and must be passed through verbatim.
@@ -108,7 +111,6 @@ ARITHMETIC_TOLERANCE <- 0.01
 DIR_RAW       <- file.path("data", "raw", "climate_trace")
 DIR_EXTRACT   <- file.path(DIR_RAW, "extracted")
 DIR_PROCESSED <- file.path("data", "processed")
-ZIP_PATH      <- file.path(DIR_RAW, sprintf("%s_%s.zip", CT_COUNTRY, CT_GAS))
 
 for (d in c(DIR_RAW, DIR_EXTRACT, DIR_PROCESSED)) {
   dir.create(d, recursive = TRUE, showWarnings = FALSE)
@@ -123,41 +125,20 @@ for (d in c(DIR_RAW, DIR_EXTRACT, DIR_PROCESSED)) {
 
 message("[1/6] Acquiring Climate TRACE country package")
 
-if (!file.exists(ZIP_PATH)) {
-  message("      downloading ", CT_URL)
-  download.file(CT_URL, destfile = ZIP_PATH, mode = "wb", quiet = TRUE)
-} else {
-  message("      using cached ", ZIP_PATH)
-}
+# `pkg` is a provenance record, not just a path: URL, byte count, SHA-256 and
+# retrieval time travel with it into the summary below.
+pkg <- ct_download_package(gas = CT_GAS, country = CT_COUNTRY, dir = DIR_RAW)
 
-archive_index <- unzip(ZIP_PATH, list = TRUE)
+sector_members <- ct_sector_files(pkg$path, CT_SUBSECTORS)
 
-# Locate the asset-level emissions file for each subsector. The filename embeds
-# a release version (e.g. `_v5_9_0`), so we match on pattern rather than a
-# hardcoded name — a version bump upstream must not silently break this script.
-find_sector_file <- function(subsector) {
-  hits <- archive_index$Name |>
-    keep(~ str_detect(.x, fixed(paste0(subsector, "_emissions_sources_"))) &&
-           str_ends(.x, ".csv") &&
-           !str_detect(.x, "confidence|ownership"))
-  if (length(hits) == 0) {
-    stop("No emissions_sources file found for subsector: ", subsector,
-         " — the package layout has changed and this script must be updated.")
-  }
-  hits[[1]]
-}
+# The `latest` URL alias does not say which release you received; the archive's
+# own filenames do. Cite this tag, never the REST API's version.
+package_version_tag <- ct_release_tag(sector_members)
 
-sector_files <- set_names(map_chr(CT_SUBSECTORS, find_sector_file), CT_SUBSECTORS)
+message("      release: ", package_version_tag,
+        ", sha256 ", substr(pkg$sha256, 1, 16), "...")
 
-# Record the upstream release version so it can be cited in SOURCES.md. A number
-# without a version is not reproducible.
-package_version_tag <- sector_files[[1]] |>
-  str_extract("v\\d+_\\d+_\\d+") |>
-  replace_na("unknown")
-
-message("      package release: ", package_version_tag)
-
-unzip(ZIP_PATH, files = unname(sector_files), exdir = DIR_EXTRACT, overwrite = TRUE)
+sector_files <- ct_extract(pkg$path, sector_members, DIR_EXTRACT)
 
 
 # =============================================================================
@@ -172,9 +153,7 @@ message("[2/6] Reading sector files")
 OTHER_VALUE_COLS <- paste0("other", 1:10)
 OTHER_DEF_COLS   <- paste0("other", 1:10, "_def")
 
-read_sector <- function(subsector, member_path) {
-  path <- file.path(DIR_EXTRACT, member_path)
-
+read_sector <- function(subsector, path) {
   raw <- read_csv(
     path,
     locale    = locale(encoding = "UTF-8"),   # §2: never rely on the OS default
@@ -481,8 +460,10 @@ md <- c(
   "",
   "## Source",
   "",
-  paste0("- Package: `", CT_URL, "`"),
+  paste0("- Package: `", pkg$url, "`"),
   paste0("- Release: **", package_version_tag, "**"),
+  paste0("- SHA-256: `", pkg$sha256, "`"),
+  paste0("- Retrieved: ", pkg$retrieved_at),
   paste0("- Gas: `", CT_GAS, "`"),
   paste0("- Subsectors: ", paste(CT_SUBSECTORS, collapse = ", ")),
   paste0("- Facilities: ", nrow(facilities)),

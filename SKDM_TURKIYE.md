@@ -72,6 +72,7 @@ policies/
   carbon_price_scenarios.json
   tr_ets.json
 scripts/
+  _sources.R              shared acquisition/provenance helpers (not a step)
   00_coverage_audit.R
   01_fetch_climate_trace.R
   02_build_facilities.R
@@ -85,6 +86,11 @@ Root files: `README.md`, `SKDM_TURKIYE.md`, `CLAUDE.md` (pointer only), `METHODO
 - Never create new top-level directories without asking.
 - Never merge `ui.R` and `server.R` into `app.R`. `global.R` is permitted and is not a merge.
 - Scripts in `scripts/` are numbered and run in order. Preserve the numbering convention.
+  **One approved exception:** `scripts/_sources.R`. The underscore prefix marks a helper
+  library that is `source()`d, not run as a pipeline step. It exists because both
+  `00_coverage_audit.R` and `01_fetch_climate_trace.R` must acquire the same archive, and
+  duplicated download logic would drift. Do not add further underscore files without
+  asking.
 
 **Known outstanding item:** JOSS requires automated tests, which implies a `tests/`
 directory. It has not been created — adding it requires the author's explicit approval

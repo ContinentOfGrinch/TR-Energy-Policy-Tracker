@@ -1,0 +1,13 @@
+sector,n_facilities,variable,n_available,pct_available
+aluminum,3,lat,3,1
+aluminum,3,lon,3,1
+aluminum,3,name,3,1
+aluminum,3,source_type,3,1
+cement,58,lat,58,1
+cement,58,lon,58,1
+cement,58,name,58,1
+cement,58,source_type,58,1
+iron-and-steel,27,lat,27,1
+iron-and-steel,27,lon,27,1
+iron-and-steel,27,name,27,1
+iron-and-steel,27,source_type,27,1

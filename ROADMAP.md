@@ -10,11 +10,13 @@ recorded reason is a gap, not a decision.
 
 ## Status
 
-**Current version:** pre-0.1 (repository scaffolding)
+**Current version:** pre-0.1
 
-**Next milestone:** `scripts/00_coverage_audit.R` — the data-availability matrix that
-determines the empirical start year `t₀` and confirms which sectors survive at
-facility-level resolution.
+**Coverage audit complete** (2026-08-19). `t₀ = 2021`; last complete year `2025`; 2026
+partial at 5 months. 88 facilities: cement 58, iron & steel 27, aluminium 3. Evidence in
+`data/processed/coverage_audit_summary.md`.
+
+**Next milestone:** `policies/*.json` skeletons, then `scripts/01_fetch_climate_trace.R`.
 
 ---
 
@@ -126,33 +128,65 @@ Fertilisers are therefore dropped from v0.1 and the exclusion is reported as a r
 addressable.* This is worth stating plainly in METHODOLOGY — it maps the edge of what
 open data can support, which is useful to the next researcher.
 
+**Where does `t₀` fall? — 2021.**
+*Closed 2026-08-19 by `scripts/00_coverage_audit.R`.*
+
+Under the pre-specified rule (≥90% of facilities in every sector carrying non-missing
+`activity` **and** `emissions_quantity`, in a temporally complete year), every year from
+2021 to 2025 passes at 100% coverage in all three sectors. 2026 fails only on
+completeness: 5 of 12 months. The panel therefore spans **2021–2026**, with 2026 flagged
+partial and never annualised by scaling — cement output is seasonal, so a 12/5 multiplier
+would bias the figure systematically rather than randomly.
+
+**Is production or emissions the binding constraint? — Neither.**
+*Closed 2026-08-19 by `scripts/00_coverage_audit.R`.*
+
+Both `activity` and `emissions_quantity` are present for 100% of facilities in every
+sector-year. The concern that production coverage would truncate the panel did not
+materialise. Note that `activity × emissions_factor == emissions_quantity` holds for 100%
+of cement and aluminium rows and 93.8% of iron & steel rows — the residual is worth
+inspecting before the panel is built, but it does not constrain `t₀`.
+
+**Can the REST API supply the panel? — No.**
+*Closed 2026-08-19 by `scripts/00_coverage_audit.R`.*
+
+`GET /v6/assets/{id}` returns a single year (the latest) and silently ignores every year
+parameter tried: `year`, `years`, `since`/`to`, `startDate`/`endDate`. An audit run
+against it reports the endpoint's limit rather than the data's. The bulk country package
+at `downloads.climatetrace.org/latest/country_packages/{gas}/{ISO3}.zip` carries monthly
+facility-level records from 2021 onward **plus** the `other1..other10` fields the API
+omits entirely, and is the only viable source. Note the release mismatch: the bulk
+package is tagged `v5_9_0` while the API serves `v6`; cite the package version.
+
 ---
 
 ## Open questions — to be resolved by evidence, not assumption
 
 These are live risks. Each will be closed by a specific artefact, not by discussion.
 
-1. **Where does `t₀` actually fall?**
-   Determined by the intersection of source × year × variable availability across all
-   retained sectors. The audit output is committed to `data/processed/` as evidence for
-   the claim, not merely printed to the console.
-   *Closed by:* `scripts/00_coverage_audit.R`
+1. **Which years are observation and which are estimate?**
+   The audit established that 2021–2025 are temporally complete and 2026 is partial
+   (5 months). It did **not** establish whether 2025 is a realised observation or a
+   Climate TRACE nowcast — completeness is not the same as being observed. This boundary
+   determines which years may carry `value_type = observed`, so it must be settled from
+   Climate TRACE's release documentation rather than inferred from the data.
+   *Closed by:* `latest/about_the_data/about_the_data.pdf` in the country package,
+   recorded in `data/processed/SOURCES.md`
 
-2. **Is `production_activity` or `co2_direct_t` the binding constraint?**
-   CBAM liability needs tonnes of goods and embedded emissions per tonne. Both fields are
-   present in the API, but presence is not coverage — the audit must measure the non-null
-   share per sector per year. If production is thinner than emissions, production sets the
-   panel's effective span.
-   *Closed by:* `scripts/00_coverage_audit.R`
+2. **How is the indirect component separated from the direct one, per sector?**
+   The audit found that `other1..other10` slot meanings are **sector-specific**. Iron &
+   steel exposes `direct and indirect emissions` as a quantity; cement instead exposes a
+   `Calcination emissions factor` and a separate `Fuel emissions factor`; aluminium
+   exposes `total emissions`. There is therefore no single expression that recovers the
+   indirect share across all three sectors, and any parser must key on the `_def` label
+   rather than the slot number.
 
-3. **Which years are observation and which are estimate?**
-   Climate TRACE returns years beyond the last realised year. The `Confidence` block is
-   the only in-band signal available for telling them apart, and it may not distinguish
-   them cleanly. If it does not, the boundary must be sourced from Climate TRACE's own
-   release documentation rather than inferred.
-   *Closed by:* `scripts/00_coverage_audit.R`
+   CBAM regulates direct emissions for v0.1, so this decomposition determines what enters
+   the calculation at all. It is analytical core work and belongs to the author (§9).
+   *Closed by:* the author, in `scripts/03_build_panel.R`, reviewed against
+   `data/processed/coverage_other_fields.csv`
 
-4. **How far do GEM and Climate TRACE disagree?**
+3. **How far do GEM and Climate TRACE disagree?**
    GEM is a cross-check, not an input, so a disagreement does not have to be reconciled —
    but it does have to be measured and published. A large divergence in capacity or
    commissioning year is a finding about source reliability that readers need.

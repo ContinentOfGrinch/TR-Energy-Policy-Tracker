@@ -1,0 +1,151 @@
+sector,year,slot,label,n_rows,n_available,pct_available
+aluminum,2021,other1,total emissions factor. Aluminium: anode Consumption emissions + anode Production Emissions + Electrolysis Electricity Emissions. Alumina: Refining direct emissions + electricity use emissions,36,36,1
+aluminum,2021,other2,total emissions,36,36,1
+aluminum,2021,other3,electricity_use_factor,36,36,1
+aluminum,2021,other4,electricity_use,36,36,1
+aluminum,2021,other5,grid_emissions_intensity,36,36,1
+aluminum,2021,other6,Percentage of emissions from smelting,36,36,1
+aluminum,2021,other7,Percent of emissions from fuel combustion,36,36,1
+aluminum,2022,other1,total emissions factor. Aluminium: anode Consumption emissions + anode Production Emissions + Electrolysis Electricity Emissions. Alumina: Refining direct emissions + electricity use emissions,36,36,1
+aluminum,2022,other2,total emissions,36,36,1
+aluminum,2022,other3,electricity_use_factor,36,36,1
+aluminum,2022,other4,electricity_use,36,36,1
+aluminum,2022,other5,grid_emissions_intensity,36,36,1
+aluminum,2022,other6,Percentage of emissions from smelting,36,36,1
+aluminum,2022,other7,Percent of emissions from fuel combustion,36,36,1
+aluminum,2023,other1,total emissions factor. Aluminium: anode Consumption emissions + anode Production Emissions + Electrolysis Electricity Emissions. Alumina: Refining direct emissions + electricity use emissions,36,36,1
+aluminum,2023,other2,total emissions,36,36,1
+aluminum,2023,other3,electricity_use_factor,36,36,1
+aluminum,2023,other4,electricity_use,36,36,1
+aluminum,2023,other5,grid_emissions_intensity,36,36,1
+aluminum,2023,other6,Percentage of emissions from smelting,36,36,1
+aluminum,2023,other7,Percent of emissions from fuel combustion,36,36,1
+aluminum,2024,other1,total emissions factor. Aluminium: anode Consumption emissions + anode Production Emissions + Electrolysis Electricity Emissions. Alumina: Refining direct emissions + electricity use emissions,36,36,1
+aluminum,2024,other2,total emissions,36,36,1
+aluminum,2024,other3,electricity_use_factor,36,36,1
+aluminum,2024,other4,electricity_use,36,36,1
+aluminum,2024,other5,grid_emissions_intensity,36,36,1
+aluminum,2024,other6,Percentage of emissions from smelting,36,36,1
+aluminum,2024,other7,Percent of emissions from fuel combustion,36,36,1
+aluminum,2025,other1,total emissions factor. Aluminium: anode Consumption emissions + anode Production Emissions + Electrolysis Electricity Emissions. Alumina: Refining direct emissions + electricity use emissions,36,36,1
+aluminum,2025,other2,total emissions,36,36,1
+aluminum,2025,other3,electricity_use_factor,36,36,1
+aluminum,2025,other4,electricity_use,36,36,1
+aluminum,2025,other5,grid_emissions_intensity,36,36,1
+aluminum,2025,other6,Percentage of emissions from smelting,36,36,1
+aluminum,2025,other7,Percent of emissions from fuel combustion,36,36,1
+aluminum,2026,other1,total emissions factor. Aluminium: anode Consumption emissions + anode Production Emissions + Electrolysis Electricity Emissions. Alumina: Refining direct emissions + electricity use emissions,15,15,1
+aluminum,2026,other2,total emissions,15,15,1
+aluminum,2026,other3,electricity_use_factor,15,15,1
+aluminum,2026,other4,electricity_use,15,15,1
+aluminum,2026,other5,grid_emissions_intensity,15,15,1
+aluminum,2026,other6,Percentage of emissions from smelting,15,15,1
+aluminum,2026,other7,Percent of emissions from fuel combustion,15,15,1
+cement,2021,other1,"Direct and Indirect emissions factor: calcination, fuel use and electricity use",696,696,1
+cement,2021,other10,model_methodology,696,696,1
+cement,2021,other2,Calcination emissions factor,696,696,1
+cement,2021,other3,Fuel emissions factor,696,696,1
+cement,2021,other4,electricity_use_factor,696,696,1
+cement,2021,other5,electricity_use,696,696,1
+cement,2021,other6,grid_emissions_intensity,696,696,1
+cement,2021,other7,cement_type,696,696,1
+cement,2021,other8,ers_technology,696,300,0.43103448275862066
+cement,2021,other9,clinker_to_cement_ratio,696,696,1
+cement,2022,other1,"Direct and Indirect emissions factor: calcination, fuel use and electricity use",696,696,1
+cement,2022,other10,model_methodology,696,696,1
+cement,2022,other2,Calcination emissions factor,696,696,1
+cement,2022,other3,Fuel emissions factor,696,696,1
+cement,2022,other4,electricity_use_factor,696,696,1
+cement,2022,other5,electricity_use,696,696,1
+cement,2022,other6,grid_emissions_intensity,696,696,1
+cement,2022,other7,cement_type,696,696,1
+cement,2022,other8,ers_technology,696,300,0.43103448275862066
+cement,2022,other9,clinker_to_cement_ratio,696,696,1
+cement,2023,other1,"Direct and Indirect emissions factor: calcination, fuel use and electricity use",696,696,1
+cement,2023,other10,model_methodology,696,696,1
+cement,2023,other2,Calcination emissions factor,696,696,1
+cement,2023,other3,Fuel emissions factor,696,696,1
+cement,2023,other4,electricity_use_factor,696,696,1
+cement,2023,other5,electricity_use,696,696,1
+cement,2023,other6,grid_emissions_intensity,696,696,1
+cement,2023,other7,cement_type,696,696,1
+cement,2023,other8,ers_technology,696,300,0.43103448275862066
+cement,2023,other9,clinker_to_cement_ratio,696,696,1
+cement,2024,other1,"Direct and Indirect emissions factor: calcination, fuel use and electricity use",696,696,1
+cement,2024,other10,model_methodology,696,696,1
+cement,2024,other2,Calcination emissions factor,696,696,1
+cement,2024,other3,Fuel emissions factor,696,696,1
+cement,2024,other4,electricity_use_factor,696,696,1
+cement,2024,other5,electricity_use,696,696,1
+cement,2024,other6,grid_emissions_intensity,696,696,1
+cement,2024,other7,cement_type,696,696,1
+cement,2024,other8,ers_technology,696,300,0.43103448275862066
+cement,2024,other9,clinker_to_cement_ratio,696,696,1
+cement,2025,other1,"Direct and Indirect emissions factor: calcination, fuel use and electricity use",696,696,1
+cement,2025,other10,model_methodology,696,696,1
+cement,2025,other2,Calcination emissions factor,696,696,1
+cement,2025,other3,Fuel emissions factor,696,696,1
+cement,2025,other4,electricity_use_factor,696,696,1
+cement,2025,other5,electricity_use,696,696,1
+cement,2025,other6,grid_emissions_intensity,696,696,1
+cement,2025,other7,cement_type,696,696,1
+cement,2025,other8,ers_technology,696,300,0.43103448275862066
+cement,2025,other9,clinker_to_cement_ratio,696,696,1
+cement,2026,other1,"Direct and Indirect emissions factor: calcination, fuel use and electricity use",290,290,1
+cement,2026,other10,model_methodology,290,290,1
+cement,2026,other2,Calcination emissions factor,290,290,1
+cement,2026,other3,Fuel emissions factor,290,290,1
+cement,2026,other4,electricity_use_factor,290,290,1
+cement,2026,other5,electricity_use,290,290,1
+cement,2026,other6,grid_emissions_intensity,290,290,1
+cement,2026,other7,cement_type,290,290,1
+cement,2026,other8,ers_technology,290,125,0.43103448275862066
+cement,2026,other9,clinker_to_cement_ratio,290,290,1
+iron-and-steel,2021,other1,Direct and Indirect emissions factor: includes electricity use,324,324,1
+iron-and-steel,2021,other2,direct and indirect emissions,324,324,1
+iron-and-steel,2021,other3,electricity_use_factor,324,324,1
+iron-and-steel,2021,other4,electricity_use,324,324,1
+iron-and-steel,2021,other5,grid_emissions_intensity,324,324,1
+iron-and-steel,2021,other6,model_methodology,324,324,1
+iron-and-steel,2021,other7,percentage_of_scrap_metal_utilized,324,192,0.5925925925925926
+iron-and-steel,2021,other8,Percentage of IPPU emissions,324,324,1
+iron-and-steel,2022,other1,Direct and Indirect emissions factor: includes electricity use,324,324,1
+iron-and-steel,2022,other2,direct and indirect emissions,324,324,1
+iron-and-steel,2022,other3,electricity_use_factor,324,324,1
+iron-and-steel,2022,other4,electricity_use,324,324,1
+iron-and-steel,2022,other5,grid_emissions_intensity,324,324,1
+iron-and-steel,2022,other6,model_methodology,324,324,1
+iron-and-steel,2022,other7,percentage_of_scrap_metal_utilized,324,192,0.5925925925925926
+iron-and-steel,2022,other8,Percentage of IPPU emissions,324,324,1
+iron-and-steel,2023,other1,Direct and Indirect emissions factor: includes electricity use,324,324,1
+iron-and-steel,2023,other2,direct and indirect emissions,324,324,1
+iron-and-steel,2023,other3,electricity_use_factor,324,324,1
+iron-and-steel,2023,other4,electricity_use,324,324,1
+iron-and-steel,2023,other5,grid_emissions_intensity,324,324,1
+iron-and-steel,2023,other6,model_methodology,324,324,1
+iron-and-steel,2023,other7,percentage_of_scrap_metal_utilized,324,192,0.5925925925925926
+iron-and-steel,2023,other8,Percentage of IPPU emissions,324,324,1
+iron-and-steel,2024,other1,Direct and Indirect emissions factor: includes electricity use,324,324,1
+iron-and-steel,2024,other2,direct and indirect emissions,324,324,1
+iron-and-steel,2024,other3,electricity_use_factor,324,324,1
+iron-and-steel,2024,other4,electricity_use,324,324,1
+iron-and-steel,2024,other5,grid_emissions_intensity,324,324,1
+iron-and-steel,2024,other6,model_methodology,324,324,1
+iron-and-steel,2024,other7,percentage_of_scrap_metal_utilized,324,192,0.5925925925925926
+iron-and-steel,2024,other8,Percentage of IPPU emissions,324,324,1
+iron-and-steel,2025,other1,Direct and Indirect emissions factor: includes electricity use,324,324,1
+iron-and-steel,2025,other2,direct and indirect emissions,324,324,1
+iron-and-steel,2025,other3,electricity_use_factor,324,324,1
+iron-and-steel,2025,other4,electricity_use,324,324,1
+iron-and-steel,2025,other5,grid_emissions_intensity,324,324,1
+iron-and-steel,2025,other6,model_methodology,324,324,1
+iron-and-steel,2025,other7,percentage_of_scrap_metal_utilized,324,192,0.5925925925925926
+iron-and-steel,2025,other8,Percentage of IPPU emissions,324,324,1
+iron-and-steel,2026,other1,Direct and Indirect emissions factor: includes electricity use,135,135,1
+iron-and-steel,2026,other2,direct and indirect emissions,135,135,1
+iron-and-steel,2026,other3,electricity_use_factor,135,135,1
+iron-and-steel,2026,other4,electricity_use,135,135,1
+iron-and-steel,2026,other5,grid_emissions_intensity,135,135,1
+iron-and-steel,2026,other6,model_methodology,135,135,1
+iron-and-steel,2026,other7,percentage_of_scrap_metal_utilized,135,80,0.5925925925925926
+iron-and-steel,2026,other8,Percentage of IPPU emissions,135,133,0.9851851851851852

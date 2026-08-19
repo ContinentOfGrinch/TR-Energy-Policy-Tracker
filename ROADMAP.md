@@ -24,7 +24,7 @@ facility-level resolution.
 
 | Dimension | Decision |
 |---|---|
-| Sectors | Iron & steel, cement, aluminium, fertilisers |
+| Sectors | Iron & steel, cement, aluminium |
 | Geography | Türkiye |
 | Unit of analysis | Individual facility |
 | Time | Historical panel only; `t₀` set empirically by the coverage audit |
@@ -34,13 +34,19 @@ facility-level resolution.
 
 ### Scope decisions already taken
 
-**1. Four of the six CBAM goods categories.**
+**1. Three of the six CBAM goods categories.**
 CBAM covers cement, iron & steel, aluminium, fertilisers, electricity and hydrogen.
-v0.1 covers the first four. Electricity is excluded because Türkiye's electricity
-exports to the EU are marginal and because the indirect-emissions channel requires a
-grid emission factor (deferred below). Hydrogen is excluded as negligible in volume.
-**This 4-of-6 restriction must be stated explicitly in the README and METHODOLOGY** —
-it is a scope choice, not an oversight.
+v0.1 covers cement, iron & steel and aluminium. The three exclusions are not equivalent
+and must not be presented as though they were:
+
+- **Electricity — excluded by choice.** Türkiye's electricity exports to the EU are
+  marginal, and the channel requires the indirect-emissions treatment and a grid emission
+  factor, both deferred below.
+- **Hydrogen — excluded by choice.** Negligible export volume.
+- **Fertilisers — excluded on evidence.** See the closed question below. This one is a
+  finding, not a preference, and should be reported as such.
+
+**This 3-of-6 restriction must be stated explicitly in the README and METHODOLOGY.**
 
 **2. EU export share is modelled at sector level, not assumed to be 100%.**
 CBAM liability arises only on goods actually exported to the EU. A facility selling
@@ -53,12 +59,26 @@ Facility-level export shares are not publicly available in Türkiye and will not
 fabricated. The uniform-within-sector assumption is a known limitation, documented in
 METHODOLOGY.
 
-**3. Coverage audit evaluates two candidate sources, not one.**
-Climate TRACE provides facility-level emission *estimates* with coordinates but has
-patchier production and capacity coverage. The Global Energy Monitor sector trackers
-provide capacity, technology and commissioning year but no emissions. The audit
-scans both before the source strategy is fixed, so that `t₀` and the source decision
-are empirical outcomes rather than prior assumptions.
+**3. Climate TRACE is the primary source; GEM is cross-validation only.**
+The original plan was to merge two sources because Climate TRACE was expected to have
+thin production and capacity coverage. API reconnaissance (2026-08-19) disproved that
+premise: Climate TRACE already carries `AssetType` (technology, e.g. BF/BOF), `Capacity`
+and `Activity` (production in tonnes of product) per facility per year.
+
+The merge is therefore dropped. Entity resolution between two facility registers would
+have introduced a matching error rate into every downstream number in exchange for fields
+that turned out to already be present — a bad trade.
+
+GEM is retained in a narrower role: an **independent check** on capacity and commissioning
+year for the facilities it also covers. The disagreement rate is reported in METHODOLOGY
+as a data-quality statistic. GEM values do not enter `facility_panel.rds`, so the panel
+keeps a single licence and a single attribution chain.
+
+**4. Forward years are retained but never rendered as observations.**
+Climate TRACE publishes estimates beyond the last observed year (currently 2025–2026).
+These enter the panel with `value_type = projected` and must be drawn differently from
+observed values — dashed, desaturated, badged. Displaying 2026 matters, because that is
+when CBAM's definitive regime applies; presenting it as a realised figure would not.
 
 **4. Estimated exposure is not a tax bill.**
 CBAM certificates are surrendered by the EU importer, not by the Turkish producer. The
@@ -88,34 +108,56 @@ rather than re-argued from scratch.
 
 ---
 
+## Closed questions
+
+**Does the fertiliser sector survive at facility level? — No.**
+*Closed 2026-08-19 by Climate TRACE API reconnaissance.*
+
+Climate TRACE publishes no fertiliser-**production** subsector. The similarly named
+`synthetic-fertilizer-application` covers N₂O released when fertiliser is applied to
+agricultural soils — a different emission source from a different part of the economy,
+and not what CBAM regulates. Substituting it would be a category error, not an
+approximation. GEM publishes no fertiliser tracker. The `chemicals` subsector returns
+3 Turkish assets but spans petrochemicals and other chemicals, so it cannot stand in
+for fertilisers without fabricating a sectoral boundary that the data does not support.
+
+Fertilisers are therefore dropped from v0.1 and the exclusion is reported as a result:
+*at facility resolution, with open data, Turkish fertiliser production is not currently
+addressable.* This is worth stating plainly in METHODOLOGY — it maps the edge of what
+open data can support, which is useful to the next researcher.
+
+---
+
 ## Open questions — to be resolved by evidence, not assumption
 
 These are live risks. Each will be closed by a specific artefact, not by discussion.
 
-1. **Does the fertiliser sector survive at facility level?**
-   Steel and cement have strong open facility trackers; aluminium is moderate;
-   fertilisers have no comparable open source. If the coverage audit shows fertiliser
-   coverage is materially thinner, the options are (a) drop the sector from v0.1, or
-   (b) retain it with an explicit low-confidence flag surfaced in the UI. Reducing
-   scope to three sectors is an empirical finding to be reported, not a failure.
-   *Closed by:* `scripts/00_coverage_audit.R`
-
-2. **Where does `t₀` actually fall?**
+1. **Where does `t₀` actually fall?**
    Determined by the intersection of source × year × variable availability across all
    retained sectors. The audit output is committed to `data/processed/` as evidence for
    the claim, not merely printed to the console.
    *Closed by:* `scripts/00_coverage_audit.R`
 
-3. **Is `production_activity` or `co2_direct_t` the binding constraint?**
-   CBAM liability needs tonnes of goods and embedded emissions per tonne. If production
-   coverage is thinner than emissions coverage, the panel's effective time span is set
-   by production, not emissions.
+2. **Is `production_activity` or `co2_direct_t` the binding constraint?**
+   CBAM liability needs tonnes of goods and embedded emissions per tonne. Both fields are
+   present in the API, but presence is not coverage — the audit must measure the non-null
+   share per sector per year. If production is thinner than emissions, production sets the
+   panel's effective span.
    *Closed by:* `scripts/00_coverage_audit.R`
 
-4. **How are Climate TRACE and GEM facilities matched?**
-   If both sources are retained, entity resolution (name similarity plus coordinate
-   distance) becomes a distinct work item with its own error rate that must be reported.
-   *Closed by:* a matching-diagnostics section in `scripts/02_build_facilities.R`
+3. **Which years are observation and which are estimate?**
+   Climate TRACE returns years beyond the last realised year. The `Confidence` block is
+   the only in-band signal available for telling them apart, and it may not distinguish
+   them cleanly. If it does not, the boundary must be sourced from Climate TRACE's own
+   release documentation rather than inferred.
+   *Closed by:* `scripts/00_coverage_audit.R`
+
+4. **How far do GEM and Climate TRACE disagree?**
+   GEM is a cross-check, not an input, so a disagreement does not have to be reconciled —
+   but it does have to be measured and published. A large divergence in capacity or
+   commissioning year is a finding about source reliability that readers need.
+   *Closed by:* a validation section in `scripts/02_build_facilities.R`, reported in
+   METHODOLOGY
 
 5. **Turkish cement and clinker default values are unstable.**
    The Commission withdrew the default value and benchmark pending reissue at amended

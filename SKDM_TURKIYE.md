@@ -122,7 +122,7 @@ under the rule above. Tracked in `ROADMAP.md` under the release path.
 
 | Dimension | Decision |
 |---|---|
-| Sectors | Iron & steel, cement, aluminium, fertilisers (CBAM industrial sectors) |
+| Sectors | Iron & steel, cement, aluminium (fertilisers dropped on evidence — see below) |
 | Geography | Türkiye |
 | Unit of analysis | Individual facility |
 | Time | Historical panel only; `t₀` determined **empirically** by `00_coverage_audit.R`, not guessed |
@@ -132,20 +132,38 @@ under the rule above. Tracked in `ROADMAP.md` under the release path.
 
 **Scope decisions taken — see `ROADMAP.md` for full reasoning:**
 
-1. **Four of the six CBAM goods categories.** CBAM also covers electricity and hydrogen.
-   Both are excluded from v1. This restriction must be stated explicitly in README and
-   METHODOLOGY — it is a decision, not an oversight.
+1. **Three of the six CBAM goods categories.** Two distinct kinds of exclusion, and the
+   distinction matters for how each is defended:
+   - *By choice:* electricity and hydrogen. Türkiye's electricity exports to the EU are
+     marginal and the indirect-emissions channel is deferred; hydrogen volumes are negligible.
+   - *On evidence:* fertilisers. Climate TRACE has no fertiliser-**production** subsector
+     (`synthetic-fertilizer-application` is agricultural N₂O from soils — a different
+     emission source entirely, and must never be substituted), and GEM publishes no
+     fertiliser tracker. The `chemicals` subsector returns 3 Turkish assets but is broader
+     than fertilisers and must not be used as a proxy.
+
+   Both restrictions must be stated explicitly in README and METHODOLOGY. The fertiliser
+   exclusion is reported as an **empirical finding** of the coverage audit, not as an
+   oversight — "not addressable at facility resolution with open data" is itself a result.
 2. **EU export share is modelled, not assumed to be 100%.** CBAM liability arises only on
    goods actually exported to the EU. A sector-level `eu_export_share` derived from
    HS-code export statistics is applied within each sector and exposed as a user-adjustable
    UI control. Facility-level export shares are not public and must not be fabricated.
-3. **The coverage audit evaluates two candidate sources.** Climate TRACE (facility-level
-   emission estimates, patchier production data) and the Global Energy Monitor sector
-   trackers (capacity, technology, commissioning year, no emissions). The source strategy
-   and `t₀` are outcomes of the audit, not prior assumptions.
+3. **Climate TRACE is the primary source; GEM is cross-validation only.** Reconnaissance
+   showed Climate TRACE already carries the fields originally expected from GEM —
+   `AssetType` (e.g. BF/BOF), `Capacity`, and `Activity` (production in tonnes of product).
+   GEM is therefore not merged into the panel; it is used to independently check capacity
+   and commissioning year, and the **disagreement rate is reported in METHODOLOGY** rather
+   than silently reconciled. This keeps a single licence and attribution chain in the panel
+   and avoids entity-resolution error entering the numbers.
 4. **Estimated exposure is not a tax bill.** CBAM certificates are surrendered by the EU
    importer, not the Turkish producer. UI wording must use "maruziyet" and "maliyet
    baskısı" — never "vergi" or "ödeyeceği tutar".
+5. **Forward years are retained but never rendered as observations.** Climate TRACE carries
+   estimates beyond the last observed year (currently 2025–2026). These enter the panel with
+   `value_type = projected` and must be drawn with a dashed line, desaturation and a visible
+   badge. Showing 2026 matters — it is the year CBAM's definitive regime applies — but it
+   must never be mistaken for a realised figure.
 
 **Explicitly deferred to `ROADMAP.md` — do not build these in v1:**
 
@@ -286,7 +304,7 @@ without a citation is not usable in this project.
 - JOSS will require: working installation instructions, tests, documentation, example data,
   and a contribution guide. Build toward these from the start rather than retrofitting.
 
-**Author:** Selahattin İlhan · selahattinilkhan@gmail.com · ORCID: *pending*
+**Author:** Selahattin İlhan · selahattinilkhan@gmail.com · ORCID: 0009-0007-4824-752X
 
 ---
 
@@ -299,14 +317,37 @@ Completed:
 - [x] Git repository initialised on branch `main`
 
 Next, in order:
-1. `scripts/00_coverage_audit.R` — produce a source × year × variable data-availability
-   matrix across **both** Climate TRACE and the GEM sector trackers, and report the
-   empirical intersection that determines `t₀`. Commit the resulting matrix to
-   `data/processed/` as evidence, not merely to the console.
+1. `scripts/00_coverage_audit.R` — produce a sector × year × variable data-availability
+   matrix from Climate TRACE and report the empirical intersection that determines `t₀`.
+   Commit the resulting matrix to `data/processed/` as evidence, not merely to the console.
 2. `policies/*.json` skeletons
-3. `scripts/01_fetch_climate_trace.R` (and a GEM fetch script if the audit warrants it)
+3. `scripts/01_fetch_climate_trace.R`
 4. `README.md` and `CITATION.cff`
 5. Only then: `app/global.R`, `app/ui.R`, `app/server.R`
+
+### Climate TRACE API — verified endpoints
+
+Reconnaissance performed 2026-08-19. Public, no authentication, no API key.
+
+| Purpose | Endpoint |
+|---|---|
+| Subsector vocabulary | `GET /v6/definitions/subsectors` |
+| Facility list (latest year only) | `GET /v6/assets?countries=TUR&subsectors=<s>&limit=500` |
+| **Per-facility time series** | `GET /v6/assets/{id}` → `EmissionsDetails[]`, each with a `Year` |
+
+Base URL `https://api.climatetrace.org`. Relevant subsectors: `iron-and-steel`, `cement`,
+`aluminum` (US spelling). Turkish asset counts at time of audit: cement 58, iron-and-steel
+27, aluminum 3 — 88 facilities, so per-facility calls are cheap.
+
+Fields that map directly onto the data model: `Name`, `Id`, `NativeId`, `AssetType`
+(→ `technology`), `Owners[].CompanyName` (→ `operator_name`), `Centroid.Geometry` with
+`SRID 4326` (→ `lat`/`lon`, already in the target CRS), and per year `Activity`
+(→ `production_activity`), `Capacity`, `CapacityFactor`, `EmissionsFactor`
+(→ `emission_intensity`), `EmissionsQuantity` (→ `co2_direct_t`).
+
+`Confidence` carries a per-year, per-variable rating (`high`/`medium`/`low`/`very low`).
+**Retain it** — it feeds both the `value_type` assignment and the §8.4 audit trail, and
+buying that information back later is impossible.
 
 **Note on `app/ui.R`:** a file of that name exists in the repository but was written
 against a superseded project brief (an energy-policy tracker with English labels). It does

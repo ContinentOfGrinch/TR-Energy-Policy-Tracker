@@ -2,6 +2,14 @@
 # skdm-turkiye — .gitignore
 # ---------------------------------------------------------------------------
 
+# --- Local working journal -------------------------------------------------
+# MEMORY.md is a private, machine-local development log: what was done in what
+# order, which decisions were taken, and which approaches were tried and
+# abandoned. Deliberately NOT tracked — it never reaches GitHub, Zenodo or JOSS.
+# The tracked companions are STATUS.md (current state) and ROADMAP.md
+# (decisions and open questions).
+MEMORY.md
+
 # --- Raw source data -------------------------------------------------------
 # Reproducibility comes from the fetch scripts in scripts/, not from committed
 # binaries (CLAUDE.md §8.6). Processed outputs ARE tracked so the app runs on

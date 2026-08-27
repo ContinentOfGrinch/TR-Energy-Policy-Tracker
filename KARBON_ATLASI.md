@@ -12,6 +12,11 @@ Companion documents:
   (so they are not re-derived), and the traps already paid for. Keep it current in the
   same commit as the work it describes.
 - `ROADMAP.md` — the authoritative record of scope decisions and deferred features
+- `MEMORY.md` — **local only, gitignored, will not exist in a fresh clone.** A chronological
+  working journal: what was built in what order, which approaches were tried and abandoned,
+  and which mistakes were made. If it is present on disk, read it after `STATUS.md` — it
+  explains *how* the project reached its current shape, which the tracked files do not.
+  Append to it as work proceeds; never commit it.
 - `METHODOLOGY.md` — written by the author; do not generate its prose
 
 ---

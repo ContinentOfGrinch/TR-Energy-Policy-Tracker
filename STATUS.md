@@ -318,7 +318,11 @@ CLAUDE.md              one-line pointer -> KARBON_ATLASI.md. DO NOT DELETE:
                        without it the instructions are not auto-loaded.
 KARBON_ATLASI.md        project instructions — scope, data model, rules, API endpoints
 STATUS.md              this file
-ROADMAP.md             decisions with reasoning, open questions 1-8, deferred features
+MEMORY.md              LOCAL ONLY, gitignored, absent from a fresh clone.
+                       Chronological working journal: what was built in what
+                       order, approaches tried and abandoned, mistakes made.
+                       Read it after this file if it exists on disk.
+ROADMAP.md             decisions with reasoning, open questions 1-8 and E1-E4
 README.md              public-facing; Turkish summary block
 METHODOLOGY.md         NOT YET WRITTEN — author's prose only (§9)
 CITATION.cff           ORCID recorded

@@ -1,5 +1,5 @@
 {
-  "_comment": "Turkish Emissions Trading System parameters. POPULATED BUT NOT WIRED INTO ANY CALCULATION IN v1 (SKDM_TURKIYE.md section 7). Kept here so that v2 can switch it on without a schema change, and so the deferral is documented rather than invisible.",
+  "_comment": "Turkish Emissions Trading System parameters. POPULATED BUT NOT WIRED INTO ANY CALCULATION IN v1 (KARBON_ATLASI.md section 7). Kept here so that v2 can switch it on without a schema change, and so the deferral is documented rather than invisible.",
 
   "meta": {
     "parameter_set": "tr_ets",

@@ -1,6 +1,6 @@
 # STATUS.md — where this project stands
 
-**Read this first when resuming work.** `SKDM_TURKIYE.md` says what the project *is*;
+**Read this first when resuming work.** `KARBON_ATLASI.md` says what the project *is*;
 this file says where it *got to*, what runs, what is blocked, and which traps have already
 been paid for.
 
@@ -14,7 +14,7 @@ Last updated: **2026-08-19** · 10 commits · working tree clean · **~53% compl
 
 ## 1. What this is, in one paragraph
 
-`skdm-turkiye` maps individual carbon-intensive industrial installations in Türkiye and
+`karbon-atlasi-turkiye` maps individual carbon-intensive industrial installations in Türkiye and
 estimates their exposure to the EU Carbon Border Adjustment Mechanism (CBAM / SKDM) under
 user-defined carbon price scenarios. R Shiny, `shinydashboard`, `leaflet`, `sf`. Author:
 Selahattin İlhan, ORCID 0009-0007-4824-752X. Destination: Zenodo DOI, then JOSS.
@@ -258,9 +258,9 @@ Every one of these cost real time. Do not rediscover them.
 ## 9. Where things live
 
 ```
-CLAUDE.md              one-line pointer -> SKDM_TURKIYE.md. DO NOT DELETE:
+CLAUDE.md              one-line pointer -> KARBON_ATLASI.md. DO NOT DELETE:
                        without it the instructions are not auto-loaded.
-SKDM_TURKIYE.md        project instructions — scope, data model, rules, API endpoints
+KARBON_ATLASI.md        project instructions — scope, data model, rules, API endpoints
 STATUS.md              this file
 ROADMAP.md             decisions with reasoning, open questions 1-8, deferred features
 README.md              public-facing; Turkish summary block
@@ -290,7 +290,7 @@ data/raw/              gitignored
 
 ## 10. Resuming
 
-1. `SKDM_TURKIYE.md` loads automatically via the `CLAUDE.md` pointer.
+1. `KARBON_ATLASI.md` loads automatically via the `CLAUDE.md` pointer.
 2. Read this file, then `ROADMAP.md` open questions.
 3. `git log --oneline` — commit messages carry the reasoning for each decision.
 4. Ask the author what changed on the B track; work done in his head is not on disk.

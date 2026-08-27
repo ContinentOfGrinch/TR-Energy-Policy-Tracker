@@ -1,5 +1,5 @@
 {
-  "_comment": "Carbon price scenarios in EUR per tonne CO2e. Read at runtime; never hardcode (SKDM_TURKIYE.md section 7). CBAM certificate prices update quarterly, so this file is expected to change often — that is the point of keeping it out of R source.",
+  "_comment": "Carbon price scenarios in EUR per tonne CO2e. Read at runtime; never hardcode (KARBON_ATLASI.md section 7). CBAM certificate prices update quarterly, so this file is expected to change often — that is the point of keeping it out of R source.",
 
   "meta": {
     "parameter_set": "carbon_price_scenarios",
@@ -41,7 +41,7 @@
       "applies_to": 2034,
       "source_url": null,
       "citation_required": true,
-      "citation_note": "SKDM_TURKIYE.md section 7 attributes this to an EBRD / Directorate of Climate Change study but gives no URL. Section 7 also states that a regulatory number without a citation is not usable in this project. FIND THE STUDY, record its title, author, year and URL here, or replace the scenario with one that can be cited."
+      "citation_note": "KARBON_ATLASI.md section 7 attributes this to an EBRD / Directorate of Climate Change study but gives no URL. Section 7 also states that a regulatory number without a citation is not usable in this project. FIND THE STUDY, record its title, author, year and URL here, or replace the scenario with one that can be cited."
     },
 
     "high": {

@@ -1,5 +1,5 @@
 {
-  "_comment": "CBAM phase-in factors. Read at runtime; never hardcode these in R (SKDM_TURKIYE.md section 7). The cbam_factor is the share of embedded emissions on which CBAM certificates must be surrendered in a given year. It mirrors the EU ETS free-allocation phase-out for CBAM sectors, reaching full application in 2034.",
+  "_comment": "CBAM phase-in factors. Read at runtime; never hardcode these in R (KARBON_ATLASI.md section 7). The cbam_factor is the share of embedded emissions on which CBAM certificates must be surrendered in a given year. It mirrors the EU ETS free-allocation phase-out for CBAM sectors, reaching full application in 2034.",
 
   "meta": {
     "parameter_set": "cbam_phase_in",

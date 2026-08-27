@@ -27,7 +27,7 @@
 #   Crude steel is not finished steel: there is yield loss between them, and
 #   Annex I does not cover every steel product. Dividing one by the other
 #   without a stated conversion is a modelling choice, and it belongs to the
-#   author (SKDM_TURKIYE.md §9).
+#   author (KARBON_ATLASI.md §9).
 #
 # OUTPUTS
 #   data/raw/eurostat/comext_<sector>_<year>.json   cached API responses

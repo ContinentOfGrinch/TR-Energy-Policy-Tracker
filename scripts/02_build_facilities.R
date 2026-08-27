@@ -4,7 +4,7 @@
 # PURPOSE
 #   Produce `data/processed/facilities.rds`: one row per facility, carrying only
 #   attributes that do not change over time. Anything that varies by year lives
-#   in the panel (SKDM_TURKIYE.md §6) — putting capacity or status here would
+#   in the panel (KARBON_ATLASI.md §6) — putting capacity or status here would
 #   break the panel structure.
 #
 #   The substantive work is deriving province and İBBS-2 (NUTS-2) region from
@@ -304,7 +304,7 @@ message("      ", sum(geocoded$geocode_quality == "within_province"), " clean, "
 # =============================================================================
 # 4. ASSEMBLE THE SCHEMA
 # =============================================================================
-# Column set fixed by SKDM_TURKIYE.md §6. Fields that v1 does not vary are still
+# Column set fixed by KARBON_ATLASI.md §6. Fields that v1 does not vary are still
 # present, because adding them later would break every downstream layer.
 
 message("[4/5] Assembling facilities table")

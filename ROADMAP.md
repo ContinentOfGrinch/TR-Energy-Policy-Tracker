@@ -1,6 +1,6 @@
 # Roadmap
 
-Scope decisions, deferred features, and the release path for `skdm-turkiye`.
+Scope decisions, deferred features, and the release path for `karbon-atlasi-turkiye`.
 
 This file is the authoritative record of what is **deliberately** out of scope. If a
 feature is absent from v0.1, it should appear here with a reason — absence without a

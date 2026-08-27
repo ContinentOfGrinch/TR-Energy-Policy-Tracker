@@ -24,10 +24,10 @@
 # WHAT THIS SCRIPT DELIBERATELY DOES NOT DO
 #   It does not aggregate months into years, and it does not decompose the
 #   `other*` fields into direct and indirect emissions. Both are analytical
-#   decisions and belong to the author (SKDM_TURKIYE.md §9). The audit measures
+#   decisions and belong to the author (KARBON_ATLASI.md §9). The audit measures
 #   availability and reports diagnostics; it does not choose a formula.
 #
-# OUTPUTS (committed as evidence, per SKDM_TURKIYE.md §11)
+# OUTPUTS (committed as evidence, per KARBON_ATLASI.md §11)
 #   data/processed/coverage_matrix_panel.csv     sector x year x variable
 #   data/processed/coverage_matrix_facility.csv  time-invariant attributes
 #   data/processed/coverage_other_fields.csv     other1..other10 diagnostics
@@ -52,7 +52,7 @@ suppressPackageStartupMessages({
 
 # Acquisition, integrity and archive inspection live in a shared helper so that
 # this script and 01_fetch_climate_trace.R cannot drift apart. See §3 of
-# SKDM_TURKIYE.md for the approved exception to the numbering convention.
+# KARBON_ATLASI.md for the approved exception to the numbering convention.
 source(file.path("scripts", "_sources.R"))
 
 
@@ -542,7 +542,7 @@ md <- c(
   "",
   "Interpreting these identities — in particular whether an indirect component",
   "is recoverable, and by what expression in each sector — is an analytical",
-  "decision reserved for the author (SKDM_TURKIYE.md §9). This audit only",
+  "decision reserved for the author (KARBON_ATLASI.md §9). This audit only",
   "reports how often each identity holds.",
   "",
   "## Known gaps",

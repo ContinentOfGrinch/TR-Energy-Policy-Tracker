@@ -1,5 +1,5 @@
 {
-  "_comment": "Customs codes used to measure EU-bound trade in CBAM goods. Feeds eu_export_share. Read at runtime; never hardcode (SKDM_TURKIYE.md section 7).",
+  "_comment": "Customs codes used to measure EU-bound trade in CBAM goods. Feeds eu_export_share. Read at runtime; never hardcode (KARBON_ATLASI.md section 7).",
 
   "meta": {
     "parameter_set": "cbam_goods_cn_codes",

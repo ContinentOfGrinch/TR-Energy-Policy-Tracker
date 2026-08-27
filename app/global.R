@@ -12,7 +12,7 @@
 
 # Windows defaults to a non-UTF-8 encoding. Turkish UI labels break silently
 # without this, and the failure shows up as mojibake in the browser rather than
-# as an error. See SKDM_TURKIYE.md §2.
+# as an error. See KARBON_ATLASI.md §2.
 options(encoding = "UTF-8")
 
 suppressPackageStartupMessages({
@@ -34,7 +34,7 @@ suppressPackageStartupMessages({
 # relative to the project root resolves to app/data/... and fails. Locate the
 # root by its marker file instead, so the app runs identically whether launched
 # from the project root, from app/, or by RStudio's Run App button.
-find_project_root <- function(marker = "SKDM_TURKIYE.md", max_up = 3) {
+find_project_root <- function(marker = "KARBON_ATLASI.md", max_up = 3) {
   path <- normalizePath(".", winslash = "/", mustWork = FALSE)
   for (i in seq_len(max_up + 1)) {
     if (file.exists(file.path(path, marker))) return(path)

@@ -3,7 +3,7 @@
 # -----------------------------------------------------------------------------
 # NOT a numbered pipeline step. The underscore prefix marks this as a library
 # sourced by other scripts rather than something run on its own. Approved as an
-# explicit exception to the numbering convention in SKDM_TURKIYE.md §3, because
+# explicit exception to the numbering convention in KARBON_ATLASI.md §3, because
 # `00_coverage_audit.R` and `01_fetch_climate_trace.R` both need to acquire the
 # same archive and duplicated download logic would drift apart.
 #

@@ -1,7 +1,7 @@
 # =============================================================================
 # ui.R — interface definition
 # -----------------------------------------------------------------------------
-# Turkish labels throughout; English code and identifiers (SKDM_TURKIYE.md §2).
+# Turkish labels throughout; English code and identifiers (KARBON_ATLASI.md §2).
 #
 # This file replaces an earlier ui.R written against a superseded brief (an
 # energy-policy tracker with English labels). §11 required a rewrite rather than

@@ -1,4 +1,4 @@
-# SKDM_TURKIYE.md — Project Instructions
+# KARBON_ATLASI.md — Project Instructions
 
 Persistent context for Claude Code working on this repository. Read fully before writing
 any code. If a request conflicts with anything here, stop and ask rather than improvising.
@@ -18,21 +18,40 @@ Companion documents:
 
 ## 1. What this project is
 
-An open-source **R Shiny** dashboard that maps individual carbon-intensive industrial
-installations in Türkiye and estimates their exposure to the **EU Carbon Border Adjustment
-Mechanism** (CBAM / Turkish: *Sınırda Karbon Düzenleme Mekanizması*, SKDM) under
-user-defined carbon price scenarios.
+An open-source **R Shiny** atlas of Türkiye's carbon-intensive infrastructure, at the level
+of the individual installation. It maps two populations and the causal link between them:
 
-**Repository name:** `skdm-turkiye`
+1. **Industrial installations** in the CBAM sectors — iron & steel, cement, aluminium —
+   and their exposure to the **EU Carbon Border Adjustment Mechanism** (CBAM / Turkish:
+   *Sınırda Karbon Düzenleme Mekanizması*, SKDM) under user-defined carbon price scenarios.
+2. **Energy assets** — power stations, coal mines, oil and gas facilities — which both
+   carry their own emissions and *determine the grid carbon intensity* that sets the
+   indirect emissions of the industrial installations above.
+
+**Repository name:** `karbon-atlasi-turkiye` · Turkish title: **Türkiye Karbon Atlası**
 
 **Author:** an undergraduate economics researcher. This is a portfolio project intended to
 be released with a Zenodo DOI and potentially submitted to the Journal of Open Source
 Software (JOSS). It must therefore be reproducible, documented, and honest about its limits.
 
-**Research positioning:** existing tools analyse CBAM exposure for Türkiye only at national
-or sectoral resolution. Facility-level, spatially explicit, open-source treatment appears to
-be unoccupied. That combination *is* the contribution — not the calculation formula, which
-is commodity.
+**Research positioning.** Two literatures exist separately. CBAM exposure for Türkiye is
+analysed at national or sectoral resolution; energy-transition dashboards map the power
+fleet without connecting it to trade exposure. **The bridge is the contribution:** Turkish
+industrial CBAM exposure depends on the carbon intensity of the electricity those plants
+consume, and that intensity is produced by an identifiable, mappable fleet whose evolution
+was driven by identifiable policies.
+
+Climate TRACE already publishes `electricity_use` and `grid_emissions_intensity` for every
+industrial facility in the panel. Those fields are the seam along which the two halves
+join — the energy layer explains where that intensity comes from.
+
+Neither half alone is novel. The formula is commodity. The combination, at facility
+resolution, spatially explicit, with an audit trail, is what is unoccupied.
+
+**Naming history.** This project began as an energy-policy tracker, was redirected to
+CBAM-only facility exposure (`karbon-atlasi-turkiye`), and was merged back into a single scope on
+2026-08-19. The `karbon-atlasi-turkiye` name and the energy-only `app/ui.R` both survive in git
+history; do not treat either as current.
 
 ---
 
@@ -83,7 +102,7 @@ scripts/
   03_build_panel.R
 ```
 
-Root files: `README.md`, `SKDM_TURKIYE.md`, `CLAUDE.md` (pointer only), `STATUS.md`,
+Root files: `README.md`, `KARBON_ATLASI.md`, `CLAUDE.md` (pointer only), `STATUS.md`,
 `METHODOLOGY.md`, `ROADMAP.md`, `CITATION.cff`, `LICENSE`, `renv.lock`, `.gitignore`,
 `.gitattributes`.
 
@@ -133,13 +152,21 @@ under the rule above. Tracked in `ROADMAP.md` under the release path.
 
 | Dimension | Decision |
 |---|---|
-| Sectors | Iron & steel, cement, aluminium (fertilisers dropped on evidence — see below) |
+| Industrial sectors | Iron & steel, cement, aluminium — **88 facilities** (fertilisers dropped on evidence, see below) |
+| Energy assets | Electricity generation **157**, coal mining **38**, oil & gas production / refining / transport **15** — **210 total** |
+| Total population | **298 facilities** |
 | Geography | Türkiye |
 | Unit of analysis | Individual facility |
-| Time | Historical panel only; `t₀` determined **empirically** by `00_coverage_audit.R`, not guessed |
-| Policy | EU CBAM liability under user-set carbon price scenarios |
-| Aggregation | Facility → province → national |
+| Emissions panel | `t₀` determined **empirically** by `00_coverage_audit.R`. Currently 2021 for Climate TRACE. |
+| Fleet timeline | Extended back to **2000** using GEM commissioning years, so policy effects on the fleet are visible. Emissions remain 2021+; the two must be visually distinct. |
+| Policy | EU CBAM liability under user-set carbon price scenarios; energy policy timeline |
+| Aggregation | Facility → province → İBBS-2 → national |
 | Key UI control | **Time slider** — the most important control element, place it prominently |
+
+**The two populations are linked, not merely co-displayed.** Energy assets determine grid
+carbon intensity; grid carbon intensity determines the indirect emissions of the industrial
+installations. An app that draws both on one map without computing that link has done half
+the job.
 
 **Scope decisions taken — see `ROADMAP.md` for full reasoning:**
 
@@ -176,12 +203,19 @@ under the rule above. Tracked in `ROADMAP.md` under the release path.
    badge. Showing 2026 matters — it is the year CBAM's definitive regime applies — but it
    must never be mistaken for a realised figure.
 
-**Explicitly deferred to `ROADMAP.md` — do not build these in v1:**
+**Moved INTO scope on 2026-08-19** (previously deferred; the merge decision brought them
+forward):
 
-- Electricity generation assets (thermal and renewable) and the indirect-emissions channel
+- Energy assets — power generation, coal mining, oil and gas
+- The indirect-emissions channel
+- The grid emission factor, now computed from the mapped fleet rather than assumed.
+  `policies/grid_emission_factor.json` is no longer a placeholder.
+- Energy and climate policy timeline
+
+**Still explicitly deferred to `ROADMAP.md` — do not build these:**
+
 - TR-ETS liability and the domestic-carbon-price offset engine
 - Forward projection to 2035
-- Endogenous grid emission factor
 - Monte Carlo / uncertainty quantification
 - EPİAŞ Transparency Platform integration (requires authentication; unsuitable for a public
   app without a scheduled ETL)
@@ -196,8 +230,10 @@ If asked to build a deferred feature, flag the scope decision before proceeding.
 **`data/processed/facilities.rds`** — time-invariant facility attributes, one row per facility:
 
 ```
-facility_id, facility_name_tr, operator_name, sector, technology,
-liability_class, lat, lon, province_code, nuts2_code,
+facility_id, facility_name_tr, operator_name,
+asset_class, sector, subsector, technology, fuel_type,
+liability_class, commissioning_year, commissioning_source,
+lat, lon, province_code, nuts2_code,
 country_iso3, regime_id, source, source_id, geocode_quality
 ```
 
@@ -211,8 +247,21 @@ value_type, vintage, source
 ```
 
 Notes:
-- `liability_class` ∈ {`direct`, `indirect_driver`, `neutral`} — kept even though v1 is all
-  `direct`, because v2 adds power assets.
+- `asset_class` ∈ {`industrial`, `energy`} — the top-level split between the two
+  populations. Everything in the UI that filters, colours or aggregates keys on this first.
+- `liability_class` ∈ {`direct`, `indirect_driver`, `neutral`}. **Now live, not reserved.**
+  Industrial installations are `direct` (they hold CBAM-relevant embedded emissions).
+  Power stations are `indirect_driver` (they are not CBAM-liable themselves — Turkish
+  electricity exports to the EU are marginal — but they set the grid intensity that
+  produces industrial indirect emissions). Coal mines and oil & gas assets are `neutral`:
+  mapped and counted, but outside both the CBAM calculation and the grid factor. Putting
+  this field in on day one is now paying for itself.
+- `fuel_type` — energy assets only; `NA` for industrial. Drives the fleet-composition view.
+- `commissioning_year` — the field that makes the 2000–2026 timeline possible. Sourced
+  from GEM, **not** Climate TRACE, which starts at 2021. `commissioning_source` records
+  which register supplied it so a GEM-derived year is never mistaken for an observation.
+  Facilities without a commissioning year carry `NA` and must be visibly excluded from the
+  pre-2021 fleet animation rather than silently assumed to have always existed.
 - `value_type` ∈ {`observed`, `legislated`, `scenario`, `projected`, `assumption`}. These are
   epistemically different and must be encoded differently in the UI (solid vs dashed lines,
   desaturation, a "projection" badge). Never render a projection identically to an
@@ -257,7 +306,22 @@ do not wire into calculations in v1. Reference facts: pilot period **2026–2027
 the pilot under a benchmark method, administered by the Directorate of Climate Change with
 the market operated by EXIST/EPİAŞ.
 
-**`grid_emission_factor.json`** — placeholder for v2.
+**`grid_emission_factor.json`** — **live, no longer a placeholder.** The merge made the
+indirect-emissions channel part of v1, so the grid factor is now a computed quantity rather
+than a reserved filename.
+
+Two things must be kept apart and never blended without saying so:
+
+- **Reported intensity** — Climate TRACE publishes `grid_emissions_intensity` per
+  industrial facility per year (0.52 tCO₂/MWh for steel in the sample inspected). This is
+  the value its own indirect-emissions estimate already uses. Treat it as the baseline.
+- **Computed intensity** — derived from the mapped power fleet: total generation emissions
+  divided by total generation. This is the project's own number and the point of mapping
+  157 power stations.
+
+Where the two disagree, **report the gap; do not silently prefer either.** The disagreement
+is itself a result and belongs in METHODOLOGY. Store both in the file with distinct keys
+and a `value_type`.
 
 Every parameter file must carry a `source_url` and a retrieval date. A regulatory number
 without a citation is not usable in this project.

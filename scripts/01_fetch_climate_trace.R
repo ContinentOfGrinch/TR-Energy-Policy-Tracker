@@ -7,7 +7,7 @@
 #   the same bytes.
 #
 #   This script is the reproducibility contract for raw data. `data/raw/` is not
-#   committed (SKDM_TURKIYE.md §8.6) — reproducibility comes from being able to
+#   committed (KARBON_ATLASI.md §8.6) — reproducibility comes from being able to
 #   re-run this, not from a 45 MB blob in git history.
 #
 # WHY NOT THE REST API
@@ -217,7 +217,7 @@ lines <- c(lines,
   "- **Aluminium PFCs.** CBAM covers CO2 *and* perfluorocarbons for aluminium.",
   "  Climate TRACE publishes no `pfc` country package, so aluminium exposure",
   "  computed here is an underestimate. The gap is carried as `NA` and shown in",
-  "  the UI; it is never filled with a substitute value (SKDM_TURKIYE.md §8.1).",
+  "  the UI; it is never filled with a substitute value (KARBON_ATLASI.md §8.1).",
   "- **Fertilisers.** No fertiliser-*production* subsector exists. The similarly",
   "  named `synthetic-fertilizer-application` covers N2O from fertiliser applied",
   "  to agricultural soils — a different emission source, and not what CBAM",

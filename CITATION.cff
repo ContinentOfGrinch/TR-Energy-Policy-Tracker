@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software or its derived data, please cite it as below."
-title: "skdm-turkiye: Facility-level EU CBAM exposure for Türkiye"
+title: "karbon-atlasi-turkiye: Facility-level EU CBAM exposure for Türkiye"
 abstract: >-
   An open-source R Shiny dashboard that maps individual carbon-intensive
   industrial installations in Türkiye and estimates their exposure to the EU
@@ -15,7 +15,7 @@ authors:
     given-names: "Selahattin"
     email: "selahattinilkhan@gmail.com"
     orcid: "https://orcid.org/0009-0007-4824-752X"
-repository-code: "https://github.com/selahattinilhan/skdm-turkiye"
+repository-code: "https://github.com/selahattinilhan/karbon-atlasi-turkiye"
 license: MIT
 version: "0.1.0-dev"
 date-released: "2026-08-19"

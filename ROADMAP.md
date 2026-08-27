@@ -380,6 +380,23 @@ wrong. Decide whether they are a separate map layer with their own units or are 
 
 ---
 
+## Repository visibility
+
+**Private for now** (decided 2026-08-19). The work is honest about its gaps but several
+are still open — two price scenarios without a citation, provisional customs codes, the
+Kars duplicate and the Toprakkale assignment — and there is no reason to publish before
+they are addressed.
+
+**This must flip to public before the release path can proceed, and it is easy to forget.**
+Zenodo's GitHub integration archives a release only from a public repository, and JOSS
+requires the source to be openly readable throughout review. Making the repository public
+at the moment of tagging also means the first thing a reviewer sees is a version whose
+`README.md` already lists its own limitations, which is the intended impression.
+
+Repository name: `karbon-atlasi-turkiye`, matching `CITATION.cff`.
+
+---
+
 ## Release path
 
 1. Working v0.1 on `main`, reproducible from a clean clone via `renv::restore()`

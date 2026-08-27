@@ -115,11 +115,26 @@ Root files: `README.md`, `KARBON_ATLASI.md`, `CLAUDE.md` (pointer only), `STATUS
 - Never create new top-level directories without asking.
 - Never merge `ui.R` and `server.R` into `app.R`. `global.R` is permitted and is not a merge.
 - Scripts in `scripts/` are numbered and run in order. Preserve the numbering convention.
-  **One approved exception:** `scripts/_sources.R`. The underscore prefix marks a helper
-  library that is `source()`d, not run as a pipeline step. It exists because both
-  `00_coverage_audit.R` and `01_fetch_climate_trace.R` must acquire the same archive, and
-  duplicated download logic would drift. Do not add further underscore files without
-  asking.
+  **Two approved exceptions.** The underscore prefix marks a helper library that is
+  `source()`d, not run as a pipeline step:
+  - `scripts/_sources.R` — acquisition, integrity and archive inspection. Exists because
+    several steps must acquire the same archive and duplicated download logic would drift.
+  - `scripts/_validate.R` — data quality gates, approved 2026-08-19. Acquisition and
+    validation are different jobs and do not belong in the same file.
+
+  Do not add further underscore files without asking.
+
+**Gates versus tests.** `tests/` asserts properties of artefacts *after* they are written;
+`_validate.R` runs *inside* the pipeline, before `saveRDS()`, so a build that violates a
+structural rule produces no artefact at all. Both exist because they catch different
+things, and the gates are themselves tested (`tests/testthat/test-validate-gates.R`) by
+deliberately corrupting a valid table one property at a time — an untested gate is theatre.
+
+The gates are **tiered, and the tiering is the design decision**: structural impossibilities
+(duplicate key, coordinate outside Türkiye, a province mapped to two İBBS-2 regions,
+mojibake) STOP the build; data-quality observations (a facility 129 m from a border, an
+unresolved operator, two records 71 m apart) WARN and continue. A gate that stops on
+everything gets disabled within a week, and the structural checks go with it.
 
 **`tests/` — approved and created 2026-08-19.** JOSS requires automated tests. The
 directory holds `testthat.R` plus `tests/testthat/`.

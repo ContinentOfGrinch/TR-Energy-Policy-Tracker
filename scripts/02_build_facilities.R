@@ -36,6 +36,7 @@ suppressPackageStartupMessages({
 })
 
 source(file.path("scripts", "_sources.R"))
+source(file.path("scripts", "_validate.R"))
 
 
 # =============================================================================
@@ -348,17 +349,25 @@ facilities <- geocoded |>
   ) |>
   arrange(sector, province_code, facility_name_tr)
 
-stopifnot(
-  "facility_id must be unique" = !any(duplicated(facilities$facility_id)),
-  "No facility may lack a sector" = !any(is.na(facilities$sector))
+# =============================================================================
+# 5. VALIDATE, THEN WRITE
+# =============================================================================
+# The gate runs BEFORE saveRDS. A structural failure — duplicate key, coordinate
+# outside Türkiye, a province mapped to two NUTS-2 regions, mojibake in a name —
+# stops the build and writes nothing, rather than leaving a plausible-looking
+# but wrong artefact on disk for the app to read.
+#
+# Quality observations (border-proximate assignments, unresolved operators,
+# facilities close enough together to be one site recorded twice) are reported
+# and the build continues: those are properties of the data, not defects in the
+# code. See scripts/_validate.R for why that distinction is enforced.
+
+message("[5/5] Validating and writing outputs")
+
+facilities <- gate_facilities(
+  facilities,
+  report = file.path(DIR_PROCESSED, "facilities_validation.html")
 )
-
-
-# =============================================================================
-# 5. WRITE
-# =============================================================================
-
-message("[5/5] Writing outputs")
 
 saveRDS(facilities, file.path(DIR_PROCESSED, "facilities.rds"))
 

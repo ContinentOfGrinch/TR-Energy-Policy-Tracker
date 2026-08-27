@@ -10,6 +10,13 @@
 # (decisions and open questions).
 MEMORY.md
 
+# --- Generated validation reports -------------------------------------------
+# pointblank writes a ~200 KB self-contained HTML report with inline CSS/JS and
+# a fresh timestamp on every run. Tracking it would churn git history on each
+# pipeline execution for no benefit. The tracked evidence is the CSV and
+# Markdown output in data/processed/; the gate itself is enforced in code.
+data/processed/*_validation.html
+
 # --- Raw source data -------------------------------------------------------
 # Reproducibility comes from the fetch scripts in scripts/, not from committed
 # binaries (CLAUDE.md §8.6). Processed outputs ARE tracked so the app runs on

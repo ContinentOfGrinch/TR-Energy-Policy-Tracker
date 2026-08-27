@@ -322,13 +322,42 @@ These are live risks. Each will be closed by a specific artefact, not by discuss
 These did not exist before 2026-08-19. None is blocked on the author; they are
 build-and-measure questions.
 
-**E1. Does Climate TRACE's `electricity-generation` include zero-emission plants?**
-Türkiye's fleet is roughly a third hydro plus growing wind and solar. If Climate TRACE
-lists only emitting assets, the 157 count is thermal-heavy and the fleet-composition view
-would misrepresent the transition — and, worse, a grid emission factor computed as total
-emissions ÷ total generation would be wrong, because the denominator would omit clean
-generation. **This must be settled before any grid factor is computed.**
-*Closed by:* inspecting the fetched asset list for capacity, fuel and zero-emission records
+**E1. Does Climate TRACE's `electricity-generation` include zero-emission plants? — NO.**
+*Closed 2026-08-19 by inspecting the country package.*
+
+Türkiye's `electricity-generation` register contains **158 combustion plants only**:
+
+| Fuel | Plants | 2024 generation | 2024 CO₂ |
+|---|---|---|---|
+| coal | 30 | 102.5 TWh | 103.5 Mt |
+| gas / gas+other fossil | 64 | 60.9 TWh | 23.6 Mt |
+| biomass | 55 | 8.2 TWh | 0 (biogenic convention) |
+| oil / mixed | 9 | 5.6 TWh | 5.4 Mt |
+
+**There is no hydro, wind, solar, geothermal or nuclear.** Climate TRACE's
+`grid_marginal_operating_emissions_intensity` field (`other7`) is empty for every record,
+so it offers no fallback.
+
+**The consequence was quantified and it is large.** A grid factor computed naively as
+total emissions ÷ total generation over this fleet gives **0.748 tCO₂/MWh**. Climate
+TRACE's own `grid_emissions_intensity`, carried in the *industrial* data, has a 2024 median
+of **0.477 tCO₂/MWh**. The ratio, 0.637, is consistent with roughly 36% of Turkish
+generation being renewable and therefore absent from the register. Computing the factor
+from the mapped fleet alone would have **overstated industrial indirect emissions by about
+57%** — and it would have done so silently, because the arithmetic is correct and only the
+denominator is incomplete.
+
+**Decision (2026-08-19): complete the denominator from TEİAŞ.** Numerator stays Climate
+TRACE (fossil fleet emissions); denominator becomes TEİAŞ's official annual generation by
+source, which includes hydro, wind and solar. This keeps the claim that the energy layer
+explains the grid factor, rather than borrowing a number. TEİAŞ enters `SOURCES.md` as a
+third upstream source with its own licence and retrieval date.
+
+**Decision (2026-08-19): renewables are added to the map from GEM.** Hydro, wind, solar and
+geothermal plants come from the GEM Global Integrated Power Tracker with coordinates and
+commissioning years — the same fetch that E2 already requires. Their emissions stay zero or
+`NA`. Without them the 2000–2026 fleet animation would omit the single largest change in
+Türkiye's power sector, which is the point of having a timeline at all.
 
 **E2. How many of the 210 energy assets have a GEM commissioning year?**
 The 2000–2026 fleet timeline depends on it. Facilities without one carry `NA` and must be

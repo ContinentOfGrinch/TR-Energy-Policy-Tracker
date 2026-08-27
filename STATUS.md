@@ -4,7 +4,12 @@
 this file says where it *got to*, what runs, what is blocked, and which traps have already
 been paid for.
 
-Last updated: **2026-08-19** · 10 commits · working tree clean · **~53% complete**
+Last updated: **2026-08-19** · 12 commits · **~35% complete**
+
+> **The percentage dropped from 53% to 35% and no work was lost.** The scopes were merged
+> on 2026-08-19 and the denominator grew: 88 facilities became 298, and the energy layer,
+> the grid emission factor and the fleet timeline joined the target. Same numerator, bigger
+> target.
 
 > Keep this file current. When a milestone lands or a decision changes, update the
 > relevant section here in the same commit. A stale STATUS.md is worse than none, because
@@ -14,13 +19,23 @@ Last updated: **2026-08-19** · 10 commits · working tree clean · **~53% compl
 
 ## 1. What this is, in one paragraph
 
-`karbon-atlasi-turkiye` maps individual carbon-intensive industrial installations in Türkiye and
-estimates their exposure to the EU Carbon Border Adjustment Mechanism (CBAM / SKDM) under
-user-defined carbon price scenarios. R Shiny, `shinydashboard`, `leaflet`, `sf`. Author:
-Selahattin İlhan, ORCID 0009-0007-4824-752X. Destination: Zenodo DOI, then JOSS.
+`karbon-atlasi-turkiye` — **Türkiye Karbon Atlası** — maps Türkiye's carbon-intensive
+infrastructure at facility level and links two populations that are normally studied apart:
 
-The contribution is facility-level, spatially explicit, open-source treatment with a full
-audit trail — not the arithmetic, which is commodity.
+- **88 industrial installations** (iron & steel, cement, aluminium) and their EU CBAM /
+  SKDM exposure under user-defined carbon price scenarios;
+- **210 energy assets** (157 power stations, 38 coal mines, 15 oil & gas facilities) which
+  carry their own emissions *and* set the grid carbon intensity that produces the
+  industrial installations' indirect emissions.
+
+R Shiny, `shinydashboard`, `leaflet`, `sf`. Author: Selahattin İlhan, ORCID
+0009-0007-4824-752X. Destination: Zenodo DOI, then JOSS.
+
+**The bridge is the contribution.** Climate TRACE already publishes `electricity_use` and
+`grid_emissions_intensity` for every industrial facility; the energy layer explains where
+that intensity comes from. Neither half alone is novel — CBAM exposure is studied
+nationally, energy dashboards ignore trade exposure. The combination, at facility
+resolution, with an audit trail, is what is unoccupied.
 
 ---
 
@@ -35,13 +50,19 @@ audit trail — not the arithmetic, which is commodity.
 - EU trade fetch from Eurostat Comext
 - Shiny app: facility map, sector and province filters, geocode-quality panel, sources tab
 
+Everything above covers the **industrial half only**. The energy half is decided and
+specified but nothing has been fetched.
+
 ### What does not exist yet
 
 | Missing | Blocked on |
 |---|---|
+| **Energy assets (210 facilities)** | nothing — ready to build |
+| **GEM commissioning years** | nothing — required for the 2000–2026 fleet timeline |
+| **Grid emission factor** | the energy fetch above |
 | `facility_panel.rds` | Author decisions **B1** (direct/indirect split) and **B2** (annual aggregation) |
 | CBAM liability figure | Author decisions **B7** (`eu_export_share`) and **B9** (the calculation) |
-| Time slider, cost layer, audit-trail panel | the panel above |
+| Time slider, cost layer, energy layer, audit-trail panel | the panel above |
 | `METHODOLOGY.md` | author writes the prose (§9) |
 | `tests/` | **author's permission still outstanding** — §3 forbids new top-level directories |
 
@@ -49,23 +70,30 @@ audit trail — not the arithmetic, which is commodity.
 
 | Component | Weight | Done |
 |---|---|---|
-| Scaffolding, licence, instructions, roadmap | 5 | ✅ |
-| renv / reproducible environment | 4 | ✅ |
-| Coverage audit + t₀ | 9 | ✅ |
-| Fetch + provenance chain | 9 | ✅ |
-| `facilities.rds` | 9 | ✅ 95% |
-| App shell + map | 7 | ✅ |
-| `policies/*.json` | 5 | ✅ |
-| README + CITATION.cff | 3 | ✅ |
-| `eu_export_share` | 6 | ◐ 50% — fetch works, definition pending |
-| `facility_panel.rds` | 11 | ❌ |
-| CBAM calculation core | 11 | ❌ |
-| App phase 2 (slider, cost, scenarios, audit trail) | 11 | ❌ |
+| Scaffolding, licence, instructions, roadmap | 4 | ✅ |
+| renv / reproducible environment | 3 | ✅ |
+| Coverage audit + t₀ (industrial) | 5 | ✅ |
+| Fetch + provenance chain (industrial) | 5 | ✅ |
+| `facilities.rds` (industrial, 88) | 5 | ✅ |
+| `policies/*.json` | 4 | ✅ |
+| README + CITATION.cff | 2 | ✅ |
+| App shell + industrial map | 5 | ✅ |
+| `eu_export_share` | 4 | ◐ 50% — fetch works, definition pending |
+| **Energy coverage audit + fetch (5 subsectors)** | 6 | ❌ |
+| **Energy facilities (210)** | 6 | ❌ |
+| **GEM commissioning years → 2000 timeline** | 5 | ❌ |
+| **Grid emission factor** | 6 | ❌ |
+| **Energy emissions panel** | 6 | ❌ |
+| `facility_panel.rds` (industrial) | 8 | ❌ |
+| CBAM calculation core | 8 | ❌ |
+| App phase 2 (slider, cost, energy layer, audit trail) | 8 | ❌ |
 | `METHODOLOGY.md` | 5 | ❌ |
 | `tests/` | 3 | ❌ |
 | Zenodo / JOSS packaging | 2 | ❌ |
 
-Of the remaining ~47 points, **16 are explicitly the author's own work** under §9.
+Of the remaining ~65 points, **21 are explicitly the author's own work** under §9
+(the calculation core, the decomposition, the export-share definition, METHODOLOGY).
+The other ~44 are buildable without waiting on anyone.
 
 ---
 
@@ -98,6 +126,8 @@ cached and re-runs take seconds.
 
 | Fact | Value | Evidence |
 |---|---|---|
+| Energy assets available | electricity-generation **157**, coal-mining **38**, oil-and-gas production / refining / transport **5 each** | Climate TRACE API, counted 2026-08-19 |
+| Total target population | **298** = 88 industrial + 210 energy | same |
 | `t₀` | **2021** | `data/processed/coverage_audit_summary.md` |
 | Last complete year | 2025 | same |
 | 2026 | partial, **5 of 12 months** | same |
@@ -137,6 +167,18 @@ Full reasoning in `ROADMAP.md`. Compressed here so a resuming session does not r
    12/5 multiplier biases systematically rather than randomly.
 8. **Exposure is not a tax bill.** The importer surrenders certificates. UI wording:
    *maruziyet*, *maliyet baskısı* — never *vergi* or *ödeyeceği tutar*.
+9. **The energy and CBAM scopes were merged (2026-08-19).** Energy assets are not a second
+   project sharing a map; they are `indirect_driver`s whose fleet composition sets the grid
+   intensity that produces industrial indirect emissions. An app that draws both without
+   computing that link has done half the job.
+10. **Electricity means two different things — keep them apart.** Electricity as an
+    *imported CBAM good* (Türkiye selling power to the EU) stays out of scope; volumes are
+    marginal. Electricity *generation assets* are in scope, as indirect drivers. A reviewer
+    will ask; README and METHODOLOGY must draw the line explicitly.
+11. **Commissioning years come from GEM, not Climate TRACE**, which starts at 2021. This is
+    what makes the 2000–2026 fleet timeline possible. `commissioning_source` records the
+    provenance so a GEM year is never mistaken for an observation, and facilities without
+    one carry `NA` and are visibly excluded from the pre-2021 animation.
 
 ---
 
@@ -163,6 +205,20 @@ Numbered as in `ROADMAP.md`. The author-facing task list is published at
   crude production — different physical quantities. **Aluminium breaks the ratio
   entirely** (see §7 below).
 - **B9** Write the liability calculation, retaining every intermediate for the audit trail.
+
+**Raised by the merge — buildable now, blocked on nobody:**
+
+- **E1** Does `electricity-generation` include zero-emission plants? If Climate TRACE lists
+  only emitting assets, a grid factor computed as emissions ÷ generation is wrong, because
+  the denominator omits hydro, wind and solar. **Settle this before computing any grid
+  factor.**
+- **E2** How many of the 210 energy assets have a GEM commissioning year? Thin coverage
+  means the 2000–2026 timeline claim has to be scaled back.
+- **E3** How far apart are Climate TRACE's reported `grid_emissions_intensity` and the
+  project's own computed figure? The gap is a result, not an error to tune away.
+- **E4** Do coal mines and oil & gas assets belong in the same panel? Their emissions are
+  largely fugitive methane — a different gas on a different accounting basis from the CO₂
+  the rest of the project handles. Adding them into a CO₂-denominated total would be wrong.
 
 **Blocking publication only** — short tasks, but v0.1 cannot be tagged with any outstanding:
 

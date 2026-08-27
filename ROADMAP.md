@@ -12,31 +12,36 @@ recorded reason is a gap, not a decision.
 
 **Current version:** pre-0.1
 
-**Data foundation complete** (2026-08-19). Acquisition, provenance, coverage audit and
-the facility table are done and verified; the analytical layer has not been started.
+**Scope merged 2026-08-19.** The project now covers both industrial CBAM exposure and the
+energy fleet that drives its indirect emissions. The industrial half is built and verified;
+the energy half is decided but not yet built.
 
 | Component | State |
 |---|---|
-| `scripts/_sources.R`, `00`, `01`, `02` | done |
-| `facilities.rds` | 88 facilities, verified |
-| `facility_panel.rds` | **not started** — blocked on the direct/indirect decomposition |
-| `policies/*.json` | not started |
-| CBAM liability calculation | **not started** — author's analytical core (§9) |
-| App | map, filters and sources tab working; no time slider, no liability figure |
-| `README.md`, `CITATION.cff`, `METHODOLOGY.md` | not started |
+| `scripts/_sources.R`, `00`, `01`, `01b`, `02` | done — industrial only |
+| `facilities.rds` | 88 industrial facilities, verified |
+| **Energy assets (210)** | **not started** — subsectors identified and counted, nothing fetched |
+| **GEM commissioning years** | **not started** — required for the 2000–2026 fleet timeline |
+| **Grid emission factor** | **not started** — no longer a placeholder |
+| `policies/*.json` | 4 files done (CBAM phase-in, carbon prices, TR-ETS, CN codes) |
+| `facility_panel.rds` | not started — blocked on the direct/indirect decomposition |
+| CBAM liability calculation | not started — author's analytical core (§9) |
+| App | industrial map, filters and sources tab working; no time slider, no cost layer, no energy layer |
+| `README.md`, `CITATION.cff` | done |
+| `METHODOLOGY.md` | not started — author's prose only |
 
-`t₀ = 2021`; last complete year `2025`; 2026 partial at 5 months. 88 facilities: cement 58,
-iron & steel 27, aluminium 3.
+`t₀ = 2021` for emissions; last complete year `2025`; 2026 partial at 5 months.
 
 **Verification, 2026-08-19:** 34 checks passed, 0 failed, 3 flagged for human resolution
 (open questions 3 and 4 below, plus two "Elmadağ Cement Plant" records in Ankara confirmed
 as genuinely distinct sites 4.4 km apart under different operators). Sixteen facilities
 were checked against publicly known locations and all sixteen were assigned correctly,
 including the Karadeniz Ereğli / Marmara Ereğlisi pair that a name-based method would
-confuse.
+confuse. **This verification covers the industrial half only.**
 
-**Next milestone:** `policies/*.json` skeletons — the only remaining piece that needs no
-analytical decision and can proceed in parallel with the author's work on the panel.
+**Next milestone:** extend `00_coverage_audit.R` to the five energy subsectors, then fetch
+and build the energy half of `facilities.rds`. The province and İBBS-2 assignment machinery
+transfers unchanged.
 
 ---
 
@@ -46,27 +51,36 @@ analytical decision and can proceed in parallel with the author's work on the pa
 
 | Dimension | Decision |
 |---|---|
-| Sectors | Iron & steel, cement, aluminium |
+| Industrial sectors | Iron & steel, cement, aluminium — 88 facilities |
+| Energy assets | Electricity generation 157, coal mining 38, oil & gas 15 — 210 facilities |
+| Total | **298 facilities** |
 | Geography | Türkiye |
 | Unit of analysis | Individual facility |
-| Time | Historical panel only; `t₀` set empirically by the coverage audit |
-| Policy | EU CBAM liability under user-defined carbon price scenarios |
-| Aggregation | Facility → province → national |
+| Emissions panel | `t₀` set empirically by the coverage audit — currently 2021 |
+| Fleet timeline | Back to **2000** via GEM commissioning years; emissions stay 2021+ |
+| Policy | EU CBAM liability under user-defined carbon price scenarios; energy policy timeline |
+| Aggregation | Facility → province → İBBS-2 → national |
 | Output | Shiny dashboard (Turkish UI) with a full audit trail per displayed figure |
 
 ### Scope decisions already taken
 
 **1. Three of the six CBAM goods categories.**
 CBAM covers cement, iron & steel, aluminium, fertilisers, electricity and hydrogen.
-v0.1 covers cement, iron & steel and aluminium. The three exclusions are not equivalent
-and must not be presented as though they were:
+v0.1 covers cement, iron & steel and aluminium as **CBAM goods**. The three exclusions are
+not equivalent and must not be presented as though they were:
 
-- **Electricity — excluded by choice.** Türkiye's electricity exports to the EU are
-  marginal, and the channel requires the indirect-emissions treatment and a grid emission
-  factor, both deferred below.
+- **Electricity — excluded as a CBAM good, by choice.** Türkiye's electricity *exports* to
+  the EU are marginal, so electricity is not modelled as a traded CBAM good.
 - **Hydrogen — excluded by choice.** Negligible export volume.
 - **Fertilisers — excluded on evidence.** See the closed question below. This one is a
   finding, not a preference, and should be reported as such.
+
+> **Do not confuse two different things called "electricity".** Electricity as an *imported
+> CBAM good* — Türkiye selling power across the border — remains out of scope. Electricity
+> *generation assets* are very much in scope since the 2026-08-19 merge, but in a different
+> role: they are `indirect_driver`s that set the grid carbon intensity feeding the
+> industrial installations' indirect emissions. A reviewer will ask about this; the README
+> and METHODOLOGY must draw the line explicitly.
 
 **This 3-of-6 restriction must be stated explicitly in the README and METHODOLOGY.**
 
@@ -117,10 +131,16 @@ must preserve this distinction — "maruziyet" and "maliyet baskısı", never "v
 Each entry states *why* it is deferred, so the decision can be revisited on evidence
 rather than re-argued from scratch.
 
+**Three rows left this table on 2026-08-19** when the scopes were merged: electricity
+generation assets, the indirect-emissions channel, and the endogenous grid emission factor
+are all now in v0.1. They are listed under "In scope" above. The deferral reasoning that
+used to sit here — "expands the facility universe by an order of magnitude" — turned out
+to be right about the magnitude (88 → 298) and wrong about it being a reason to wait: the
+`electricity_use` and `grid_emissions_intensity` fields already in the industrial panel
+made the link cheap to compute once the fleet was mapped.
+
 | Feature | Target | Reason for deferral |
 |---|---|---|
-| Electricity generation assets (thermal + renewable) | v0.2 | Requires the indirect-emissions channel and a grid emission factor. Expands the facility universe by an order of magnitude. The `liability_class` field already anticipates this. |
-| Indirect emissions channel | v0.2 | Depends on an endogenous grid emission factor; `policies/grid_emission_factor.json` is reserved as a placeholder. |
 | TR-ETS liability and domestic carbon price offset | v0.2 | CBAM permits deduction of carbon prices *effectively paid* in the country of origin. During the TR-ETS pilot (2026–2027) allocation is 100% free, so the deductible amount is approximately zero. Deferring the offset is therefore the **correct** treatment for the pilot period, not a simplification. It becomes material from the first compliance period (2028–2035). |
 | Forward projection to 2035 | v0.2 | The `value_type = projected` encoding exists from day one so projections can be added without a schema change, but v0.1 makes no forward claims. |
 | Monte Carlo / uncertainty quantification | v0.3 | Requires characterised input distributions. Premature while emission estimates are single-point modelled values with undocumented error bounds. |
@@ -294,6 +314,40 @@ These are live risks. Each will be closed by a specific artefact, not by discuss
    levels. These must be handled with an explicit flag and never silently replaced with
    a global average.
    *Closed by:* a versioned entry in `policies/` plus a visible UI warning.
+
+---
+
+## Open questions raised by the merge
+
+These did not exist before 2026-08-19. None is blocked on the author; they are
+build-and-measure questions.
+
+**E1. Does Climate TRACE's `electricity-generation` include zero-emission plants?**
+Türkiye's fleet is roughly a third hydro plus growing wind and solar. If Climate TRACE
+lists only emitting assets, the 157 count is thermal-heavy and the fleet-composition view
+would misrepresent the transition — and, worse, a grid emission factor computed as total
+emissions ÷ total generation would be wrong, because the denominator would omit clean
+generation. **This must be settled before any grid factor is computed.**
+*Closed by:* inspecting the fetched asset list for capacity, fuel and zero-emission records
+
+**E2. How many of the 210 energy assets have a GEM commissioning year?**
+The 2000–2026 fleet timeline depends on it. Facilities without one carry `NA` and must be
+visibly excluded from the pre-2021 animation rather than silently assumed to have always
+existed. If coverage is thin, the timeline claim has to be scaled back.
+*Closed by:* a coverage audit pass over GEM
+
+**E3. Reported versus computed grid intensity — how far apart?**
+Climate TRACE publishes `grid_emissions_intensity` per industrial facility (0.52 tCO₂/MWh
+in the steel sample). The project will also compute its own from the mapped fleet. The gap
+between them is a result, not an error to be tuned away, and belongs in METHODOLOGY.
+*Closed by:* the grid factor script, reported in `grid_emission_factor.json`
+
+**E4. Do coal mines and oil & gas assets belong in the same panel?**
+They are `neutral` — outside both the CBAM calculation and the grid factor. Their emissions
+are largely fugitive methane, a different gas with a different accounting basis from the
+CO₂ the rest of the project handles. Including them in a CO₂-denominated total would be
+wrong. Decide whether they are a separate map layer with their own units or are dropped.
+*Closed by:* the author, when the energy panel is designed
 
 ---
 

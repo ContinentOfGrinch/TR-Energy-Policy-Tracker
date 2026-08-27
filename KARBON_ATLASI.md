@@ -121,9 +121,25 @@ Root files: `README.md`, `KARBON_ATLASI.md`, `CLAUDE.md` (pointer only), `STATUS
   duplicated download logic would drift. Do not add further underscore files without
   asking.
 
-**Known outstanding item:** JOSS requires automated tests, which implies a `tests/`
-directory. It has not been created — adding it requires the author's explicit approval
-under the rule above. Tracked in `ROADMAP.md` under the release path.
+**`tests/` — approved and created 2026-08-19.** JOSS requires automated tests. The
+directory holds `testthat.R` plus `tests/testthat/`.
+
+These are **data tests, not unit tests of pure functions**, and that is deliberate. This
+project's failures do not look like exceptions; they look like plausible numbers. A
+`mutate()` that resolved a column instead of its argument tripled a denominator silently; a
+project-root marker left stale by a rename broke the app without an error. Testing a helper
+in isolation would have caught neither. The tests therefore assert properties of the built
+artefacts in `data/processed/` — schema completeness, key uniqueness, coordinates inside
+Türkiye, province assignments against sixteen publicly known facility locations, encoding
+survival, and that no policy parameter carries a number without either a `source_url` or an
+explicit `citation_required` flag.
+
+Tests **skip** rather than fail when an artefact has not been built, so a fresh clone runs
+green before the pipeline has been executed.
+
+```
+Rscript tests/testthat.R
+```
 
 ---
 

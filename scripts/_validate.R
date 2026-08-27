@@ -277,3 +277,180 @@ gate_facilities <- function(df, report = NULL) {
 
   invisible(df)
 }
+
+
+# =============================================================================
+# The policy parameter gate
+# =============================================================================
+# Policy files are hand-edited, and hand-edited JSON drifts. A renamed field, a
+# date typed as 19-08-2026, a scope_status quietly changed to something the
+# fetch script does not recognise — none of these raise an error at read time.
+# They produce NULL, and NULL propagates into a figure.
+#
+# Two layers, because they catch different things:
+#   1. JSON Schema, in policies/_schema/, validates STRUCTURE.
+#   2. R checks below validate RELATIONSHIPS between elements, which JSON Schema
+#      cannot express — monotonicity of the phase-in, the factor and free
+#      allocation summing to one, a scenario having either a source or an
+#      admission that it needs one.
+
+POLICY_SCHEMA_DIR <- file.path("policies", "_schema")
+
+#' Read a file as a single UTF-8 string.
+#'
+#' Explicit about encoding because these files carry Turkish characters and the
+#' Windows default is not UTF-8 (§2). Returning one string rather than a path
+#' also keeps jsonvalidate from having to guess what it was handed.
+.read_utf8 <- function(path) {
+  raw <- readBin(path, "raw", file.info(path)$size)
+  s <- rawToChar(raw)
+  Encoding(s) <- "UTF-8"
+  s
+}
+
+#' Escape every non-ASCII character as a \uXXXX JSON escape.
+#'
+#' WHY THIS EXISTS. jsonvalidate runs ajv inside V8, and handing V8 a string
+#' containing raw UTF-8 Turkish characters fails intermittently on Windows with
+#' `SyntaxError: Invalid or unexpected token` — a message that names neither the
+#' file nor the field. It reproduced under `testthat` and not outside it, which
+#' makes it an encoding-handoff problem somewhere in the R → V8 boundary rather
+#' than a defect in the documents.
+#'
+#' `\uXXXX` escaping is part of the JSON specification, so the escaped text is
+#' the same document by any conforming parser. Escaping removes the ambiguity
+#' instead of depending on every layer agreeing about encoding.
+#'
+#' Handles the Basic Multilingual Plane, which covers all Turkish characters.
+#' Anything above U+FFFF would need surrogate pairs; if such a character ever
+#' appears in a policy file this must be extended rather than silently mangling.
+.ascii_escape <- function(s) {
+  cp <- utf8ToInt(s)
+  if (all(cp < 128L)) return(s)
+
+  if (any(cp > 0xFFFFL)) {
+    stop("Policy JSON contains a character above U+FFFF; .ascii_escape() ",
+         "handles the BMP only and must be extended before this can be validated.",
+         call. = FALSE)
+  }
+
+  out <- ifelse(cp < 128L, intToUtf8(cp, multiple = TRUE),
+                sprintf("\\u%04x", cp))
+  paste(out, collapse = "")
+}
+
+#' Validate every policy file against its schema and its internal relationships.
+#'
+#' @param dir       directory holding the policy JSON files
+#' @param schema_dir directory holding `<name>.schema.json`
+gate_policies <- function(dir = "policies", schema_dir = POLICY_SCHEMA_DIR) {
+
+  files <- list.files(dir, pattern = "\\.json$", full.names = TRUE)
+
+  .gate_header(sprintf("policies (%d files)", length(files)))
+
+  if (length(files) == 0) {
+    stop("No policy files found in ", dir, call. = FALSE)
+  }
+
+  failures <- character(0)
+
+  for (f in files) {
+    nm     <- tools::file_path_sans_ext(basename(f))
+    schema <- file.path(schema_dir, paste0(nm, ".schema.json"))
+
+    # An unschema'd policy file is itself a failure. Otherwise the way to bypass
+    # validation is simply to add a new file, which defeats the gate entirely.
+    if (!file.exists(schema)) {
+      failures <- c(failures, sprintf(
+        "%s has no schema at %s — every policy file must be schema-backed",
+        basename(f), schema))
+      next
+    }
+
+    # Read both sides as explicit UTF-8 strings rather than handing jsonvalidate
+    # a path. jsonvalidate decides whether an argument is a filename or a JSON
+    # literal, and on Windows that guess interacts badly with backslash paths
+    # and with the Turkish characters inside these files — the symptom is a V8
+    # "SyntaxError: Invalid or unexpected token" that says nothing about which
+    # file or which field. Passing strings removes the guess.
+    ok <- jsonvalidate::json_validate(
+      json    = .ascii_escape(.read_utf8(f)),
+      schema  = .ascii_escape(.read_utf8(schema)),
+      engine  = "ajv",
+      verbose = TRUE
+    )
+    if (!ok) {
+      errs <- attr(ok, "errors")
+      detail <- if (is.data.frame(errs) && nrow(errs) > 0) {
+        paste0(errs$instancePath, " ", errs$message, collapse = "; ")
+      } else "schema validation failed"
+      failures <- c(failures, sprintf("%s: %s", basename(f), detail))
+    }
+  }
+
+  # --- Relationship checks JSON Schema cannot express ------------------------
+
+  phase_in_path <- file.path(dir, "cbam_phase_in.json")
+  if (file.exists(phase_in_path)) {
+    p <- jsonlite::fromJSON(phase_in_path)$phase_in
+
+    if (!all(abs(p$cbam_factor + p$free_allocation_share - 1) < 1e-9)) {
+      failures <- c(failures,
+        "cbam_phase_in.json: cbam_factor and free_allocation_share must sum to 1")
+    }
+    if (!all(diff(p$cbam_factor) > 0)) {
+      failures <- c(failures,
+        "cbam_phase_in.json: cbam_factor must increase monotonically — the obligation phases in, it never reverses")
+    }
+    if (!isTRUE(p$cbam_factor[p$year == 2034] == 1)) {
+      failures <- c(failures,
+        "cbam_phase_in.json: full application in 2034 is the legislated endpoint and must equal 1")
+    }
+  }
+
+  prices_path <- file.path(dir, "carbon_price_scenarios.json")
+  if (file.exists(prices_path)) {
+    j <- jsonlite::fromJSON(prices_path, simplifyVector = FALSE)
+    for (nm in names(j$scenarios)) {
+      s <- j$scenarios[[nm]]
+      has_source <- !is.null(s$source_url) && nzchar(s$source_url)
+      admits_gap <- isTRUE(s$citation_required)
+      user_set   <- identical(nm, "custom")
+      if (!(has_source || admits_gap || user_set)) {
+        failures <- c(failures, sprintf(
+          "carbon_price_scenarios.json: scenario '%s' has neither a source_url nor citation_required — section 7 forbids an uncited regulatory number",
+          nm))
+      }
+    }
+  }
+
+  .gate_stop(failures, "policies")
+  message("  STOP tier: passed (", length(files), " files, all schema-backed)")
+
+  # --- WARN tier -------------------------------------------------------------
+  observations <- character(0)
+
+  if (file.exists(prices_path)) {
+    j <- jsonlite::fromJSON(prices_path, simplifyVector = FALSE)
+    needy <- names(j$scenarios)[vapply(j$scenarios,
+                                       function(s) isTRUE(s$citation_required),
+                                       logical(1))]
+    if (length(needy) > 0) {
+      observations <- c(observations, sprintf(
+        "scenario(s) still awaiting a citation: %s", paste(needy, collapse = ", ")))
+    }
+  }
+
+  codes_path <- file.path(dir, "cbam_goods_cn_codes.json")
+  if (file.exists(codes_path)) {
+    st <- jsonlite::fromJSON(codes_path, simplifyVector = FALSE)$meta$scope_status
+    if (!identical(st, "annex_i_verified")) {
+      observations <- c(observations,
+        "cbam_goods_cn_codes.json is still PROVISIONAL_AGGREGATE — derived shares are upper bounds")
+    }
+  }
+
+  .gate_warn(observations, "policies")
+  invisible(TRUE)
+}

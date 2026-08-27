@@ -117,3 +117,87 @@ test_that("gate returns the table unchanged so it can be piped into saveRDS", {
   out <- suppressMessages(gate_facilities(f))
   expect_equal(out, f)
 })
+
+
+# =============================================================================
+# The policy gate
+# =============================================================================
+
+test_that("the real policy files pass their schemas", {
+  expect_no_error(suppressMessages(
+    gate_policies(dir        = file.path(ROOT, "policies"),
+                  schema_dir = file.path(ROOT, "policies", "_schema"))
+  ))
+})
+
+
+test_that("a policy file with no schema is refused", {
+  # Otherwise the way to bypass validation is simply to add a new file, which
+  # defeats the gate entirely.
+  tmp <- withr::local_tempdir()
+  file.copy(file.path(ROOT, "policies", "cbam_phase_in.json"), tmp)
+  writeLines('{"meta":{}}', file.path(tmp, "unschemad_parameters.json"))
+
+  expect_error(
+    suppressMessages(gate_policies(
+      dir = tmp, schema_dir = file.path(ROOT, "policies", "_schema"))),
+    "has no schema"
+  )
+})
+
+
+test_that("a phase-in factor that reverses is refused", {
+  # JSON Schema cannot express a relationship between array elements, so this
+  # check lives in R. The obligation phases in; it never goes backwards.
+  tmp <- withr::local_tempdir()
+  j <- jsonlite::fromJSON(file.path(ROOT, "policies", "cbam_phase_in.json"),
+                          simplifyVector = FALSE)
+  j$phase_in[[3]]$cbam_factor          <- 0.01
+  j$phase_in[[3]]$free_allocation_share <- 0.99
+  jsonlite::write_json(j, file.path(tmp, "cbam_phase_in.json"),
+                       auto_unbox = TRUE, pretty = TRUE)
+
+  expect_error(
+    suppressMessages(gate_policies(
+      dir = tmp, schema_dir = file.path(ROOT, "policies", "_schema"))),
+    "monotonic"
+  )
+})
+
+
+test_that("a price scenario with neither source_url nor citation_required is refused", {
+  # This is the section 7 rule the project already broke once.
+  tmp <- withr::local_tempdir()
+  j <- jsonlite::fromJSON(
+    file.path(ROOT, "policies", "carbon_price_scenarios.json"),
+    simplifyVector = FALSE)
+  j$scenarios$low$citation_required <- FALSE
+  j$scenarios$low$source_url        <- NULL
+  jsonlite::write_json(j, file.path(tmp, "carbon_price_scenarios.json"),
+                       auto_unbox = TRUE, pretty = TRUE, null = "null")
+
+  expect_error(
+    suppressMessages(gate_policies(
+      dir = tmp, schema_dir = file.path(ROOT, "policies", "_schema"))),
+    "citation_required"
+  )
+})
+
+
+test_that("a malformed retrieval date is refused by the schema", {
+  tmp <- withr::local_tempdir()
+  j <- jsonlite::fromJSON(file.path(ROOT, "policies", "tr_ets.json"),
+                          simplifyVector = FALSE)
+  j$meta$retrieved_date <- "19-08-2026"   # not ISO; reads fine, means nothing
+  # null = "null" matters: jsonlite drops NULL entries by default, which would
+  # silently remove first_compliance_period$free_allocation_share and change
+  # what this test is testing.
+  jsonlite::write_json(j, file.path(tmp, "tr_ets.json"),
+                       auto_unbox = TRUE, pretty = TRUE, null = "null")
+
+  expect_error(
+    suppressMessages(gate_policies(
+      dir = tmp, schema_dir = file.path(ROOT, "policies", "_schema"))),
+    "tr_ets"
+  )
+})

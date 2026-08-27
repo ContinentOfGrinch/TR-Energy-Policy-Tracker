@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "carbon_price_scenarios",
+  "description": "Carbon price scenarios in EUR/tCO2e. The central rule this schema exists to enforce: a scenario carries either a source_url or an explicit citation_required flag. A bare number with neither is what section 7 forbids, and it has already happened once.",
+  "type": "object",
+  "required": ["meta", "scenarios"],
+
+  "properties": {
+    "_comment": { "type": "string" },
+
+    "meta": {
+      "type": "object",
+      "required": ["parameter_set", "retrieved_date", "unit", "currency"],
+      "properties": {
+        "parameter_set":  { "const": "carbon_price_scenarios" },
+        "regime_id":      { "type": "string" },
+        "version":        { "type": "string" },
+        "retrieved_date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "unit":           { "type": "string" },
+        "currency":       { "const": "EUR" },
+        "comment":        { "type": "string" }
+      }
+    },
+
+    "scenarios": {
+      "type": "object",
+      "required": ["observed", "low", "high", "custom"],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["label_tr", "value_type"],
+        "properties": {
+          "label_tr": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Turkish UI label. Section 2 requires everything the user reads to be Turkish."
+          },
+          "value_type": {
+            "type": "string",
+            "enum": ["observed", "legislated", "scenario", "projected", "assumption"],
+            "description": "Section 6 vocabulary. An observed price and a user guess must never render identically."
+          },
+          "description":       { "type": "string" },
+          "source_url":        { "type": ["string", "null"] },
+          "retrieved_date":    { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+          "citation_required": { "type": "boolean" },
+          "citation_note":     { "type": "string" },
+          "granularity":       { "type": "string", "enum": ["quarter", "year"] },
+          "flat_price_eur_t":  { "type": ["number", "null"], "minimum": 0 },
+          "applies_from":      { "type": "integer" },
+          "applies_to":        { "type": "integer" },
+
+          "quarterly": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["year", "quarter", "price_eur_t"],
+              "properties": {
+                "year":        { "type": "integer", "minimum": 2020 },
+                "quarter":     { "type": "integer", "minimum": 1, "maximum": 4 },
+                "price_eur_t": { "type": "number", "minimum": 0 },
+                "published":   { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+              },
+              "additionalProperties": false
+            }
+          },
+
+          "pending": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["year", "quarter"],
+              "properties": {
+                "year":    { "type": "integer" },
+                "quarter": { "type": "integer", "minimum": 1, "maximum": 4 },
+                "scheduled_publication": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+
+          "annual": {
+            "type": "array",
+            "description": "Deliberately empty while a year is incomplete. Averaging published quarters into an annual figure would fabricate a value.",
+            "items": {
+              "type": "object",
+              "required": ["year", "price_eur_t"],
+              "properties": {
+                "year":        { "type": "integer" },
+                "price_eur_t": { "type": "number", "minimum": 0 },
+                "method":      { "type": "string" }
+              }
+            }
+          },
+          "annual_comment": { "type": "string" },
+
+          "ui_min_eur_t":     { "type": "number", "minimum": 0 },
+          "ui_max_eur_t":     { "type": "number", "minimum": 0 },
+          "ui_default_eur_t": { "type": "number", "minimum": 0 },
+          "ui_step_eur_t":    { "type": "number", "exclusiveMinimum": 0 }
+        }
+      }
+    }
+  }
+}

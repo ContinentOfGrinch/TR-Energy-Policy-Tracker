@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "cbam_phase_in",
+  "description": "CBAM phase-in factors by year. Enforces KARBON_ATLASI.md section 7: every parameter file carries a source_url and a retrieval date.",
+  "type": "object",
+  "required": ["meta", "phase_in"],
+
+  "properties": {
+    "_comment": { "type": "string" },
+
+    "meta": {
+      "type": "object",
+      "required": ["parameter_set", "retrieved_date", "source_url", "value_type"],
+      "properties": {
+        "parameter_set": { "const": "cbam_phase_in" },
+        "regime_id":     { "type": "string" },
+        "version":       { "type": "string" },
+        "retrieved_date": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "description": "ISO yyyy-mm-dd. A parameter without a retrieval date cannot be audited."
+        },
+        "unit":       { "type": "string" },
+        "value_type": { "const": "legislated" },
+        "primary_legal_source": { "type": "string" },
+        "source_url": { "type": "string", "format": "uri", "minLength": 1 },
+        "source_note": { "type": "string" },
+        "verification_status": {
+          "type": "string",
+          "enum": ["secondary_source_verified_primary_pending", "primary_source_verified"],
+          "description": "Must be one of two known states. Prevents the field being quietly edited to something meaningless."
+        }
+      }
+    },
+
+    "notes": {
+      "type": "object",
+      "properties": {
+        "definitive_regime_start": { "type": "string" },
+        "transitional_period":     { "type": "string" },
+        "full_application_year":   { "type": "integer", "const": 2034 },
+        "de_minimis": {
+          "type": "object",
+          "required": ["threshold_tonnes_per_importer_per_year", "source_url"],
+          "properties": {
+            "threshold_tonnes_per_importer_per_year": { "type": "number", "minimum": 0 },
+            "basis":      { "type": "string" },
+            "source_url": { "type": "string", "minLength": 1 },
+            "comment":    { "type": "string" }
+          }
+        }
+      }
+    },
+
+    "phase_in": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Year to factor. Monotonicity and the factor/free-allocation complement are checked in R, not here: JSON Schema cannot express a relationship between array elements.",
+      "items": {
+        "type": "object",
+        "required": ["year", "cbam_factor", "free_allocation_share"],
+        "properties": {
+          "year":        { "type": "integer", "minimum": 2020, "maximum": 2100 },
+          "cbam_factor": { "type": "number", "minimum": 0, "maximum": 1 },
+          "free_allocation_share": { "type": "number", "minimum": 0, "maximum": 1 },
+          "comment":     { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+
+    "pre_definitive": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["year", "cbam_factor", "free_allocation_share"],
+        "properties": {
+          "year":        { "type": "integer" },
+          "cbam_factor": { "type": "number", "const": 0 },
+          "free_allocation_share": { "type": "number", "const": 1 },
+          "comment":     { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

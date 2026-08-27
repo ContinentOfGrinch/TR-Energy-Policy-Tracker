@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "cbam_goods_cn_codes",
+  "description": "Customs codes used to measure EU-bound trade in CBAM goods. The schema's main job is keeping scope_status honest: the codes are currently HS2/HS4 aggregates standing in for the Annex I CN8 list, which is acceptable in development and not at publication.",
+  "type": "object",
+  "required": ["meta", "sectors"],
+
+  "properties": {
+    "_comment": { "type": "string" },
+
+    "meta": {
+      "type": "object",
+      "required": ["parameter_set", "retrieved_date", "source_url", "scope_status"],
+      "properties": {
+        "parameter_set":  { "const": "cbam_goods_cn_codes" },
+        "version":        { "type": "string" },
+        "retrieved_date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "authoritative_source": { "type": "string" },
+        "source_url":     { "type": "string", "minLength": 1 },
+
+        "scope_status": {
+          "type": "string",
+          "enum": ["PROVISIONAL_AGGREGATE", "annex_i_verified"],
+          "description": "Two known states only. 01b_fetch_eu_trade.R warns loudly on the first and is silent on the second, so this value must never be a free-text edit."
+        },
+        "scope_warning":   { "type": "string" },
+        "action_required": { "type": "string" },
+
+        "trade_source": {
+          "type": "object",
+          "required": ["provider", "dataset", "endpoint"],
+          "properties": {
+            "provider":        { "type": "string" },
+            "dataset":         { "type": "string" },
+            "endpoint":        { "type": "string", "minLength": 1 },
+            "verified_working": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+            "dimension_codes": {
+              "type": "object",
+              "properties": {
+                "freq":       { "type": "string" },
+                "reporter":   { "type": "string" },
+                "partner":    { "type": "string" },
+                "flow":       { "type": "string" },
+                "indicators": { "type": "array", "items": { "type": "string" } }
+              }
+            },
+            "unit_note": { "type": "string" }
+          }
+        }
+      }
+    },
+
+    "sectors": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["label_tr", "codes", "code_level"],
+        "properties": {
+          "label_tr": { "type": "string", "minLength": 1 },
+          "codes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9]{2}([0-9]{2}([0-9]{2}([0-9]{2})?)?)?$",
+              "description": "HS2, HS4, HS6 or CN8 — an even number of digits, 2 to 8."
+            }
+          },
+          "code_level":    { "type": "string" },
+          "description":   { "type": "string" },
+          "annex_i_note":  { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+
+    "out_of_scope": {
+      "type": "object",
+      "description": "Goods CBAM covers that this project does not. Recording them here is what keeps the 3-of-6 restriction a stated decision rather than an apparent oversight.",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}

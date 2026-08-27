@@ -382,18 +382,24 @@ wrong. Decide whether they are a separate map layer with their own units or are 
 
 ## Repository visibility
 
-**Private for now** (decided 2026-08-19). The work is honest about its gaps but several
-are still open — two price scenarios without a citation, provisional customs codes, the
-Kars duplicate and the Toprakkale assignment — and there is no reason to publish before
-they are addressed.
+**Public from 2026-08-28.** Briefly considered private, then published — which is the
+better call: Zenodo archives a release only from a public repository and JOSS requires
+openly readable source throughout review, so private was always temporary.
 
-**This must flip to public before the release path can proceed, and it is easy to forget.**
-Zenodo's GitHub integration archives a release only from a public repository, and JOSS
-requires the source to be openly readable throughout review. Making the repository public
-at the moment of tagging also means the first thing a reviewer sees is a version whose
-`README.md` already lists its own limitations, which is the intended impression.
+Publishing while gaps are open is deliberate, not premature. Two price scenarios still lack
+a citation, the customs codes are provisional aggregates, and the Kars duplicate and
+Toprakkale assignment are unresolved — all of which `README.md` states plainly under
+"Known data-quality issues". A repository that documents its own limitations reads as more
+trustworthy than one that hides them until they are fixed.
 
-Repository name: `karbon-atlasi-turkiye`, matching `CITATION.cff`.
+**Repository:** <https://github.com/ContinentOfGrinch/karbon-atlasi-turkiye>
+
+Renamed from `TR-Energy-Policy-Tracker`, which was the superseded brief's name and no
+longer described the scope. GitHub redirects the old URL, so nothing breaks.
+
+**Not published, deliberately:** `data/raw/` (the 45 MB Climate TRACE package — the fetch
+scripts reproduce it), `MEMORY.md` (local working journal), `renv/library/`, and the
+generated pointblank HTML report.
 
 ---
 

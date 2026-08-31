@@ -359,11 +359,39 @@ commissioning years — the same fetch that E2 already requires. Their emissions
 `NA`. Without them the 2000–2026 fleet animation would omit the single largest change in
 Türkiye's power sector, which is the point of having a timeline at all.
 
-**E2. How many of the 210 energy assets have a GEM commissioning year?**
-The 2000–2026 fleet timeline depends on it. Facilities without one carry `NA` and must be
-visibly excluded from the pre-2021 animation rather than silently assumed to have always
-existed. If coverage is thin, the timeline claim has to be scaled back.
-*Closed by:* a coverage audit pass over GEM
+**E2. Where do commissioning years come from? — GEM, by documented manual download.**
+*Decided 2026-08-28 after measuring the openly fetchable alternative.*
+
+Neither Climate TRACE package carries a start year for power plants or coal mines. Coal
+mining does carry GEM-derived metadata — coal type, reserves, mine depth, even a GEM Wiki
+link — but not a commissioning date.
+
+The obvious open alternative was measured and rejected. WRI's Global Power Plant Database
+v1.3 downloads without registration, but for Türkiye:
+
+| | WRI GPPD |
+|---|---|
+| Plants | 163 |
+| Capacity | 51,445 MW |
+| **`commissioning_year` populated** | **25 of 163 — 15%** |
+| Latest commissioning year | **2017** |
+| Solar | 68 plants, 695 MW |
+| Wind | 8 plants, 390 MW |
+
+Türkiye's installed capacity is now roughly 115 GW, so the database sees about half of it,
+and its solar figure is off by more than an order of magnitude. A 15%-populated
+commissioning year would produce an animation in which 18 plants appear and 145 stay
+invisible — worse than having no timeline at all.
+
+**GEM's Global Integrated Power Tracker is current to the August 2026 release and carries
+start years, but exposes no direct download URL; the file sits behind a form.**
+
+**Decision: accept one documented manual step.** The file is downloaded once into
+`data/raw/gem/` and `scripts/01c_ingest_gem.R` reads it from there. If it is absent the
+script stops with instructions rather than proceeding silently. The cost is real and must
+be stated: a fresh clone cannot run the pipeline end to end without that download, and a
+JOSS reviewer will see the manual step. The alternative was a timeline built on 15%
+coverage, which is not a trade worth making.
 
 **E3. Reported versus computed grid intensity — how far apart?**
 Climate TRACE publishes `grid_emissions_intensity` per industrial facility (0.52 tCO₂/MWh

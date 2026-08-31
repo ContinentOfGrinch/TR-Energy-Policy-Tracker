@@ -98,13 +98,35 @@ install `libgdal-dev libgeos-dev libproj-dev` first.
 45 MB blob in git history. Run the pipeline in order:
 
 ```bash
-Rscript scripts/00_coverage_audit.R      # optional: regenerates the availability evidence
+Rscript scripts/00_coverage_audit.R      # availability evidence, fixes t₀
 Rscript scripts/01_fetch_climate_trace.R # downloads sources, writes SOURCES.md
+Rscript scripts/01b_fetch_eu_trade.R     # EU trade quantities from Eurostat Comext
+Rscript scripts/01c_ingest_gem.R         # commissioning years — NEEDS A MANUAL STEP
 Rscript scripts/02_build_facilities.R    # builds facilities.rds
 ```
 
 On Windows use `Rscript`, not `R` — in PowerShell `R` collides with the `Invoke-History`
 alias.
+
+#### The one manual step
+
+Everything else fetches itself. **`01c_ingest_gem.R` does not**, because Global Energy
+Monitor distributes its trackers through a form rather than a download URL:
+
+1. Download the **Global Integrated Power Tracker** workbook from
+   [globalenergymonitor.org](https://globalenergymonitor.org/projects/global-integrated-power-tracker/download-data/)
+2. Save it, unrenamed, into `data/raw/gem/`
+3. Optionally add the **Global Coal Mine Tracker** workbook to the same folder
+
+The script stops with these instructions if the file is absent; it never proceeds with an
+empty table.
+
+This step is here because the open alternative was measured and found unusable. WRI's
+Global Power Plant Database downloads freely but populates `commissioning_year` for only
+25 of 163 Turkish plants — 15% — and stops at 2017, reporting 695 MW of solar against a
+real figure more than an order of magnitude larger. A fleet timeline built on that would
+show 18 plants appearing while 145 stayed invisible. One manual download was the better
+trade; the reasoning is recorded in [ROADMAP.md](ROADMAP.md) under E2.
 
 ### Run the app
 

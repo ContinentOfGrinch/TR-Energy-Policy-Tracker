@@ -4,12 +4,13 @@
 this file says where it *got to*, what runs, what is blocked, and which traps have already
 been paid for.
 
-Last updated: **2026-09-01** · 32 commits · **~58% complete** · 133 assertions passing
+Last updated: **2026-09-01** · 33 commits · **~69% complete** · 174 assertions passing
 
-> The figure moved 53% → 35% → 58%. The drop was the scope merge on 2026-08-19 growing the
-> denominator, not work being lost; the recovery is the energy half being built. Both
-> populations are now on the map. What remains is disproportionately the analytical core,
-> which §9 reserves for the author.
+> The figure moved 53% → 35% → 58% → 69%. The drop was the scope merge on 2026-08-19
+> growing the denominator, not work being lost. The recoveries are the energy half, and
+> then the panel: `facility_panel.rds` was two weighted line items and it blocked the time
+> slider, the fleet timeline and the cost layer behind it. What remains is now
+> disproportionately the analytical core, which §9 reserves for the author.
 
 **Published:** <https://github.com/ContinentOfGrinch/TR-Energy-Policy-Tracker>
 (rename to `karbon-atlasi-turkiye` still outstanding)
@@ -70,12 +71,17 @@ and the arithmetic on top of it.
 
 | Missing | Blocked on |
 |---|---|
-| `facility_panel.rds` | Author decisions **B1** (direct/indirect split) and **B2** (annual aggregation) |
+| `co2_direct_t` / `co2_indirect_t` in the panel | Author decision **B1** (direct/indirect split). The panel is built and carries `emissions_reported_t`; these two columns are deliberately NA and the gate reports them on every build |
 | CBAM liability figure | Author decisions **B7** (`eu_export_share`) and **B9** (the calculation) |
 | Grid factor **selection** | Author decision — three estimates exist, `selection.chosen` is deliberately `null` |
-| Time slider, cost layer, audit-trail panel | the panel above |
-| The 2000–2026 fleet timeline | the panel; commissioning years are ingested and joined |
+| Time slider, cost layer, audit-trail panel | nothing — the panel now exists, this is buildable |
+| The 2000–2026 fleet timeline | **A6** first: 9 facilities report emissions before their GEM commissioning year, and the timeline is built on that field |
 | `METHODOLOGY.md` | author writes the prose (§9) |
+
+**B2 is closed.** The monthly→annual aggregation rule was decided 2026-09-01 and is
+implemented in `03_build_panel.R`: flows sum, capacity is the **mean** of the monthly
+values (the author's choice, so a plant commissioned mid-year shows at part capacity),
+ratios are **recomputed from annual totals** rather than averaged across months.
 
 ### Progress by component
 
@@ -96,8 +102,8 @@ and the arithmetic on top of it.
 | Grid emission factor | 6 | ◐ 60% — three estimates assembled, selection pending |
 | `eu_export_share` | 4 | ◐ 50% — fetch works, definition pending |
 | App phase 2 (slider, cost, energy layer, audit trail) | 8 | ◐ 30% — energy layer and grid tab done; no slider, cost or audit trail |
-| Energy emissions panel | 6 | ❌ |
-| `facility_panel.rds` (industrial) | 8 | ❌ |
+| Energy emissions panel | 6 | ✅ |
+| `facility_panel.rds` (industrial) | 8 | ◐ 65% — built, gated and tested; `co2_direct_t` / `co2_indirect_t` await B1 |
 | CBAM calculation core | 8 | ❌ |
 | `METHODOLOGY.md` | 5 | ❌ |
 | Zenodo / JOSS packaging | 2 | ❌ |
@@ -130,7 +136,7 @@ Rscript scripts/01b_fetch_eu_trade.R      # Eurostat Comext trade quantities
 Rscript scripts/01c_ingest_gem.R          # commissioning years + captive flags
 Rscript scripts/01d_fetch_ember.R         # national generation -> grid intensity
 Rscript scripts/02_build_facilities.R     # -> facilities.rds + fleet_renewables.rds
-# scripts/03_build_panel.R                # DOES NOT EXIST YET (blocked on B1/B2)
+Rscript scripts/03_build_panel.R          # -> facility_panel.rds (1,800 rows)
 
 # tests — run these SEPARATELY from any commit
 Rscript tests/testthat.R
@@ -159,20 +165,26 @@ cached and re-runs take seconds.
 | Total population | **300** records at **290** locations = 88 industrial + 212 energy | same |
 | `t₀` | **2021** | `data/processed/coverage_audit_summary.md` |
 | Last complete year | 2025 | same |
-| 2026 | partial, **5 of 12 months** | same |
+| 2026 | partial, and **not equally so**: `co2` **5 of 12** months, `co2e_100yr` **6 of 12**. Industrial and energy 2026 are not commensurable | measured 2026-09-01 |
+| Temporal granularity | **monthly** — every source row is one asset-month. This is why B2 is a real blocker, not a formality | same |
 | Industrial facilities | **88** — cement 58, iron & steel 27, aluminium 3 | `facilities.rds` |
 | Gas basis | industrial **CO₂** (88), energy **CO₂e(100yr)** (212) — **never summed** | same |
 | Commissioning years | **78.3%** overall; industrial 87.5%, energy 74.5%; oil & gas **0%**; earliest **1911** | measured 2026-09-01 |
 | Captive plants | **27** flagged in the register; GEM declares 34 operating units / 4.46 GW fleet-wide | `is_captive` |
 | Renewable fleet (context only) | **3,136** operating plants, **58.8 GW** | `fleet_renewables.rds` |
 | Grid intensity 2024 | naive fleet **748**, Ember **471**, Climate TRACE reported **477** gCO₂/kWh | `grid_intensity.csv` |
-| Source release | Climate TRACE **v5_9_0** | `SOURCES.md` |
+| Source release | **Two, not one** — `co2` is **v5_9_0**, `co2e_100yr` is **v5_10_0**, downloaded the same day. Gas and release vary together, so the E6 register difference is **confounded** and cannot be attributed to gas | filenames, checked 2026-09-01 |
 | CBAM phase-in | 2026 **2.5%** → 2034 **100%** | `policies/cbam_phase_in.json` |
 | CBAM certificate price | Q1 2026 **€75.36**, Q2 2026 **€75.28** | verified against the Commission price page |
 | CBAM de minimis | 50 t per importer per year | recorded, deliberately **not applied** |
 | TR-ETS | Law 7552, pilot 2026–27, 50,000 tCO₂e threshold, 100% free allocation | `policies/tr_ets.json` |
 | Geocode quality | **220** within province, **64** boundary-proximate, **12** snapped to nearest, **4** offshore | `facilities_geocode_report.csv` |
-| Verification | **133 assertions**, 0 failures | `Rscript tests/testthat.R` |
+| Panel | **1,800 rows** = 300 facilities × 6 years, 2021–2026 | `facility_panel.rds` |
+| Emissions 2024 | industrial **74.9 Mt CO₂**, energy **172 Mt CO₂e** — **never summed** | same |
+| **Release revision** | the identical 151 power stations carry **+12.4%** more generation in v5_10_0 than v5_9_0 (2024). Activity is gas-independent, so this is a version revision, not a gas difference | measured 2026-09-01 |
+| Coverage of national generation | **52% on v5_9_0, 58% on v5_10_0** — release-dependent, always cite which | derived from the above |
+| GEM vs Climate TRACE conflict | **9 facilities** report emissions before their GEM commissioning year | panel gate, every build |
+| Verification | **174 assertions**, 0 failures | `Rscript tests/testthat.R` |
 
 ---
 
@@ -227,8 +239,11 @@ Numbered as in `ROADMAP.md`. The author-facing task list is published at
   different meanings in each sector: iron & steel `other2` is a direct-plus-indirect
   *quantity*, cement `other2` is a calcination *factor*, aluminium `other2` is a total
   *quantity*. Any parser must key on the `_def` label, never the slot number.
-- **B2** Monthly → annual aggregation rule. Flows sum; `capacity` is a stock and summing
-  it gives a figure twelve times too large; ratios need a weighting decision.
+- ~~**B2**~~ **CLOSED 2026-09-01.** Flows sum; capacity is the **mean** of the monthly
+  values; ratios are **recomputed from annual totals**, never averaged across months.
+  Implemented in `03_build_panel.R`, enforced by `gate_panel()` — which refuses a build
+  where annual capacity exceeds the largest monthly value, the signature of a sum — and
+  asserted on the artefact by `tests/testthat/test-panel.R`.
 
 **Blocking the cost figure:**
 
@@ -261,9 +276,12 @@ is on disk.
   and the two are never summed — the interface says so before the idea forms.
 - ~~**E5**~~ **Answered:** GEM declares captive status directly (`Captive Industry Type`),
   34 operating units / 4.46 GW. The 1.5 km spatial heuristic was demoted to a cross-check.
-- ~~**E6**~~ **Answered:** the `co2` and `co2e_100yr` packages carry different registers and
-  neither is a subset of the other. `co2e_100yr` is authoritative for energy; the eight
-  omissions are listed rather than silently reconciled.
+- **E6** **Partly answered, and the first answer was wrong about the cause.** The two
+  packages do carry different registers, neither a subset of the other, and `co2e_100yr`
+  stays authoritative for energy with the eight differences listed. But they are also
+  **different releases** — v5_9_0 and v5_10_0 — so gas and version vary together and the
+  difference cannot be attributed to the gas. Separating them would need both gases at one
+  release, which was not on offer. Recorded as a confound, not resolved.
 - **E7** Twelve same-subsector near-duplicates remain unresolved — four coal-mine pairs at
   0 m and seven power-station pairs within 450 m, plus Kars. Nothing dropped on suspicion.
 
@@ -272,8 +290,17 @@ is on disk.
 - **B3** Resolve the Kars possible-duplicate and the Toprakkale province assignment.
 - **B4** Verify the İBBS-2 mapping against TÜİK's official classification. The table in
   `02_build_facilities.R` carries a `>>> VERIFY BEFORE PUBLICATION <<<` marker.
-- **B5** Determine which years are observed versus nowcast. Answer is in
-  `data/raw/climate_trace/about_the_data.pdf`, already downloaded, not yet read.
+- **B5** Determine which years are observed versus nowcast. **The premise recorded here
+  was wrong and the task is harder than it looked.** The PDF was read on 2026-09-01: it
+  documents every column and the licence, says the models give "our current best
+  estimates", and **draws no line between measured and nowcast years**. The confidence
+  files were then extracted as the obvious fallback and they do not vary by period either
+  — Turkish cement `emissions_quantity` is "low" for 9 facilities and "medium" for 49 in
+  2021 and 2026 alike, so it is a per-facility property with no temporal signal. Nothing
+  in the shipped package marks the boundary. The panel therefore follows §5's instruction
+  (`LAST_OBSERVED_YEAR <- 2024`, stated once in `03_build_panel.R`), and the remaining
+  work is the upstream changelog and the sector methodology documents, which are online
+  and were not consulted.
 - **B8** Find the citation for the €75 / €150 scenarios. They currently sit in
   `carbon_price_scenarios.json` with `citation_required: true` and `source_url: null` —
   §7 forbids using a regulatory number without a citation, so the project currently
@@ -407,14 +434,19 @@ scripts/01c_…          GEM ingest -> commissioning years, SOURCES_GEM.md.
                        NEEDS A MANUAL DOWNLOAD; stops rather than proceeding empty
 scripts/01d_…          Ember -> grid_intensity.csv, SOURCES_EMBER.md
 scripts/02_…           facilities.rds + fleet_renewables.rds
-scripts/03_…           DOES NOT EXIST — the panel, blocked on B1/B2
+scripts/03_…           facility_panel.rds. Monthly -> annual: flows sum,
+                       capacity is the MEAN, ratios recomputed from annual
+                       totals. Also writes panel_b1_inputs.csv, a diagnostic
+                       that lays out every other* slot by its own _def label so
+                       B1 is a reading task rather than a research one
 
 tests/                 testthat; data-property assertions, not unit tests.
                        Skip rather than fail when an artefact is unbuilt
 policies/*.json        5 files, all with source_url + retrieval date,
                        each validated against a schema in policies/_schema/
-data/processed/        facilities.rds, fleet_renewables.rds, coverage matrices,
-                       grid_intensity.csv, SOURCES*.md, geocode report
+data/processed/        facilities.rds, facility_panel.rds, fleet_renewables.rds,
+                       coverage matrices, grid_intensity.csv, panel_coverage.csv,
+                       panel_b1_inputs.csv, SOURCES*.md, geocode report
 data/raw/              gitignored
 ```
 

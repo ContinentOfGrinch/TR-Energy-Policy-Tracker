@@ -183,6 +183,38 @@ ct_extract <- function(zip_path, members, exdir) {
 }
 
 
+#' Locate the confidence CSV for a subsector inside the archive.
+#'
+#' WHY THIS EXISTS. Climate TRACE ships a per-source, per-period confidence
+#' rating for each reported variable — source_type, capacity, capacity_factor,
+#' activity, emissions_factor, emissions_quantity — on the scale very high /
+#' high / medium / low / very low. KARBON_ATLASI.md §11 requires retaining it,
+#' because it feeds the audit trail and cannot be bought back later: the archive
+#' for a given release stops being downloadable once that release ages out.
+#'
+#' MEASURED CAVEAT (2026-09-01). The ratings are published per period but do not
+#' vary by period. For Turkish cement, `emissions_quantity` is "low" for 9
+#' facilities and "medium" for 49 in every year from 2021 to 2026 alike. It is
+#' therefore a per-facility property replicated across months, and it CANNOT be
+#' used to separate observed years from nowcast years. Retain it as a quality
+#' attribute; do not read a temporal signal into it that is not there.
+#'
+#' Optional, like ownership: a missing confidence file loses the ratings but
+#' does not stop the build.
+ct_confidence_files <- function(zip_path, subsectors) {
+  index <- unzip(zip_path, list = TRUE)
+
+  find_one <- function(subsector) {
+    hits <- index$Name |>
+      keep(~ str_detect(.x, fixed(paste0(subsector, "_emissions_sources_confidence_"))) &&
+             str_ends(.x, ".csv"))
+    if (length(hits) == 0) NA_character_ else hits[[1]]
+  }
+
+  set_names(map_chr(subsectors, find_one), subsectors)
+}
+
+
 #' Locate the ownership CSV for a subsector inside the archive.
 #'
 #' Separate from ct_sector_files() because ownership is an optional enrichment:

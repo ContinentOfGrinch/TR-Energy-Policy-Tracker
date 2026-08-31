@@ -329,6 +329,199 @@ gate_facilities <- function(df, report = NULL) {
 
 
 # =============================================================================
+# The panel gate
+# =============================================================================
+# The panel is where this project's characteristic failure mode lives. A
+# facilities table is wrong in ways you can see — a dot in the sea, a duplicate
+# name. A panel is wrong in ways that look like a number: a capacity summed over
+# twelve months instead of averaged is exactly twelve times too large and still
+# renders as a plausible megawatt figure on a plausible chart.
+#
+# These checks therefore target arithmetic that produces believable wrong
+# answers, not malformed data.
+
+VALID_VALUE_TYPE <- c("observed", "legislated", "scenario", "projected",
+                      "assumption", "diagnostic_not_for_use")
+
+VALID_GAS_BASIS <- c("co2", "co2e_100yr")
+
+# Twelve for a complete year. Anything else is a partial year and must be
+# visible as one rather than being compared with a full one.
+MONTHS_COMPLETE <- 12
+
+#' Validate the facility-year panel before it is written.
+#'
+#' @param df       the assembled panel
+#' @param facilities the facilities table, to check referential integrity
+gate_panel <- function(df, facilities = NULL) {
+
+  .gate_header(sprintf("facility_panel (%d rows)", nrow(df)))
+
+  # ---- STOP tier: structural impossibilities -------------------------------
+  required <- c("facility_id", "year", "gas_basis", "emissions_reported_t",
+                "production_activity", "months_covered", "value_type",
+                "vintage", "source")
+
+  failures <- c(
+    require_columns(df, required, "facility_panel"),
+    require_complete(df, c("facility_id", "year", "gas_basis", "value_type")),
+    require_in_set(df, "value_type", VALID_VALUE_TYPE),
+    require_in_set(df, "gas_basis", VALID_GAS_BASIS)
+  )
+
+  # The panel key is the PAIR. A duplicate facility-year silently doubles that
+  # facility everywhere it is aggregated, and nothing about the resulting number
+  # looks wrong.
+  if (all(c("facility_id", "year") %in% names(df))) {
+    dup <- sum(duplicated(df[c("facility_id", "year")]))
+    if (dup > 0) {
+      failures <- c(failures, sprintf(
+        "facility_id x year is not unique: %d duplicate pairs", dup))
+    }
+  }
+
+  # A facility-year with no facility is a join that lost rows. Reported as
+  # structural because every downstream layer joins on this key.
+  if (!is.null(facilities) && "facility_id" %in% names(df)) {
+    orphan <- setdiff(unique(df$facility_id), facilities$facility_id)
+    if (length(orphan) > 0) {
+      failures <- c(failures, sprintf(
+        "%d facility_id values in the panel are absent from facilities.rds: %s",
+        length(orphan), paste(utils::head(orphan, 5), collapse = ", ")))
+    }
+  }
+
+  # Negative emissions or activity are not a data-quality nuance here: none of
+  # these subsectors can remove carbon or produce negative tonnes.
+  for (col in c("emissions_reported_t", "production_activity",
+                "capacity_mw_or_capacity_t")) {
+    if (col %in% names(df) && any(df[[col]] < 0, na.rm = TRUE)) {
+      failures <- c(failures, sprintf(
+        "column `%s` contains %d negative values", col,
+        sum(df[[col]] < 0, na.rm = TRUE)))
+    }
+  }
+
+  # months_covered must be a real month count. If this is ever 0 the aggregation
+  # produced a row from nothing; above 12 it double-counted.
+  if ("months_covered" %in% names(df)) {
+    bad <- df$months_covered < 1 | df$months_covered > MONTHS_COMPLETE
+    if (any(bad, na.rm = TRUE)) {
+      failures <- c(failures, sprintf(
+        "months_covered outside 1-12 for %d rows", sum(bad, na.rm = TRUE)))
+    }
+  }
+
+  # THE TWELVE-TIMES CHECK. Capacity is a stock: the annual figure is the mean
+  # of the monthly values, so it must sit inside the monthly range. If someone
+  # changes the aggregation to sum(), every complete year jumps by roughly 12x
+  # and this is what catches it.
+  if (all(c("capacity_mw_or_capacity_t", "capacity_month_max") %in% names(df))) {
+    over <- df$capacity_mw_or_capacity_t > df$capacity_month_max * 1.001
+    if (any(over, na.rm = TRUE)) {
+      failures <- c(failures, sprintf(
+        paste0("annual capacity exceeds the largest monthly value for %d rows. ",
+               "Capacity is a stock and must be averaged, not summed."),
+        sum(over, na.rm = TRUE)))
+    }
+  }
+
+  .gate_stop(failures, "facility_panel")
+
+  # ---- WARN tier: quality observations -------------------------------------
+  obs <- character(0)
+
+  # Partial years are legitimate and must not stop a build, but a partial year
+  # compared against a complete one is the mistake this project is most likely
+  # to make in a chart. Report the shape so it is visible at build time.
+  if (all(c("year", "months_covered", "gas_basis") %in% names(df))) {
+    partial <- df |>
+      dplyr::filter(months_covered < MONTHS_COMPLETE) |>
+      dplyr::distinct(gas_basis, year, months_covered)
+
+    for (i in seq_len(nrow(partial))) {
+      obs <- c(obs, sprintf(
+        "%s year %s is partial: %d of 12 months. Never annualise by scaling.",
+        partial$gas_basis[i], partial$year[i], partial$months_covered[i]))
+    }
+
+    # The two populations having DIFFERENT partial depths is worse than either
+    # being partial, because a chart will place them side by side as one year.
+    depths <- partial |>
+      dplyr::group_by(year) |>
+      dplyr::summarise(n = dplyr::n_distinct(months_covered), .groups = "drop") |>
+      dplyr::filter(n > 1)
+
+    if (nrow(depths) > 0) {
+      obs <- c(obs, sprintf(
+        paste0("year %s has DIFFERENT month depths across gas bases. The two ",
+               "populations' figures for it are not commensurable and any ",
+               "chart drawing them together must say so."),
+        paste(depths$year, collapse = ", ")))
+    }
+  }
+
+  # A facility reporting emissions in a year its commissioning register says it
+  # did not yet exist. Not a build failure — the two sources disagree and this
+  # project's rule is to report the disagreement rather than reconcile it
+  # silently — but it directly threatens the fleet timeline, which is the entire
+  # reason commissioning years were fetched.
+  if (all(c("status", "emissions_reported_t") %in% names(df))) {
+    contra <- df |>
+      dplyr::filter(status == "pre_commissioning",
+                    !is.na(emissions_reported_t),
+                    emissions_reported_t > 0)
+    if (nrow(contra) > 0) {
+      obs <- c(obs, sprintf(
+        paste0("%d facility-years report emissions before their GEM ",
+               "commissioning year (%d facilities). GEM and Climate TRACE ",
+               "disagree; neither has been overridden."),
+        nrow(contra), dplyr::n_distinct(contra$facility_id)))
+    }
+  }
+
+  # More than one upstream release inside one artefact. Legitimate here — the
+  # two gas packages ship at different versions — but it must never be silent,
+  # because release-to-release revisions in this source are large: Turkish
+  # generation for the identical fleet moved 12% between v5_9_0 and v5_10_0.
+  if ("vintage" %in% names(df)) {
+    vints <- sort(unique(stats::na.omit(df$vintage)))
+    if (length(vints) > 1) {
+      obs <- c(obs, sprintf(
+        paste0("the panel mixes %d upstream releases (%s). Any figure ",
+               "comparing the two populations must cite both."),
+        length(vints), paste(vints, collapse = ", ")))
+    }
+  }
+
+  # An intensity with no activity behind it is not an error, but it is a hole in
+  # the audit trail and the user must be told which facilities it affects.
+  if ("production_activity" %in% names(df)) {
+    no_act <- sum(is.na(df$production_activity) | df$production_activity == 0)
+    if (no_act > 0) {
+      obs <- c(obs, sprintf(
+        "%d of %d rows have no activity, so no intensity can be computed",
+        no_act, nrow(df)))
+    }
+  }
+
+  # Placeholder columns reserved for author decisions. Reported every build so
+  # they cannot quietly become permanent.
+  for (col in c("co2_direct_t", "co2_indirect_t", "eu_export_share")) {
+    if (col %in% names(df) && all(is.na(df[[col]]))) {
+      obs <- c(obs, sprintf(
+        "`%s` is entirely NA — awaiting an author decision, not yet computed",
+        col))
+    }
+  }
+
+  .gate_warn(obs, "facility_panel")
+
+  invisible(df)
+}
+
+
+# =============================================================================
 # The policy parameter gate
 # =============================================================================
 # Policy files are hand-edited, and hand-edited JSON drifts. A renamed field, a

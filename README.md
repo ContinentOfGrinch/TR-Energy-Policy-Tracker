@@ -12,11 +12,14 @@ produces it.
 > **Built and verified:** the acquisition pipeline with a full provenance chain, the
 > coverage audit that fixes `t₀` empirically, the 300-facility register with province and
 > İBBS-2 assignment, commissioning years from GEM, three cross-validated estimates of grid
-> carbon intensity, and an interactive map of both populations.
+> carbon intensity, the **1,800-row facility × year emissions panel** (2021–2026), and an
+> interactive map of both populations.
 >
-> **Not built:** the CBAM liability calculation, the emissions panel, and the time slider.
-> The regulatory parameters they need are in place and cited; the modelling decisions they
-> rest on are not made. See [ROADMAP.md](ROADMAP.md).
+> **Not built:** the CBAM liability calculation, and the time slider that the panel now
+> makes possible. The panel's `co2_direct_t` and `co2_indirect_t` columns are deliberately
+> empty pending the direct/indirect decomposition, which is a modelling decision and not a
+> parsing one. The regulatory parameters are in place and cited. See
+> [ROADMAP.md](ROADMAP.md).
 >
 > **This tool does not yet produce a CBAM exposure figure.** When it does, this paragraph
 > will say so.
@@ -127,7 +130,9 @@ Rscript scripts/00_coverage_audit.R      # availability evidence, fixes t₀
 Rscript scripts/01_fetch_climate_trace.R # downloads sources, writes SOURCES.md
 Rscript scripts/01b_fetch_eu_trade.R     # EU trade quantities from Eurostat Comext
 Rscript scripts/01c_ingest_gem.R         # commissioning years — NEEDS A MANUAL STEP
+Rscript scripts/01d_fetch_ember.R        # national generation, grid intensity
 Rscript scripts/02_build_facilities.R    # builds facilities.rds
+Rscript scripts/03_build_panel.R         # builds facility_panel.rds
 ```
 
 On Windows use `Rscript`, not `R` — in PowerShell `R` collides with the `Invoke-History`
@@ -239,6 +244,18 @@ argument, with its measurements, will appear in `METHODOLOGY.md`.
   3,136 operating plants, 58.8 GW — kept in a separate register (`fleet_renewables.rds`)
   rather than merged into `facilities.rds`, so the 300 modelled facilities stay the 300
   modelled facilities.
+- **A Climate TRACE figure is not reproducible without its release tag, and the download
+  URL does not carry one.** The bulk packages are served from a `/latest` alias. The two
+  packages this project uses were downloaded on the same day and arrived at *different*
+  releases — `co2` at v5_9_0, `co2e_100yr` at v5_10_0 — and for the identical 151 Turkish
+  power stations, v5_10_0 reports **12.4% more generation in 2024** than v5_9_0. Activity
+  is a physical quantity in MWh and does not depend on which gas you asked for, so that is
+  a version revision. Every panel row therefore carries a `vintage` column naming its own
+  release, and any figure quoted from this project should carry it too.
+- **The two populations' 2026 is not the same 2026.** `co2` stops after 5 months,
+  `co2e_100yr` after 6. The panel counts months from the data rather than assuming twelve
+  and stores the count, because a bar labelled "2026" beside another labelled "2026"
+  asserts a comparability that does not hold here. 2026 is never annualised by scaling.
 - **The İBBS-2 mapping is transcribed, not fetched** from an authoritative file, and
   carries a verification marker pending a citation to the official TÜİK classification.
 - **Two carbon price scenarios lack a citation.** `policies/carbon_price_scenarios.json`

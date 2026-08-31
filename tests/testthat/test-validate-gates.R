@@ -201,3 +201,125 @@ test_that("a malformed retrieval date is refused by the schema", {
     "tr_ets"
   )
 })
+
+
+# =============================================================================
+# The panel gate
+# =============================================================================
+# Same principle, different failure mode. A corrupt facilities table usually
+# looks wrong; a corrupt panel looks like a number. Each corruption below is one
+# that would render without complaint on a chart.
+
+#' A minimal but valid panel, used as the base for each corruption.
+valid_panel <- function() {
+  tibble::tibble(
+    facility_id               = c("CT1", "CT1", "CT2", "CT2"),
+    year                      = c(2023L, 2024L, 2023L, 2024L),
+    status                    = "operating",
+    gas_basis                 = "co2",
+    emissions_reported_t      = c(1000, 1100, 2000, 2200),
+    capacity_mw_or_capacity_t = c(500, 500, 800, 800),
+    capacity_month_max        = c(500, 500, 800, 800),
+    production_activity       = c(4000, 4400, 8000, 8800),
+    co2_direct_t              = NA_real_,
+    co2_indirect_t            = NA_real_,
+    emission_intensity        = c(0.25, 0.25, 0.25, 0.25),
+    eu_export_share           = NA_real_,
+    months_covered            = 12L,
+    value_type                = "observed",
+    vintage                   = "v5_9_0",
+    source                    = "climate_trace"
+  )
+}
+
+
+test_that("a valid panel passes the gate", {
+  expect_no_error(suppressMessages(gate_panel(valid_panel())))
+})
+
+
+test_that("panel gate STOPS on a duplicate facility-year", {
+  # The key is the PAIR. A duplicate silently doubles that facility in every
+  # aggregate, and the resulting total looks entirely plausible.
+  bad <- valid_panel()
+  bad$year[2] <- bad$year[1]
+
+  expect_error(suppressMessages(gate_panel(bad)), "not unique")
+})
+
+
+test_that("panel gate STOPS when capacity was summed instead of averaged", {
+  # The twelve-times trap, reproduced exactly. Nothing about 6000 MW is
+  # malformed — it is the right shape, the right type and the wrong number.
+  bad <- valid_panel()
+  bad$capacity_mw_or_capacity_t <- bad$capacity_mw_or_capacity_t * 12
+
+  expect_error(suppressMessages(gate_panel(bad)),
+               "must be averaged, not summed")
+})
+
+
+test_that("panel gate STOPS on months_covered above twelve", {
+  bad <- valid_panel()
+  bad$months_covered[1] <- 13L
+
+  expect_error(suppressMessages(gate_panel(bad)), "months_covered outside")
+})
+
+
+test_that("panel gate STOPS on a facility absent from the register", {
+  bad <- valid_panel()
+  facilities <- tibble::tibble(facility_id = "CT1")
+
+  expect_error(
+    suppressMessages(gate_panel(bad, facilities = facilities)),
+    "absent from facilities.rds")
+})
+
+
+test_that("panel gate STOPS on negative emissions", {
+  bad <- valid_panel()
+  bad$emissions_reported_t[3] <- -50
+
+  expect_error(suppressMessages(gate_panel(bad)), "negative values")
+})
+
+
+test_that("panel gate STOPS on a value_type outside the vocabulary", {
+  bad <- valid_panel()
+  bad$value_type[1] <- "estimated"   # plausible, and not one of the six
+
+  expect_error(suppressMessages(gate_panel(bad)), "outside the allowed set")
+})
+
+
+test_that("panel gate WARNS but does not stop on a partial year", {
+  # A partial year is a property of the upstream release, not a defect. It must
+  # be visible and must not halt the build.
+  warn <- valid_panel()
+  warn$months_covered[c(2, 4)] <- 6L
+
+  expect_no_error(suppressMessages(gate_panel(warn)))
+  expect_message(gate_panel(warn), "partial")
+})
+
+
+test_that("panel gate WARNS when the two populations mix releases", {
+  warn <- valid_panel()
+  warn$vintage[3:4] <- "v5_10_0"
+
+  expect_no_error(suppressMessages(gate_panel(warn)))
+  expect_message(gate_panel(warn), "upstream releases")
+})
+
+
+test_that("panel gate WARNS on emissions before commissioning", {
+  # GEM and Climate TRACE disagreeing is a finding, not a build failure. The
+  # count must surface on every build so it cannot quietly become normal.
+  warn <- valid_panel()
+  warn$status[1] <- "pre_commissioning"
+
+  expect_no_error(suppressMessages(gate_panel(warn)))
+  expect_message(gate_panel(warn), "before their GEM")
+})
+

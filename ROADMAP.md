@@ -536,8 +536,42 @@ consistent with the basis that layer is reported on. The eight facilities presen
 records, so the emissions consequence is small, but the count discrepancy must be visible
 rather than quietly resolved.
 
-**Total population: 88 industrial + 212 energy = 300 facilities.** Earlier documents said
-298 based on API counts; the bulk package is the authority and the figure is corrected.
+**Total population: 88 industrial + 212 energy = 300 records.** Earlier documents said 298
+based on API counts; the bulk package is the authority and the figure is corrected.
+
+**But 300 records are 290 places.** Climate TRACE lists each of the six Turkish oil and gas
+fields twice — once under `oil-and-gas-production` and once under `oil-and-gas-transport`
+— at identical coordinates with different source ids. Production emissions and transport
+emissions are genuinely different sources at one location, so this is correct accounting
+and misleading cartography: six fields would draw as twelve dots and any site-level total
+would count them twice. Four coal-mine records share coordinates with another mine as well,
+which is question E7 below.
+
+Both numbers are reported by `02_build_facilities.R` so that whichever is quoted is quoted
+deliberately. The UI must collapse them for display; the panel must not, because the
+emissions are real and distinct.
+
+---
+
+**E7. Twelve same-subsector near-duplicates await resolution.**
+*Surfaced 2026-08-28 once the energy layer landed.*
+
+The near-coincidence check, refined to separate same-subsector pairs from expected
+cross-subsector co-location, leaves twelve pairs that could be one site recorded twice:
+
+- **Four coal-mine pairs at 0 m** — Alpagut Dodurga / Dodurga Ayva, Yeniköy / Kemerköy
+  Lignite Mines, Çan / Üzülmez, Amasra B / Amasra. Identical coordinates and related names
+  suggest one complex split across records, or a coordinate assigned at complex rather than
+  mine level.
+- **Seven power-station pairs** within 450 m, clustered in Bursa and Gebze industrial zones,
+  where several small captive plants genuinely do sit side by side.
+- **Bozkale / Kars Cement**, the pair already recorded above.
+
+The sixteen cross-subsector co-locations — mine-mouth power stations, captive generation
+beside its host, refinery own-use — are expected and counted rather than listed. They still
+have to be netted out of any site-level total, which is what E5's captive rule does for the
+grid factor.
+*Closed by:* manual inspection against operator disclosures, documented in METHODOLOGY
 
 ---
 

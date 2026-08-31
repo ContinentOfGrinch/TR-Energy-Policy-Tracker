@@ -1,89 +1,301 @@
 facility_id,facility_name_tr,sector,lat,lon,province_code,province_name_tr,nuts2_code,boundary_distance_m,snap_distance_m,geocode_quality
+CT3144142,Tupras Izmit Refinery,oil-and-gas-refining,40.75063,29.77044,41,Kocaeli,TR42,18,NA,boundary_proximate
 CT1897887,Körfez Cement Plant,cement,40.7820049734054,29.6018683802237,41,Kocaeli,TR42,51,NA,boundary_proximate
 CT1567074,Koc Metallurgical Toprakkale steel plant,iron-and-steel,37.0140274095328,36.1063625862528,31,Hatay,TR63,129,NA,boundary_proximate
+CT25454040,Bilgin Samsun gas power station,electricity-generation,41.1454,37.1564,52,Ordu,TR90,160,NA,boundary_proximate
+CT4401591,Aksa Akrilik power station,electricity-generation,40.6911,29.4056,77,Yalova,TR42,258,NA,boundary_proximate
+CT25454795,Atlas Enerji İskenderun power station,electricity-generation,36.6903,36.2091,31,Hatay,TR63,269,NA,boundary_proximate
+CT49701831,Nuh Çimento power station,electricity-generation,40.7845,29.6072,41,Kocaeli,TR42,310,NA,boundary_proximate
 CT1567082,Yesilyurt Iron and Steel Tekkekoy plant,iron-and-steel,41.2403516954097,36.4404842723864,55,Samsun,TR83,347,NA,boundary_proximate
+CT16345,Aegean Lignite Coal Mines,coal-mining,39.083006,27.539574000000002,35,İzmir,TR31,357,NA,boundary_proximate
+CT16358,Karacaören Coal Mine,coal-mining,38.800585,30.096683,3,Afyonkarahisar,TR33,390,NA,boundary_proximate
+CT449567,Ambarlı B power station,electricity-generation,40.9793,28.6994,34,İstanbul,TR10,398,NA,boundary_proximate
+CT448836,Petkim power station,electricity-generation,38.7872,26.9367,35,İzmir,TR31,410,NA,boundary_proximate
+CT49701805,Silivri Seymen power station,electricity-generation,41.2191,28.1561,34,İstanbul,TR10,446,NA,boundary_proximate
+CT718982,Izmir Refinery power station,electricity-generation,38.8054,26.9409,35,İzmir,TR31,451,NA,boundary_proximate
+CT448091,Karadeniz Ereğli Zonguldak power station,electricity-generation,41.2615,31.4201,67,Zonguldak,TR81,459,NA,boundary_proximate
 CT1567189,Toscelik Iskenderun steel plant,iron-and-steel,36.6865157946304,36.2136191348841,31,Hatay,TR63,470,NA,boundary_proximate
 CT1567064,Diler Iron and Steel Dilovasi plant,iron-and-steel,40.7839434675694,29.5330798467728,41,Kocaeli,TR42,505,NA,boundary_proximate
+CT3144143,STAR Aliaga Oil Refinery,oil-and-gas-refining,38.8106,26.9372,35,İzmir,TR31,518,NA,boundary_proximate
 CT32439191,Büyükçekmece Cement Plant,cement,41.0222474864885,28.5558084041902,34,İstanbul,TR10,520,NA,boundary_proximate
 CT1567083,Tosyali Toprakkale steel plant,iron-and-steel,37.0188279969216,36.0940099999736,80,Osmaniye,TR63,533,NA,boundary_proximate
 CT1567076,MMK Türkiye Metallurgical Payas steel plant,iron-and-steel,36.7814103000801,36.2056452039363,31,Hatay,TR63,536,NA,boundary_proximate
+CT25453969,ZETES power stations,electricity-generation,41.5075,31.8949,67,Zonguldak,TR81,568,NA,boundary_proximate
 CT1567080,Toscelik Toprakkale steel plant,iron-and-steel,37.0197246117158,36.1101864309013,80,Osmaniye,TR63,572,NA,boundary_proximate
 CT1897902,Soma Manisa Cement Plant,cement,39.1819839914652,27.49986261921,45,Manisa,TR33,596,NA,boundary_proximate
+CT448342,IZMIT REFINERY,electricity-generation,40.7607,29.7637,41,Kocaeli,TR42,640,NA,boundary_proximate
 CT1567071,Isdemir Payas steel plant,iron-and-steel,36.735732350892,36.2094834824266,31,Hatay,TR63,651,NA,boundary_proximate
+CT25455161,Cenal power station,electricity-generation,40.4167,27.3183,17,Çanakkale,TR22,698,NA,boundary_proximate
+CT25454377,Cengiz Enerji Samsun CCPP power station,electricity-generation,41.2393,36.4799,55,Samsun,TR83,704,NA,boundary_proximate
+CT452073,Yesilyurt power station,electricity-generation,41.2363,36.4416,55,Samsun,TR83,726,NA,boundary_proximate
+CT25452373,EÜAS Hopa Termik Sant. Artvin,electricity-generation,41.4193,41.4393,8,Artvin,TR90,759,NA,boundary_proximate
+CT451710,Erzin power station,electricity-generation,36.9271,36.0534,31,Hatay,TR63,817,NA,boundary_proximate
+CT449568,Ambarlı A power station,electricity-generation,40.9823,28.6904,34,İstanbul,TR10,826,NA,boundary_proximate
+CT43160124,Amasra Coal Mine,coal-mining,41.721848,32.349063,74,Bartın,TR81,831,NA,boundary_proximate
+CT56162428,Amasra B Coal Mine,coal-mining,41.721848,32.349063,74,Bartın,TR81,831,NA,boundary_proximate
+CT25452557,İsken Sugözü power station,electricity-generation,36.835,35.8791,1,Adana,TR62,839,NA,boundary_proximate
+CT712776,Tupras Izmir Refinery,oil-and-gas-refining,38.802286,26.93823,35,İzmir,TR31,868,NA,boundary_proximate
+CT451198,Bandırma power station,electricity-generation,40.3084,27.7686,10,Balıkesir,TR22,873,NA,boundary_proximate
 CT1567067,Erdemir Eregli steel plant,iron-and-steel,41.261467963656,31.4258724870855,67,Zonguldak,TR81,915,NA,boundary_proximate
+CT25452375,Kemerköy power station,electricity-generation,37.0354,27.9006,48,Muğla,TR32,923,NA,boundary_proximate
+CT49701843,Mavibayrak Doğu power station,electricity-generation,41.0222,28.9769,34,İstanbul,TR10,967,NA,boundary_proximate
+CT449566,Aliaga EUAS power station,electricity-generation,38.7987,26.945,35,İzmir,TR31,1076,NA,boundary_proximate
+CT25454026,İÇDAŞ Biga power station,electricity-generation,40.4438,27.1307,17,Çanakkale,TR22,1077,NA,boundary_proximate
 CT1567069,İÇDAŞ Biga steel plant,iron-and-steel,40.4431217826032,27.1378719691625,17,Çanakkale,TR22,1180,NA,boundary_proximate
 CT32439216,Sarımazı Cement Plant,cement,36.9330102756753,36.0039876388797,31,Hatay,TR63,1209,NA,boundary_proximate
+CT53059163,Turkey_Northern Aegean_Conventional onshore,oil-and-gas-production,40.54342248,26.86762948,17,Çanakkale,TR22,1285,NA,boundary_proximate
+CT53060006,Turkey_Northern Aegean_Conventional onshore,oil-and-gas-transport,40.54342248,26.86762948,17,Çanakkale,TR22,1285,NA,boundary_proximate
+CT49701835,Mosbio power station,electricity-generation,38.6162,27.3442,45,Manisa,TR33,1345,NA,boundary_proximate
+CT49701825,Medcem Çimento power station,electricity-generation,36.8266,34.6941,33,Mersin,TR62,1356,NA,boundary_proximate
+CT4404130,Hereke Cement Works power station,electricity-generation,40.7937,29.5938,41,Kocaeli,TR42,1378,NA,boundary_proximate
+CT449972,Manisa OSB cogeneration power station,electricity-generation,38.6169,27.344,45,Manisa,TR33,1392,NA,boundary_proximate
 CT1567072,Kaptan Ereglisi steel plant,iron-and-steel,41.0152185914845,27.9598477255557,59,Tekirdağ,TR21,1422,NA,boundary_proximate
+CT16360,Kozlu Coal Mine,coal-mining,41.432342,31.75826,67,Zonguldak,TR81,1432,NA,boundary_proximate
 CT32439210,Ünye Ordu Cement Plant,cement,41.1079404660109,37.3242468358019,52,Ordu,TR90,1484,NA,boundary_proximate
+CT717931,İzdemir Enerji power station,electricity-generation,38.7417,26.9292,35,İzmir,TR31,1499,NA,boundary_proximate
+CT16350,Armutcuk Coal Mine,coal-mining,41.34012,31.510875,67,Zonguldak,TR81,1528,NA,boundary_proximate
 CT1567070,İDÇ Izdemir Aliaga steel plant,iron-and-steel,38.7400416920799,26.9290116293903,35,İzmir,TR31,1684,NA,boundary_proximate
+CT449791,Cigli Ataer power station,electricity-generation,38.478,27.0327,35,İzmir,TR31,1694,NA,boundary_proximate
 CT1567068,Habas Aliaga steel plant,iron-and-steel,38.7507940801235,26.9503193645367,35,İzmir,TR31,1708,NA,boundary_proximate
+CT16359,Karadon Coal Mine,coal-mining,41.483081,31.868239,67,Zonguldak,TR81,1834,NA,boundary_proximate
+CT452963,Tekirdag CHP power station,electricity-generation,41.0006,27.5054,59,Tekirdağ,TR21,1895,NA,boundary_proximate
+CT53059166,Turkey_Thrace_Conventional onshore,oil-and-gas-production,41.24914506,27.40962891,59,Tekirdağ,TR21,1961,NA,boundary_proximate
+CT53060009,Turkey_Thrace_Conventional onshore,oil-and-gas-transport,41.24914506,27.40962891,59,Tekirdağ,TR21,1961,NA,boundary_proximate
+CT452505,Aliaga Habas power station,electricity-generation,38.7419,26.9465,35,İzmir,TR31,1964,NA,boundary_proximate
+CT49701822,Toros Tarım power station,electricity-generation,41.2235,36.4596,55,Samsun,TR83,1997,NA,boundary_proximate
+CT53059164,Turkey_Pontides_Conventional shelf,oil-and-gas-production,41.19344049,31.16583402,81,Düzce,TR42,10926,10926,offshore
+CT53060007,Turkey_Pontides_Conventional shelf,oil-and-gas-transport,41.19344049,31.16583402,81,Düzce,TR42,10926,10926,offshore
+CT53059162,Turkey_Black Sea_Deepwater,oil-and-gas-production,42.94337058,31.2936596,74,Bartın,TR81,157648,157648,offshore
+CT53060005,Turkey_Black Sea_Deepwater,oil-and-gas-transport,42.94337058,31.2936596,74,Bartın,TR81,157648,157648,offshore
+CT449593,Tekirdağ A power station,electricity-generation,41.0072,27.9736,59,Tekirdağ,TR21,27,27,snapped_to_nearest
+CT25455417,EMBA Hunutlu power station,electricity-generation,36.8161,35.8548,1,Adana,TR62,30,30,snapped_to_nearest
 CT1567066,Ekinciler Iron and Steel Iskenderun plant,iron-and-steel,36.6908852919788,36.2048446538149,31,Hatay,TR63,75,75,snapped_to_nearest
 CT1567081,Yazici Iron and Steel Iskenderun plant,iron-and-steel,36.6856423936233,36.2071282983028,31,Hatay,TR63,96,96,snapped_to_nearest
+CT25450485,Gebze Çolakoğlu power station,electricity-generation,40.7776,29.5386,41,Kocaeli,TR42,219,219,snapped_to_nearest
+CT49534269,Çolakoğlu-1 power station,electricity-generation,40.7774,29.5321,41,Kocaeli,TR42,219,219,snapped_to_nearest
+CT25455299,Çatalağzı power station,electricity-generation,41.5174,31.9002,67,Zonguldak,TR81,224,224,snapped_to_nearest
+CT450952,Gebze Dilovasi power station,electricity-generation,40.7773,29.5333,41,Kocaeli,TR42,234,234,snapped_to_nearest
 CT1897889,Aslan Darıca Cement Plant,cement,40.7589222000772,29.3611229444017,41,Kocaeli,TR42,240,240,snapped_to_nearest
+CT25453664,Mersin Camis power station,electricity-generation,36.8145,34.735,33,Mersin,TR62,733,733,snapped_to_nearest
+CT448080,Tekirdağ B power station,electricity-generation,40.9974,27.9796,59,Tekirdağ,TR21,1026,1026,snapped_to_nearest
 CT1567063,Colakoglu Metallurgical Dilovasi steel plant,iron-and-steel,40.7695296150915,29.530363436516,41,Kocaeli,TR42,1087,1087,snapped_to_nearest
 CT1567190,Aba Iron and Steel Payas plant,iron-and-steel,36.7486638639711,36.2258341220088,31,Hatay,TR63,2097,NA,within_province
+CT49701845,Bandırma (Eti Maden) power station,electricity-generation,40.3491,27.9728,10,Balıkesir,TR22,2100,NA,within_province
 CT1567078,Ozkan Iron and Steel Aliaga plant,iron-and-steel,38.7376046992084,26.942784337747,35,İzmir,TR31,2179,NA,within_province
+CT57023784,IZMIT KARTONSAN,electricity-generation,40.7298,29.9652,41,Kocaeli,TR42,2259,NA,within_province
+CT449887,Enka İzmir power station,electricity-generation,38.7467,26.9563,35,İzmir,TR31,2351,NA,within_province
 CT1897849,ASCim Korkuteli Cement Plant,cement,37.2536746098047,30.4444316176981,15,Burdur,TR61,2470,NA,within_province
 CT1567085,Cebitas steel plant,iron-and-steel,38.7396881061245,26.9519644023287,35,İzmir,TR31,2471,NA,within_province
 CT32439194,Pazarcık Cement Plant,cement,37.2938679776202,37.157814695598,27,Gaziantep,TRC1,2496,NA,within_province
 CT1567079,Siddik Kardesler Dilovasi steel plant,iron-and-steel,40.8015545433451,29.509139484140398,41,Kocaeli,TR42,2545,NA,within_province
+CT450615,Marmara Çebi power station,electricity-generation,41.0201,29.046,34,İstanbul,TR10,2624,NA,within_province
 CT1567075,Kroman Steel Darica plant,iron-and-steel,40.8010537127119,29.3743248450085,41,Kocaeli,TR42,2625,NA,within_province
 CT55793501,Vertra Celik Sarımazı steel plant,iron-and-steel,36.945926,36.001643,31,Hatay,TR63,2625,NA,within_province
+CT16365,PLT Çeltek Coal Mine,coal-mining,40.865936,35.656076,5,Amasya,TR83,2644,NA,within_province
 CT1567086,Kardemir Celik Sanayi Izmir steel plant,iron-and-steel,38.7424970005737,26.961168735701,35,İzmir,TR31,2935,NA,within_province
 CT32439214,Cimko Pazarcık Cement Plant,cement,37.3504390358877,37.1620398121625,46,Kahramanmaraş,TR63,2990,NA,within_province
 CT1567065,Ege Steel Aliaga plant,iron-and-steel,38.7278344582328,26.9399494141561,35,İzmir,TR31,3118,NA,within_province
 CT32439211,SEZA Baskil Cement Plant,cement,38.4544335282813,38.7269853576352,23,Elazığ,TRB1,3430,NA,within_province
+CT16559,Harmanlı Coal Mine,coal-mining,41.100475,26.748121,22,Edirne,TR21,3497,NA,within_province
+CT16356,Eski Çeltek Coal Mine,coal-mining,40.871443,35.635996,5,Amasya,TR83,3503,NA,within_province
+CT49701848,Kalde Enerji Mersin power station,electricity-generation,36.8319,34.8176,33,Mersin,TR62,3509,NA,within_province
+CT451905,Gebze Yeni power station,electricity-generation,40.8166,29.5732,41,Kocaeli,TR42,3993,NA,within_province
 CT32439186,Tepebaşı Cement Plant,cement,39.8373616727475,30.2997425766868,26,Eskişehir,TR41,4016,NA,within_province
+CT16355,Demirhan Coal Mines,coal-mining,41.07527,26.838081,59,Tekirdağ,TR21,4194,NA,within_province
+CT451501,Delta Enerji power station,electricity-generation,41.2915,27.5613,59,Tekirdağ,TR21,4229,NA,within_province
+CT16372,Yeni Çeltek Coal Mine,coal-mining,40.876386,35.62112,5,Amasya,TR83,4314,NA,within_province
+CT718984,Eti Maden Bandirma power station,electricity-generation,40.3289,27.9904,10,Balıkesir,TR22,4477,NA,within_province
+CT49701830,Manisa power station,electricity-generation,38.6457,27.2556,35,İzmir,TR31,4497,NA,within_province
+CT25455278,Soma Kolin power station,electricity-generation,39.3166,27.7489,45,Manisa,TR33,4570,NA,within_province
+CT16695,Beşler Çeltek Coal Mine,coal-mining,40.842904,35.666581,5,Amasya,TR83,4754,NA,within_province
+CT16353,Can Coal Mine,coal-mining,41.438877,31.84698,67,Zonguldak,TR81,4938,NA,within_province
+CT16371,Uzulmez Coal Mine,coal-mining,41.438877,31.84698,67,Zonguldak,TR81,4938,NA,within_province
+CT16361,Kuyucak Coal Mine,coal-mining,38.060345,28.628563,9,Aydın,TR32,4971,NA,within_province
+CT25454451,Aliaga Alosbi power station,electricity-generation,38.8149,27.0365,35,İzmir,TR31,5077,NA,within_province
 CT32439183,Cimentas Bornova Cement Plant,cement,38.4266767746672,27.2174057954796,35,İzmir,TR31,5134,NA,within_province
+CT449827,Kentsa power station,electricity-generation,40.768,29.9891,41,Kocaeli,TR42,5136,NA,within_province
+CT25452377,Seyitömer power station,electricity-generation,39.573,29.8816,43,Kütahya,TR33,5150,NA,within_province
+CT3144145,Tupras Batman Oil Refinery,oil-and-gas-refining,37.879732,41.134987,72,Batman,TRC3,5170,NA,within_province
+CT25454692,Yunus Emre power station,electricity-generation,39.9843,31.6356,26,Eskişehir,TR41,5327,NA,within_province
+CT449564,İzmit-Köseköy power station,electricity-generation,40.7497,30.0005,41,Kocaeli,TR42,5407,NA,within_province
+CT450222,Mersin power station,electricity-generation,36.8681,34.7549,33,Mersin,TR62,5433,NA,within_province
 CT1897886,Silifke Cement Plant,cement,36.2630234976574,33.7299238803563,33,Mersin,TR62,5536,NA,within_province
+CT450266,Silopi power station,electricity-generation,37.2415,42.4149,73,Şırnak,TRC3,5694,NA,within_province
 CT1897865,Akdeniz Cement Plant,cement,36.8686612705993,34.7619062344916,33,Mersin,TR62,5715,NA,within_province
+CT49701811,Samnsun power station,electricity-generation,41.2244,36.5688,55,Samsun,TR83,6004,NA,within_province
+CT49701828,Biogerm BES power station,electricity-generation,39.0591,34.4345,40,Kırşehir,TR71,6471,NA,within_province
 CT1897869,Ladik Cement Plant,cement,40.9359209889983,35.8842489264263,55,Samsun,TR83,6596,NA,within_province
+CT49701826,Kalyoncu power station,electricity-generation,41.0072,29.1314,34,İstanbul,TR10,6658,NA,within_province
 CT42547024,Kilis Merkez Cement Plant,cement,36.7975552818761,37.019098642858,79,Kilis,TRC1,6861,NA,within_province
+CT452540,Yahsihan power station,electricity-generation,39.8846,33.4084,71,Kırıkkale,TR71,6878,NA,within_province
+CT25454027,Şırnak Silopi (CİNER) power station,electricity-generation,37.31,42.5947,73,Şırnak,TRC3,6897,NA,within_province
+CT449752,Luleburgaz Zorlu power station,electricity-generation,41.2775,27.5882,59,Tekirdağ,TR21,6959,NA,within_province
+CT49701804,Odayeri power station,electricity-generation,41.2165,28.8546,34,İstanbul,TR10,6968,NA,within_province
+CT16366,Seyitomer Coal Mine,coal-mining,39.574254,29.832337,43,Kütahya,TR33,7291,NA,within_province
 CT32439173,Doğubayazıt Cement Plant,cement,39.5857378292495,43.9011886572011,4,Ağrı,TRA2,7305,NA,within_province
+CT16362,Malkara Coal Mine,coal-mining,40.931881,26.806032,59,Tekirdağ,TR21,7468,NA,within_province
+CT447772,Esenyurt power station,electricity-generation,41.0652,28.6682,34,İstanbul,TR10,7482,NA,within_province
+CT4407643,Eyüp Kemerburgaz power station,electricity-generation,41.2245,28.8148,34,İstanbul,TR10,7611,NA,within_province
 CT32439212,Sanko Bartin Cement Plant,cement,41.6404482650459,32.3041861072343,74,Bartın,TR81,7638,NA,within_province
+CT57027228,CANAKKALE CIMENTO,electricity-generation,39.8695,26.2415,17,Çanakkale,TR22,7781,NA,within_province
+CT25452371,Çayırhan power station,electricity-generation,40.097,31.695,6,Ankara,TR51,7856,NA,within_province
+CT49701817,Harmandali power station,electricity-generation,38.5328,27.0746,35,İzmir,TR31,8051,NA,within_province
+CT49701820,Avcıkoru power station,electricity-generation,41.1463,29.3784,34,İstanbul,TR10,8068,NA,within_province
+CT49701801,Kömürcuoda power station,electricity-generation,41.1459,29.3775,34,İstanbul,TR10,8126,NA,within_province
 CT1897871,Ezine Cement Plant,cement,39.8638011379185,26.2445980770296,17,Çanakkale,TR22,8181,NA,within_province
+CT449570,Bursa B power station,electricity-generation,40.2952,29.0736,16,Bursa,TR41,8235,NA,within_province
+CT16354,Çayırhan Coal Mine,coal-mining,40.10121,31.701746,6,Ankara,TR51,8568,NA,within_province
 CT32439179,Batıçim Bornova Cement Plant,cement,38.4563347262105,27.2634323215444,35,İzmir,TR31,8644,NA,within_province
+CT452193,Denizli Saraykoy power station,electricity-generation,37.9136,28.9048,20,Denizli,TR32,8871,NA,within_province
+CT708737,Bolu Göynük Coal Mine,coal-mining,40.245916,30.797164,14,Bolu,TR42,9290,NA,within_province
+CT710583,Omerler Coal Mine,coal-mining,37.57055,28.11058,9,Aydın,TR32,9461,NA,within_province
 CT1897852,Taşçılar Cement Plant,cement,40.2412442448696,29.9256265591767,11,Bilecik,TR41,9568,NA,within_province
 CT1897873,Askale Kavak Cement Plant,cement,41.0253039176168,36.0992754266868,55,Samsun,TR83,9660,NA,within_province
 CT1567084,Asil Celik Orhangazi steel plant,iron-and-steel,40.4272815024238,29.270123608243,16,Bursa,TR41,9874,NA,within_province
+CT49701836,Akçansa Çimento power station,electricity-generation,39.9143,26.3017,17,Çanakkale,TR22,9940,NA,within_province
+CT16364,Pirinççeşme Coal Mine,coal-mining,41.001763,26.862122,59,Tekirdağ,TR21,10160,NA,within_province
+CT25453705,Bolu Göynük power station,electricity-generation,40.2523,30.8116,14,Bolu,TR42,10691,NA,within_province
+CT49701850,Boren power station,electricity-generation,37.8629,34.4578,51,Niğde,TR71,10791,NA,within_province
 CT32439198,Ergani Cement Plant,cement,38.2791540095865,39.7425987838833,21,Diyarbakır,TRC2,11135,NA,within_province
+CT450221,Adana power station,electricity-generation,36.9882,35.2041,1,Adana,TR62,11650,NA,within_province
 CT42547292,Marmara Hoşafoğlu Cement Plant,cement,40.9443530791637,31.3954211680389,81,Düzce,TR42,11769,NA,within_province
+CT16560,Tufanbeyli Coal Mine,coal-mining,38.18562,36.26994,1,Adana,TR62,11843,NA,within_province
+CT25452864,Tufanbeyli power station,electricity-generation,38.1856,36.2699,1,Adana,TR62,11846,NA,within_province
+CT25452378,Soma power station,electricity-generation,39.1945,27.6352,45,Manisa,TR33,12058,NA,within_province
+CT451168,Aksa Antalya power station,electricity-generation,37.1241,30.6015,7,Antalya,TR61,12096,NA,within_province
+CT452458,Cay power station,electricity-generation,38.5228,30.906,3,Afyonkarahisar,TR33,12261,NA,within_province
+CT49701824,Mutlular power station,electricity-generation,40.2049,27.7196,10,Balıkesir,TR22,12401,NA,within_province
 CT1897907,Elmadağ Cement Plant,cement,39.9437669530942,33.1920167595835,6,Ankara,TR51,12697,NA,within_province
+CT25452381,Yeniköy power station,electricity-generation,37.1402,27.8715,48,Muğla,TR32,12745,NA,within_province
+CT4407726,MAV Elektrik power station,electricity-generation,40.405,30.7881,14,Bolu,TR42,12844,NA,within_province
 CT1897868,Gönen Cement Plant,cement,37.8991045019392,30.4913003287613,32,Isparta,TR61,12878,NA,within_province
+CT451922,İç Anadolu power station,electricity-generation,39.7572,33.4504,71,Kırıkkale,TR71,13761,NA,within_province
+CT25454387,Bursa - Bis Energi power station,electricity-generation,40.2394,28.9518,16,Bursa,TR41,13770,NA,within_province
+CT452457,Bilecik power station,electricity-generation,40.0041,29.9222,11,Bilecik,TR41,13811,NA,within_province
+CT450335,Bosen Bursa power station,electricity-generation,40.2377,28.9534,16,Bursa,TR41,13956,NA,within_province
 CT1897862,Cimentas Lalapaşa Cement Plant,cement,41.7977629983033,26.7002241742094,22,Edirne,TR21,14047,NA,within_province
+CT449792,Bursa Korteks power station,electricity-generation,40.2363,28.9551,16,Bursa,TR41,14110,NA,within_province
+CT49701807,Antalya power station,electricity-generation,37.099,30.7562,7,Antalya,TR61,14406,NA,within_province
+CT16370,Tuncbilek Coal Mine,coal-mining,39.634823,29.455311,43,Kütahya,TR33,14752,NA,within_province
+CT25452380,Yatağan power station,electricity-generation,37.3309,28.1024,48,Muğla,TR32,14821,NA,within_province
 CT32439176,Askale Erzurum Cement Plant,cement,39.9248910796493,40.6724214387117,25,Erzurum,TRA1,14828,NA,within_province
 CT42547261,Bilecik Cement Plant,cement,40.2598380827433,30.0439554053492,11,Bilecik,TR41,14914,NA,within_province
+CT56162436,Kinik Coal Mine,coal-mining,39.085627,27.335387,35,İzmir,TR31,15031,NA,within_province
 CT1567077,Mescier Iron and Steel Bartin plant,iron-and-steel,41.5656427206916,32.4292890647179,74,Bartın,TR81,15170,NA,within_province
+CT16373,Yeniköy Lignite Mines (Kemerköy),coal-mining,37.163465,27.889172,48,Muğla,TR32,15199,NA,within_province
+CT16374,Yenikoy Lignite Mines (Yeniköy),coal-mining,37.163465,27.889172,48,Muğla,TR32,15199,NA,within_province
+CT49701819,Çine power station,electricity-generation,37.6144,28.0649,9,Aydın,TR32,15271,NA,within_province
+CT3144144,Tupras Kirikkale Oil Refinery,oil-and-gas-refining,39.74329,33.46447,71,Kırıkkale,TR71,15329,NA,within_province
+CT720050,Polat power station,electricity-generation,39.616,29.4429,43,Kütahya,TR33,15393,NA,within_province
+CT57024667,KIRIKKALE REFINERY,electricity-generation,39.7433,33.4653,71,Kırıkkale,TR71,15397,NA,within_province
+CT449572,Hamitabat power station,electricity-generation,41.4827,27.3366,39,Kırklareli,TR21,15398,NA,within_province
+CT3164520,Iğdekuzu Coal Mine,coal-mining,39.628937,29.459739,43,Kütahya,TR33,15459,NA,within_province
 CT32439178,Söke Cement Plant,cement,37.7705316021886,27.4372135011911,9,Aydın,TR32,15582,NA,within_province
 CT54502850,Eti Alüminyum Seydişehir Refinery,aluminum,37.4191,31.9056,42,Konya,TR52,15603,NA,within_province
+CT449579,Tunçbilek power station,electricity-generation,39.6292,29.4623,43,Kütahya,TR33,15610,NA,within_province
+CT16369,South Aegean Coal Mines,coal-mining,37.323198,28.092284,48,Muğla,TR32,15611,NA,within_province
 CT1897881,Kurtalan Cement Plant,cement,37.9617779381058,41.703090101208,56,Siirt,TRC3,15626,NA,within_province
+CT49701842,Mavi Bayrak power station,electricity-generation,37.7548,27.4373,9,Aydın,TR32,15807,NA,within_province
+CT4406669,Trakya CHP power station,electricity-generation,37.7772,38.2129,2,Adıyaman,TRC1,16060,NA,within_province
+CT49701827,Oyka power station,electricity-generation,41.4135,32.0999,67,Zonguldak,TR81,16152,NA,within_province
 CT1897904,Artova Cement Plant,cement,40.104795622506,36.2928755861641,60,Tokat,TR83,16326,NA,within_province
+CT4409310,Kipas MMP power station,electricity-generation,37.7672,27.4457,9,Aydın,TR32,16359,NA,within_province
 CT43765125,Seydisehir Eti Aluminum Smelter,aluminum,37.445228,31.843345,42,Konya,TR52,16477,NA,within_province
+CT25455205,Kırkgöz power station,electricity-generation,41.2362,27.6904,59,Tekirdağ,TR21,16647,NA,within_province
+CT49701815,Ezine power station,electricity-generation,39.7481,26.3544,17,Çanakkale,TR22,17034,NA,within_province
+CT450330,Kırkgöz power station,electricity-generation,41.2387,27.6978,59,Tekirdağ,TR21,17052,NA,within_province
 CT1897909,Elmadağ Cement Plant,cement,39.9595536515921,33.1438524098499,6,Ankara,TR51,17161,NA,within_province
+CT451581,Cerkezkoy Ugur power station,electricity-generation,41.2927,27.9563,59,Tekirdağ,TR21,17387,NA,within_province
+CT53059161,Turkey_Adana_Conventional onshore,oil-and-gas-production,37.16411545,35.18757831,1,Adana,TR62,17432,NA,within_province
+CT53060004,Turkey_Adana_Conventional onshore,oil-and-gas-transport,37.16411545,35.18757831,1,Adana,TR62,17432,NA,within_province
+CT49701837,Beta power station,electricity-generation,37.4636,35.7746,1,Adana,TR62,17436,NA,within_province
 CT32439174,Gümüşhane Merkez Cement Plant,cement,40.4118876190614,39.657978599108,29,Gümüşhane,TR90,17499,NA,within_province
 CT1897890,Bolu Merkez Cement Plant,cement,40.7566167537678,31.7843514969257,14,Bolu,TR42,17640,NA,within_province
+CT49701813,Afyonkarahisar Emirdağ power station,electricity-generation,39.0668,31.1846,3,Afyonkarahisar,TR33,17778,NA,within_province
+CT57025552,ANTALYA OSB,electricity-generation,37.0707,30.6208,7,Antalya,TR61,17817,NA,within_province
+CT715037,Coban Yildizi power station,electricity-generation,37.5573,32.848,42,Konya,TR52,18182,NA,within_province
 CT32439182,Cimentas Baskil Cement Plant,cement,38.6634215450718,39.2356227315797,23,Elazığ,TRB1,18445,NA,within_province
+CT451893,Cine Ales power station,electricity-generation,37.637,27.9748,9,Aydın,TR32,18451,NA,within_province
+CT16352,Bursa Keles Coal Mine,coal-mining,39.90331,29.17746,16,Bursa,TR41,18545,NA,within_province
+CT49701823,Arıkçayırı power station,electricity-generation,40.7295,31.7002,14,Bolu,TR42,18990,NA,within_province
 CT54502823,Cerkezkoy Aluminum Billet & Slab Plant,aluminum,41.22425,27.92025,59,Tekirdağ,TR21,19200,NA,within_province
+CT25453135,Corlu CHP power station,electricity-generation,41.2233,27.7159,59,Tekirdağ,TR21,19212,NA,within_province
+CT16346,Afşin-Elbistan Coal Mines,coal-mining,38.340685,37.082979,46,Kahramanmaraş,TR63,19448,NA,within_province
+CT49701841,OMP Enerji Yüreğir power station,electricity-generation,36.8672,35.4557,1,Adana,TR62,19483,NA,within_province
 CT32439222,Saray Cement Plant,cement,39.6953709714074,34.6739167927202,66,Yozgat,TR72,19986,NA,within_province
+CT57028256,Kirklareli power station,electricity-generation,41.5458,27.2446,39,Kırklareli,TR21,20134,NA,within_province
 CT1897906,Evrencik Cement Plant,cement,41.6300775200123,27.6867991734526,39,Kırklareli,TR21,20575,NA,within_province
 CT42547309,Kars Cement Plant,cement,40.575810790005,43.0082860136899,36,Kars,TRA2,20702,NA,within_province
 CT1897859,Bozkale Cement Plant,cement,40.5754840531073,43.0090044457683,36,Kars,TRA2,20770,NA,within_province
+CT721412,Taha power station,electricity-generation,37.2839,40.6626,47,Mardin,TRC3,20805,NA,within_province
 CT1567073,Kardemir Merkez steel plant,iron-and-steel,41.1853066102838,32.6308377888502,78,Karabük,TR81,20985,NA,within_province
+CT451645,Gediz power station,electricity-generation,38.9652,29.3653,43,Kütahya,TR33,21009,NA,within_province
 CT1897899,Adıyaman Merkez Cement Plant,cement,37.6946575828829,38.0864870094278,2,Adıyaman,TRC1,21167,NA,within_province
+CT450336,Kardemir Karabük Demir Çelik power station,electricity-generation,41.1825,32.6305,78,Karabük,TR81,21238,NA,within_province
+CT49701832,ITC Adanus power station,electricity-generation,36.9952,35.3193,1,Adana,TR62,21371,NA,within_province
+CT49701849,Kahramanmaraş Kağıt power station,electricity-generation,37.5546,36.9537,46,Kahramanmaraş,TR63,21643,NA,within_province
+CT451167,Turcas Denizli Doğalgaz S. power station,electricity-generation,37.8504,29.4152,20,Denizli,TR32,21853,NA,within_province
+CT449565,Afşin-Elbistan A power station,electricity-generation,38.3473,37.0259,46,Kahramanmaraş,TR63,22725,NA,within_province
+CT4404675,Kayseri Metalworks power station,electricity-generation,38.7107,35.3328,38,Kayseri,TR72,22890,NA,within_province
+CT16348,Alpagut Dodurga Coal Mine,coal-mining,40.855953,34.758629,19,Çorum,TR83,23334,NA,within_province
+CT3164518,Dodurga Ayva Coal Mine,coal-mining,40.855953,34.758629,19,Çorum,TR83,23334,NA,within_province
+CT49701840,Denizli-Honaz power station,electricity-generation,37.8651,29.3893,20,Denizli,TR32,24126,NA,within_province
+CT53059165,Turkey_Southeast Turkey Foldbelt_Conventional onshore,oil-and-gas-production,38.01639708,39.93490353,21,Diyarbakır,TRC2,24163,NA,within_province
+CT53060008,Turkey_Southeast Turkey Foldbelt_Conventional onshore,oil-and-gas-transport,38.01639708,39.93490353,21,Diyarbakır,TRC2,24163,NA,within_province
+CT49701812,Karaman power station,electricity-generation,37.3061,33.5153,70,Karaman,TR52,24550,NA,within_province
 CT32439209,Artuklu Cement Plant,cement,37.3384742409151,40.8025385278495,47,Mardin,TRC3,24953,NA,within_province
 CT1897858,Kestel Cement Plant,cement,40.1860720237589,29.2250957086303,16,Bursa,TR41,24957,NA,within_province
+CT452921,Pancar power station,electricity-generation,38.2132,27.2497,35,İzmir,TR31,25065,NA,within_province
+CT449917,Kırklareli Alarko power station,electricity-generation,41.7785,27.1967,39,Kırklareli,TR21,25085,NA,within_province
+CT16367,Sivas Kangal Coal Mine,coal-mining,39.0777,37.2955,58,Sivas,TR72,25097,NA,within_province
+CT25452374,Kangal power station,electricity-generation,39.0775,37.295,58,Sivas,TR72,25128,NA,within_province
 CT1897878,Pınarhisar Cement Plant,cement,41.6354900725661,27.5056233816446,39,Kırklareli,TR21,25287,NA,within_province
+CT49699647,Albayrak Varaka Paper power station,electricity-generation,39.5595,27.9695,10,Balıkesir,TR22,25323,NA,within_province
+CT49701846,5ER power station,electricity-generation,37.5066,32.6789,42,Konya,TR52,25567,NA,within_province
 CT1897892,Belevi Cement Plant,cement,37.86241803582,29.3725154380509,20,Denizli,TR32,25599,NA,within_province
+CT25450174,Afşin-Elbistan B power station,electricity-generation,38.3533,36.9806,46,Kahramanmaraş,TR63,25689,NA,within_province
+CT25452708,Çan (18 Mart) power station,electricity-generation,40.0232,26.9768,17,Çanakkale,TR22,25895,NA,within_province
+CT49701809,Eskişehir power station,electricity-generation,39.7067,30.5383,26,Eskişehir,TR41,26337,NA,within_province
+CT25452376,Orhaneli power station,electricity-generation,39.9502,28.8702,16,Bursa,TR41,26631,NA,within_province
+CT49701834,Sofulu Çöplüğü power station,electricity-generation,36.9303,35.4182,1,Adana,TR62,26970,NA,within_province
+CT49701821,Kula power station,electricity-generation,38.5552,28.536,45,Manisa,TR33,27466,NA,within_province
+CT25455271,Çan-2 power station,electricity-generation,40.0344,26.9506,17,Çanakkale,TR22,27534,NA,within_province
+CT49701851,Salihli power station,electricity-generation,38.5873,28.2969,45,Manisa,TR33,27690,NA,within_province
+CT49701799,Adana Depolama power station,electricity-generation,37.0514,35.3959,1,Adana,TR62,28030,NA,within_province
 CT1897888,Yüreğir Cement Plant,cement,36.9643325445559,35.4522289335493,1,Adana,TR62,28443,NA,within_province
+CT56162979,Sorgun Coal Mine,coal-mining,39.786437,35.135837,66,Yozgat,TR72,28597,NA,within_province
+CT4404692,Eskisehir Endustriyel power station,electricity-generation,39.7357,30.6501,26,Eskişehir,TR41,28616,NA,within_province
 CT32439195,Altıeylül Cement Plant,cement,39.6077412963933,27.878929567346,10,Balıkesir,TR22,29247,NA,within_province
+CT451580,Van CCGE power station,electricity-generation,38.5737,43.3119,65,Van,TRB2,29377,NA,within_province
 CT32439188,Niğde Merkez Cement Plant,cement,37.9474421986972,34.6840601349607,51,Niğde,TR71,29946,NA,within_province
+CT49534281,Cemdağ Akhisar power station,electricity-generation,38.9071,27.8388,45,Manisa,TR33,30004,NA,within_province
+CT451578,Marmara Pamuklu power station,electricity-generation,39.6167,27.8822,10,Balıkesir,TR22,30251,NA,within_province
+CT49701838,Gaziantep power station,electricity-generation,37.0712,37.3854,27,Gaziantep,TRC1,30341,NA,within_province
 CT32439224,Erkan Cement Plant,cement,38.8914373171245,41.5690125411962,49,Muş,TRB2,30599,NA,within_province
+CT16351,Bursa Coal Mine,coal-mining,39.921991,28.968405,16,Bursa,TR41,30672,NA,within_province
+CT49701844,Zeus power station,electricity-generation,41.6771,27.3271,39,Kırklareli,TR21,30838,NA,within_province
+CT57026364,Şanlıurfa OSB power station,electricity-generation,37.0999,38.6595,63,Şanlıurfa,TRC2,31480,NA,within_province
+CT451977,Denizli Honaz power station,electricity-generation,37.809,29.2577,20,Denizli,TR32,32162,NA,within_province
 CT32439199,Şehitkamil Cement Plant,cement,37.0686473775536,37.4297960622884,27,Gaziantep,TRC1,32292,NA,within_province
 CT32439201,Karaköprü Cement Plant,cement,37.2761984487296,38.7321997312191,63,Şanlıurfa,TRC2,32386,NA,within_province
+CT49701814,Aksaray power station,electricity-generation,38.3672,34.0118,68,Aksaray,TR71,32553,NA,within_province
+CT49701803,Mamak power station,electricity-generation,39.8846,32.9304,6,Ankara,TR51,32797,NA,within_province
+CT49701816,Balıkesir power station,electricity-generation,39.6419,27.8936,10,Balıkesir,TR22,33094,NA,within_province
 CT1897854,Askale Edremit Cement Plant,cement,38.4178502224606,43.2375565152249,65,Van,TRB2,34276,NA,within_province
+CT16357,Ilgın Coal Mine,coal-mining,38.372002,31.846171,42,Konya,TR52,35155,NA,within_province
+CT49701810,Eber power station,electricity-generation,38.7493,30.5572,3,Afyonkarahisar,TR33,37224,NA,within_province
 CT1897863,Melikgazi Cement Plant,cement,38.857551503599,35.7658933196682,38,Kayseri,TR72,37500,NA,within_province
+CT452300,Kazan Soda Elektrik power station,electricity-generation,40.1049,32.5012,6,Ankara,TR51,37934,NA,within_province
+CT49701833,Ankara power station,electricity-generation,39.9913,32.2936,6,Ankara,TR51,39199,NA,within_province
 CT42547357,Halımoru Cement Plant,cement,38.6553205337458,30.6195867176922,3,Afyonkarahisar,TR33,39410,NA,within_province
+CT3164524,Karagedik Coal Mine,coal-mining,39.571975,32.834472,6,Ankara,TR51,40466,NA,within_province
 CT1897911,Sivas Merkez Cement Plant,cement,39.7240558058946,36.936105037049,58,Sivas,TR72,40862,NA,within_province
+CT449569,Baymina Ankara power station,electricity-generation,39.7773,32.4022,6,Ankara,TR51,44365,NA,within_province
+CT46877671,Bilkent University power station,electricity-generation,39.8666,32.7563,6,Ankara,TR51,46650,NA,within_province
 CT55296418,Etimesgut Cement Plant,cement,39.9285001273122,32.7527693023024,6,Ankara,TR51,48644,NA,within_province
 CT32439207,Kahramankazan Cement Plant,cement,40.0495744725573,32.6504073543139,6,Ankara,TR51,49271,NA,within_province
+CT450480,OSTIM Industrial Zone power station,electricity-generation,39.9691,32.7488,6,Ankara,TR51,49941,NA,within_province
+CT25453459,Sincan Çadırtepe power station,electricity-generation,39.9502,32.4745,6,Ankara,TR51,52261,NA,within_province
+CT49701847,Sincan Gazlaştırma power station,electricity-generation,39.9644,32.5883,6,Ankara,TR51,55226,NA,within_province
+CT49701839,Bientaş Konya power station,electricity-generation,37.8862,32.502,42,Konya,TR52,65463,NA,within_province
 CT32439220,Selçuklu Cement Plant,cement,37.9396483907896,32.5357056396124,42,Konya,TR52,68019,NA,within_province

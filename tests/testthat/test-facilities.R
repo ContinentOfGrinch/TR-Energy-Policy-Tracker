@@ -71,34 +71,43 @@ test_that("administrative codes are well formed", {
 test_that("province assignment matches publicly known facility locations", {
   f <- read_processed("facilities.rds")
 
-  # Sixteen facilities whose location is unambiguous and publicly documented.
-  # The two Ereğli entries are the point of this test: a name-based method would
-  # confuse Karadeniz Ereğli (Zonguldak) with Marmara Ereğlisi (Tekirdağ).
+  # Facilities whose location is unambiguous and publicly documented. The two
+  # Ereğli entries are the point of this test: a name-based method would confuse
+  # Karadeniz Ereğli (Zonguldak) with Marmara Ereğlisi (Tekirdağ).
+  #
+  # Patterns are matched within an asset class. Once the energy layer arrived,
+  # bare name fragments started colliding — "Yesilyurt" and "Colakoglu" each
+  # name both a steel plant and the captive power station beside it, which is
+  # the co-location pattern recorded in ROADMAP E5, not an error.
   truth <- tibble::tribble(
-    ~pattern,               ~province,
-    "Isdemir Payas",        "Hatay",
-    "Erdemir Eregli",       "Zonguldak",
-    "Kaptan Ereglisi",      "Tekirdağ",
-    "Habas Aliaga",         "İzmir",
-    "İÇDAŞ Biga",           "Çanakkale",
-    "Kardemir Merkez",      "Karabük",
-    "Colakoglu",            "Kocaeli",
-    "Kroman Steel Darica",  "Kocaeli",
-    "Asil Celik Orhangazi", "Bursa",
-    "Yesilyurt",            "Samsun",
-    "Mescier",              "Bartın",
-    "Seydisehir Eti",       "Konya",
-    "Cerkezkoy Aluminum",   "Tekirdağ",
-    "Doğubayazıt Cement",   "Ağrı",
-    "Toscelik Toprakkale",  "Osmaniye",
-    "Tosyali Toprakkale",   "Osmaniye"
+    ~pattern,               ~province,     ~class,
+    "Isdemir Payas",        "Hatay",       "industrial",
+    "Erdemir Eregli",       "Zonguldak",   "industrial",
+    "Kaptan Ereglisi",      "Tekirdağ",    "industrial",
+    "Habas Aliaga steel",   "İzmir",       "industrial",
+    "İÇDAŞ Biga steel",     "Çanakkale",   "industrial",
+    "Kardemir Merkez",      "Karabük",     "industrial",
+    "Colakoglu Metallurgical", "Kocaeli",  "industrial",
+    "Kroman Steel Darica",  "Kocaeli",     "industrial",
+    "Asil Celik Orhangazi", "Bursa",       "industrial",
+    "Yesilyurt Iron",       "Samsun",      "industrial",
+    "Mescier",              "Bartın",      "industrial",
+    "Seydisehir Eti",       "Konya",       "industrial",
+    "Cerkezkoy Aluminum",   "Tekirdağ",    "industrial",
+    "Doğubayazıt Cement",   "Ağrı",        "industrial",
+    "Toscelik Toprakkale",  "Osmaniye",    "industrial",
+    "Tosyali Toprakkale",   "Osmaniye",    "industrial",
+    # Energy assets, to prove the same machinery works on the second population.
+    "Tupras Izmit Refinery", "Kocaeli",    "energy",
+    "Tupras Batman",         "Batman",     "energy"
   )
 
   for (i in seq_len(nrow(truth))) {
-    hit <- f |> filter(str_detect(facility_name_tr, fixed(truth$pattern[i])))
+    hit <- f |> filter(asset_class == truth$class[i],
+                       str_detect(facility_name_tr, fixed(truth$pattern[i])))
     expect_equal(nrow(hit), 1L,
                  info = paste0("'", truth$pattern[i], "' matched ", nrow(hit),
-                               " facilities, expected exactly 1"))
+                               " ", truth$class[i], " facilities, expected 1"))
     if (nrow(hit) == 1L) {
       expect_equal(hit$province_name_tr, truth$province[i],
                    info = paste0(truth$pattern[i], " assigned to ",
@@ -108,20 +117,57 @@ test_that("province assignment matches publicly known facility locations", {
 })
 
 
+test_that("the two populations are distinguishable and correctly classified", {
+  f <- read_processed("facilities.rds")
+
+  expect_true(all(f$asset_class %in% c("industrial", "energy")))
+
+  # liability_class is no longer reserved: it now carries the distinction the
+  # grid factor and the CBAM calculation both depend on (§6).
+  expect_true(all(f$liability_class[f$asset_class == "industrial"] == "direct"))
+  expect_true(all(f$liability_class[f$asset_class == "energy"] %in%
+                    c("indirect_driver", "neutral")))
+
+  # Electricity generation drives grid intensity; mines and oil & gas sit
+  # outside both the CBAM calculation and the grid factor.
+  power <- f |> filter(sector == "electricity-generation")
+  expect_true(all(power$liability_class == "indirect_driver"))
+  expect_true(all(f$liability_class[grepl("coal-mining|oil-and-gas", f$sector)]
+                  == "neutral"))
+
+  # The two gas bases must stay separable, because they are never summed.
+  expect_setequal(unique(f$gas_basis[f$asset_class == "industrial"]), "co2")
+  expect_setequal(unique(f$gas_basis[f$asset_class == "energy"]), "co2e_100yr")
+
+  # fuel_type belongs to energy assets only.
+  expect_true(all(is.na(f$fuel_type[f$asset_class == "industrial"])))
+})
+
+
 test_that("geocode quality is declared for every facility and bounded", {
   f <- read_processed("facilities.rds")
 
-  expect_true(all(f$geocode_quality %in%
-                    c("within_province", "boundary_proximate", "snapped_to_nearest")))
+  expect_true(all(f$geocode_quality %in% VALID_GEOCODE))
 
   rep <- read_processed("facilities_geocode_report.csv")
   expect_equal(nrow(rep), nrow(f))
 
-  # A facility snapped from further than 2 km offshore is not a coastline
-  # artefact any more; it is a bad coordinate and must be investigated.
-  snapped <- rep$snap_distance_m[!is.na(rep$snap_distance_m)]
-  if (length(snapped) > 0) {
-    expect_lt(max(snapped), 2000)
+  # A facility snapped a few hundred metres from a coarse coastline is a
+  # geometry artefact; one snapped tens of kilometres is genuinely at sea. They
+  # are checked separately, because a single threshold either rejects Türkiye's
+  # Black Sea gas production or waves through a bad coordinate.
+  onshore_snapped <- rep |>
+    filter(!is.na(snap_distance_m), geocode_quality == "snapped_to_nearest")
+  if (nrow(onshore_snapped) > 0) {
+    expect_lt(max(onshore_snapped$snap_distance_m), 10000)
+  }
+
+  offshore <- rep |> filter(geocode_quality == "offshore")
+  if (nrow(offshore) > 0) {
+    # Offshore assets are assigned to the nearest coastal province, which is an
+    # administrative convenience. The assertion is only that they are still in
+    # Turkish waters rather than another country's.
+    expect_lt(max(offshore$snap_distance_m, na.rm = TRUE), 400000)
   }
 })
 

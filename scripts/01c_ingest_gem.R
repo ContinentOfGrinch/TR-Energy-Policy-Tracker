@@ -188,6 +188,11 @@ TRACKER_SPECS <- list(
 # reported rather than silently reconciled.
 CROSSCHECK_SPECS <- list(
 
+  # The steel tracker splits what we need across two sheets: capacities by
+  # process route live in "Plant capacities and status", coordinates in
+  # "Plant data". They are joined on GEM plant ID below. Reading only the first
+  # left the table without coordinates, which silently made steel unmatchable
+  # against Climate TRACE.
   steel = list(
     match = "Iron_and_Steel_Tracker",
     sheet = "Plant capacities and status",
@@ -204,6 +209,13 @@ CROSSCHECK_SPECS <- list(
       cap_eaf      = "Nominal EAF steel capacity (ttpa)",
       cap_bf       = "Nominal BF capacity (ttpa)",
       cap_dri      = "Nominal DRI capacity (ttpa)"
+    ),
+    join_sheet = list(
+      sheet = "Plant data",
+      cols  = c(
+        gem_id      = "GEM plant ID",
+        coordinates = "Coordinates"
+      )
     )
   ),
 
@@ -497,13 +509,48 @@ crosscheck <- map(CROSSCHECK_SPECS, function(spec) {
   })
   if (is.null(d)) return(NULL)
 
-  # Cement gives one "lat, lon" string where steel gives none; normalise both to
-  # explicit columns so the tables can be compared on the same terms.
+  # Some trackers keep coordinates on a different sheet from the capacities.
+  # Join them rather than losing one or the other.
+  if (!is.null(spec$join_sheet)) {
+    aux_spec <- list(match = spec$match, sheet = spec$join_sheet$sheet,
+                     label = paste0(spec$label, " / ", spec$join_sheet$sheet),
+                     cols  = spec$join_sheet$cols)
+    # The auxiliary sheet has no country column, so read_tracker's Türkiye
+    # filter cannot apply; join on the id instead and let the main sheet's
+    # filter carry.
+    path <- candidates[grepl(spec$match, basename(candidates), fixed = TRUE)][1]
+    aux  <- suppressWarnings(
+      readxl::read_excel(path, sheet = spec$join_sheet$sheet,
+                         .name_repair = "minimal", guess_max = 20000))
+    missing_aux <- setdiff(unname(spec$join_sheet$cols), names(aux))
+    if (length(missing_aux) > 0) {
+      stop("In ", basename(path), " / '", spec$join_sheet$sheet,
+           "', columns absent: ", paste(missing_aux, collapse = ", "),
+           call. = FALSE)
+    }
+    aux <- aux |>
+      select(all_of(unname(spec$join_sheet$cols))) |>
+      rlang::set_names(names(spec$join_sheet$cols)) |>
+      distinct(gem_id, .keep_all = TRUE)
+
+    d <- d |> left_join(aux, by = "gem_id")
+    message("      ", spec$label, ": joined ", spec$join_sheet$sheet,
+            " for coordinates")
+  }
+
+  # GEM writes a single "lat, lon" string; split it into explicit columns so
+  # every cross-check table can be compared on the same terms.
   if ("coordinates" %in% names(d)) {
     parts <- str_split_fixed(as.character(d$coordinates), ",", 2)
     d <- d |> mutate(lat = suppressWarnings(as.numeric(trimws(parts[, 1]))),
                      lon = suppressWarnings(as.numeric(trimws(parts[, 2]))))
   }
+
+  if (!all(c("lat", "lon") %in% names(d))) {
+    warning(spec$label, ": no coordinates available, so these plants cannot be ",
+            "matched spatially against Climate TRACE.", immediate. = TRUE)
+  }
+
   d |> mutate(start_year = as_year(start_date))
 }) |> compact()
 

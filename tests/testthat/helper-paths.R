@@ -40,9 +40,19 @@ read_processed <- function(file) {
   else read_csv(path, locale = locale(encoding = "UTF-8"), show_col_types = FALSE)
 }
 
-#' Türkiye's bounding box, padded. Used to catch lon/lat inversion, which is
-#' otherwise invisible until someone looks at the map.
-TR_BBOX <- list(lon = c(25.5, 45.5), lat = c(35.5, 42.5))
+#' Türkiye's bounding box INCLUDING maritime jurisdiction. Used to catch
+#' lon/lat inversion, which is otherwise invisible until someone looks at the
+#' map. The northern bound is 43.5 rather than the 42.5 of the land border
+#' because Turkish offshore gas production sits in the Black Sea at about
+#' 42.94°N. Widening it does not weaken the check: swapping those coordinates
+#' gives 31.3°N / 42.9°E, in Saudi Arabia, still far outside.
+TR_BBOX <- list(lon = c(25.5, 45.5), lat = c(35.5, 43.5))
+
+#' Values `geocode_quality` may take. `offshore` distinguishes a facility at sea
+#' from one nudged a few hundred metres by a coarse coastline — different
+#' situations that would otherwise be conflated.
+VALID_GEOCODE <- c("within_province", "boundary_proximate",
+                   "snapped_to_nearest", "offshore")
 
 #' The 26 İBBS-2 (NUTS-2) region codes.
 NUTS2_PATTERN <- "^TR[0-9ABC][0-9]$"

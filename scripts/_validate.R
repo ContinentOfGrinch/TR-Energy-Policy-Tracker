@@ -41,15 +41,22 @@ suppressPackageStartupMessages({
 
 # --- Constants ---------------------------------------------------------------
 
-# Padded bounding box for Türkiye. Its job is catching a lon/lat swap, which
-# produces coordinates in the Indian Ocean and is invisible until the map draws.
+# Bounding box for Türkiye INCLUDING its maritime jurisdiction. The northern
+# bound is 43.5 rather than the 42.5 of the land border because Turkish offshore
+# gas production sits in the Black Sea at about 42.94°N — the Sakarya field,
+# which the first version of this gate rejected as a coordinate error.
+#
+# Widening it does not weaken the guard. The job here is catching a lon/lat
+# swap, and a swap of those very coordinates gives 31.3°N / 42.9°E, in Saudi
+# Arabia, still far outside the box. The box has to admit real assets or it
+# trains people to disable it.
 TR_LON <- c(25.5, 45.5)
-TR_LAT <- c(35.5, 42.5)
+TR_LAT <- c(35.5, 43.5)
 
 VALID_ASSET_CLASS     <- c("industrial", "energy")
 VALID_LIABILITY_CLASS <- c("direct", "indirect_driver", "neutral")
 VALID_GEOCODE_QUALITY <- c("within_province", "boundary_proximate",
-                           "snapped_to_nearest")
+                           "snapped_to_nearest", "offshore")
 
 # Boundary distance below which a province assignment is reported as uncertain.
 # A judgement call, not a standard — recorded here so it is visible and tunable
@@ -224,6 +231,13 @@ gate_facilities <- function(df, report = NULL) {
         "%d facilities fell outside every polygon and were snapped to the nearest province",
         q[["snapped_to_nearest"]]))
     }
+    if (q[["offshore"]] > 0) {
+      observations <- c(observations, sprintf(
+        paste("%d facilities are offshore — assigned to the nearest coastal",
+              "province, which is an administrative convenience rather than a",
+              "location"),
+        q[["offshore"]]))
+    }
   }
 
   if ("operator_name" %in% names(df)) {
@@ -234,20 +248,55 @@ gate_facilities <- function(df, report = NULL) {
     }
   }
 
-  # Facilities closer together than this are plausibly one site recorded twice —
-  # exactly the open question standing over the two Kars cement records.
+  # The fleet timeline rests entirely on this field, so its absence is reported
+  # as a share rather than a count — a bare number hides whether the timeline is
+  # viable.
+  if ("commissioning_year" %in% names(df)) {
+    n_na <- sum(is.na(df$commissioning_year))
+    if (n_na > 0) {
+      observations <- c(observations, sprintf(
+        "%d of %d facilities (%.0f%%) have no commissioning year — they must be excluded from the pre-2021 fleet animation, not assumed to have always existed",
+        n_na, nrow(df), 100 * n_na / nrow(df)))
+    }
+  }
+
+  # Near-coincident facilities. The naive version of this check listed every
+  # pair within 500 m and, once the energy layer arrived, produced thirty
+  # warnings — mine-mouth power stations beside their mine, captive plants
+  # beside their industrial host, a refinery beside its own generator. All are
+  # genuinely distinct facilities that happen to share a site, and burying the
+  # real signal in them is how a WARN tier gets ignored.
+  #
+  # Two cases are now separated:
+  #   SAME subsector  — plausibly one site recorded twice. Listed individually,
+  #                     because this is the Kars cement question.
+  #   CROSS subsector — expected co-location. Counted, not enumerated, and
+  #                     reported because it is what the grid factor has to net
+  #                     out (ROADMAP E5).
   if (all(c("lat", "lon") %in% names(df)) && nrow(df) > 1 &&
       requireNamespace("sf", quietly = TRUE)) {
     pts <- sf::st_as_sf(df, coords = c("lon", "lat"), crs = 4326)
     d <- sf::st_distance(pts); units(d) <- NULL; diag(d) <- Inf
     near <- which(d < 500, arr.ind = TRUE)
     near <- near[near[, 1] < near[, 2], , drop = FALSE]
+
     if (nrow(near) > 0) {
-      for (i in seq_len(nrow(near))) {
+      grp <- if ("sector" %in% names(df)) df$sector else rep("", nrow(df))
+      same <- grp[near[, 1]] == grp[near[, 2]]
+
+      for (i in which(same)) {
         observations <- c(observations, sprintf(
-          "possible duplicate site: %s and %s are %.0f m apart",
+          "possible duplicate: %s and %s, same subsector, %.0f m apart",
           df$facility_name_tr[near[i, 1]], df$facility_name_tr[near[i, 2]],
           d[near[i, 1], near[i, 2]]))
+      }
+
+      if (any(!same)) {
+        observations <- c(observations, sprintf(
+          paste("%d co-located pairs across different subsectors (mine-mouth",
+                "plants, captive generation, refinery own-use) — expected, but",
+                "they must be netted out of any site-level total"),
+          sum(!same)))
       }
     }
   }

@@ -5,9 +5,11 @@
 # belongs here so it runs once per process rather than once per session.
 #
 # SCOPE OF THIS VERSION
-#   Facility map only. `facility_panel.rds` does not exist yet, so there is no
-#   time slider and no CBAM liability figure. Both arrive once the panel is
-#   built — see ROADMAP.md. Nothing here fabricates a value to fill the gap.
+#   Both populations on one map: 88 industrial installations and 212 energy
+#   assets. No time slider and no CBAM liability figure yet —
+#   `facility_panel.rds` does not exist, because the direct/indirect
+#   decomposition is author work (KARBON_ATLASI.md §9). Nothing here fabricates
+#   a value to fill that gap.
 # =============================================================================
 
 # Windows defaults to a non-UTF-8 encoding. Turkish UI labels break silently
@@ -54,12 +56,20 @@ if (!file.exists(FACILITIES_PATH)) {
     "facilities.rds not found.\n",
     "Run the pipeline first:\n",
     "  Rscript scripts/01_fetch_climate_trace.R\n",
+    "  Rscript scripts/01c_ingest_gem.R      # needs a manual GEM download\n",
     "  Rscript scripts/02_build_facilities.R",
     call. = FALSE
   )
 }
 
 facilities <- readRDS(FACILITIES_PATH)
+
+# Optional: the grid intensity comparison, if 01d has run. The app degrades
+# rather than failing when it is absent.
+GRID_PATH <- file.path(PROJECT_ROOT, "data", "processed", "grid_intensity.csv")
+grid_intensity <- if (file.exists(GRID_PATH)) {
+  utils::read.csv(GRID_PATH, fileEncoding = "UTF-8")
+} else NULL
 
 
 # =============================================================================
@@ -69,17 +79,50 @@ facilities <- readRDS(FACILITIES_PATH)
 # Keeping the translation in one named vector means a label is never hardcoded
 # at a call site, where it would drift out of sync with its twin.
 
-SECTOR_LABELS <- c(
-  "iron-and-steel" = "Demir-Çelik",
-  "cement"         = "Çimento",
-  "aluminum"       = "Alüminyum"
+ASSET_CLASS_LABELS <- c(
+  "industrial" = "Sanayi tesisleri",
+  "energy"     = "Enerji varlıkları"
 )
 
-# Colour-blind-safe and distinguishable on the light Positron basemap.
+SECTOR_LABELS <- c(
+  # Industrial — the CBAM population
+  "iron-and-steel"         = "Demir-Çelik",
+  "cement"                 = "Çimento",
+  "aluminum"               = "Alüminyum",
+  # Energy
+  "electricity-generation" = "Elektrik Üretimi",
+  "coal-mining"            = "Kömür Madenciliği",
+  "oil-and-gas-production" = "Petrol-Gaz Üretimi",
+  "oil-and-gas-refining"   = "Rafineri",
+  "oil-and-gas-transport"  = "Petrol-Gaz Taşıma"
+)
+
+# Warm hues for the CBAM subjects, cool for the energy fleet, so the two
+# populations separate at a glance before any legend is read. Colour-blind-safe
+# and legible on the light Positron basemap.
 SECTOR_COLOURS <- c(
-  "iron-and-steel" = "#B2182B",
-  "cement"         = "#2166AC",
-  "aluminum"       = "#F4A460"
+  "iron-and-steel"         = "#B2182B",
+  "cement"                 = "#D6604D",
+  "aluminum"               = "#F4A582",
+  "electricity-generation" = "#2166AC",
+  "coal-mining"            = "#4D4D4D",
+  "oil-and-gas-production" = "#35978F",
+  "oil-and-gas-refining"   = "#01665E",
+  "oil-and-gas-transport"  = "#80CDC1"
+)
+
+# liability_class is the field the whole merge turns on, so it is shown to the
+# user rather than kept as an internal code.
+LIABILITY_LABELS <- c(
+  "direct"          = "Doğrudan — SKDM yükümlülüğü doğuran gömülü emisyon",
+  "indirect_driver" = "Dolaylı sürücü — şebeke yoğunluğunu belirler, kendisi SKDM yükümlüsü değil",
+  "neutral"         = "Nötr — haritalanır ve sayılır, SKDM hesabının ve şebeke faktörünün dışında"
+)
+
+LIABILITY_SHORT <- c(
+  "direct"          = "Doğrudan",
+  "indirect_driver" = "Dolaylı sürücü",
+  "neutral"         = "Nötr"
 )
 
 # Geocode quality is shown to the user rather than hidden: a facility whose
@@ -88,13 +131,22 @@ SECTOR_COLOURS <- c(
 GEOCODE_LABELS <- c(
   "within_province"    = "İl sınırları içinde",
   "boundary_proximate" = "İl sınırına yakın — atama belirsiz",
-  "snapped_to_nearest" = "Poligon dışında — en yakın ile atandı"
+  "snapped_to_nearest" = "Poligon dışında — en yakın ile atandı",
+  "offshore"           = "Açık deniz — en yakın kıyı iline atandı"
 )
 
 GEOCODE_BADGE <- c(
   "within_province"    = "#4C9A2A",
   "boundary_proximate" = "#E8A33D",
-  "snapped_to_nearest" = "#C0392B"
+  "snapped_to_nearest" = "#C0392B",
+  "offshore"           = "#2166AC"
+)
+
+# The two populations are denominated in different gases and must never be
+# summed. The label travels with every figure that carries a gas basis.
+GAS_LABELS <- c(
+  "co2"        = "CO₂",
+  "co2e_100yr" = "CO₂e (100 yıl)"
 )
 
 
@@ -103,11 +155,20 @@ GEOCODE_BADGE <- c(
 # =============================================================================
 # Computed once here rather than inside a reactive, because they never change.
 
-SECTOR_CHOICES <- setNames(
-  names(SECTOR_LABELS),
-  paste0(unname(SECTOR_LABELS), " (",
-         as.integer(table(facilities$sector)[names(SECTOR_LABELS)]), ")")
-)
+sector_counts <- table(facilities$sector)
+
+# Choices are grouped by asset class so the sector list reads as two
+# populations rather than eight unrelated categories.
+SECTOR_CHOICES_BY_CLASS <- lapply(names(ASSET_CLASS_LABELS), function(cls) {
+  secs <- facilities |> filter(asset_class == cls) |> pull(sector) |> unique()
+  secs <- secs[order(match(secs, names(SECTOR_LABELS)))]
+  setNames(secs,
+           paste0(unname(SECTOR_LABELS[secs]), " (",
+                  as.integer(sector_counts[secs]), ")"))
+})
+names(SECTOR_CHOICES_BY_CLASS) <- unname(ASSET_CLASS_LABELS)
+
+ALL_SECTORS <- unlist(unname(SECTOR_CHOICES_BY_CLASS), use.names = FALSE)
 
 PROVINCE_CHOICES <- facilities |>
   count(province_name_tr, name = "n") |>
@@ -117,3 +178,13 @@ PROVINCE_CHOICES <- facilities |>
 # Data vintage, surfaced in the UI. A figure without a vintage is not auditable.
 SOURCE_RELEASE <- unique(facilities$source_release)[1]
 N_FACILITIES   <- nrow(facilities)
+
+# Records and places are different numbers: Climate TRACE lists each oil and gas
+# field twice, under production and under transport, at one location. Both are
+# shown so neither is quoted by accident.
+N_SITES <- nrow(dplyr::distinct(facilities, lat, lon))
+
+N_WITH_YEAR   <- sum(!is.na(facilities$commissioning_year))
+COMMISSION_PCT <- round(100 * N_WITH_YEAR / N_FACILITIES)
+
+YEAR_RANGE <- range(facilities$commissioning_year, na.rm = TRUE)

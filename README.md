@@ -224,10 +224,14 @@ some of them are uncertain is overstating what it knows.
 - **One probable province misassignment.** Koç Metalurji Toprakkale was assigned to Hatay
   while two neighbouring plants 600 m away went to Osmaniye. Both are İBBS-2 TR63, so
   regional figures are unaffected.
-- **Renewables are absent from the mapped energy layer.** Climate TRACE's Turkish power
+- **Renewables emit nothing and are therefore not modelled.** Climate TRACE's Turkish power
   register lists combustion plants only. It covers 52% of national generation, and the
   missing half is almost exactly the renewable half — which is why a grid factor computed
-  from it alone runs 57% high. The correct denominator comes from Ember instead.
+  from it alone runs 57% high. The correct denominator comes from Ember instead. The
+  missing plants themselves are drawn as an optional **fleet context layer** from GEM —
+  3,136 operating plants, 58.8 GW — kept in a separate register (`fleet_renewables.rds`)
+  rather than merged into `facilities.rds`, so the 300 modelled facilities stay the 300
+  modelled facilities.
 - **The İBBS-2 mapping is transcribed, not fetched** from an authoritative file, and
   carries a verification marker pending a citation to the official TÜİK classification.
 - **Two carbon price scenarios lack a citation.** `policies/carbon_price_scenarios.json`

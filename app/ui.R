@@ -63,6 +63,14 @@ dashboardPage(
 
       tags$hr(style = "border-color: #4b5c66;"),
 
+      # The renewable fleet is context, not part of the modelled population, so
+      # it is off by default and labelled as a separate register.
+      checkboxInput(
+        inputId = "show_fleet",
+        label   = "Yenilenebilir filoyu göster (GEM, emisyon dışı)",
+        value   = FALSE
+      ),
+
       checkboxInput(
         inputId = "flag_uncertain",
         label   = "Konum ataması belirsiz olanları vurgula",
@@ -162,6 +170,12 @@ dashboardPage(
               title = "Devreye Giriş Yılı Kapsaması",
               collapsible = TRUE, collapsed = TRUE,
               uiOutput("commissioning_summary")
+            ),
+            box(
+              width = NULL, status = "primary", solidHeader = TRUE,
+              title = "Yenilenebilir Filo — Bağlam Katmanı",
+              collapsible = TRUE, collapsed = TRUE,
+              uiOutput("fleet_summary")
             )
           )
         )

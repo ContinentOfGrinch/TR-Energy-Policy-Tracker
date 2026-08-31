@@ -611,6 +611,96 @@ facilities <- gate_facilities(
 
 saveRDS(facilities, file.path(DIR_PROCESSED, "facilities.rds"))
 
+
+# --- Fleet context: renewables, as a separate register -----------------------
+# NOT merged into facilities.rds, and the separation is the point.
+#
+# The 300 facilities are what this project models: they emit, they come from
+# Climate TRACE, they carry a gas basis, and every documented figure counts
+# them. Renewable plants come from GEM, emit essentially nothing, and exist to
+# answer one question — where the other half of Türkiye's generation is.
+#
+# Merging would put ~3,000 zero-emission rows into a register whose purpose is
+# emissions, and would invalidate every "300 facilities" statement in the
+# documentation for no analytical gain. Kept apart, they are the visible answer
+# to ROADMAP E1: Climate TRACE's power register covers 52% of national
+# generation, and this is the half it cannot see.
+#
+# Bioenergy is EXCLUDED: Climate TRACE already lists 55 biomass plants, so
+# including GEM's would double-map them.
+
+FLEET_FUELS <- c("hydropower", "utility-scale solar", "wind", "geothermal",
+                 "nuclear")
+
+if (file.exists(GEM_COMMISSIONING)) {
+  message("      building renewable fleet context")
+
+  fleet_raw <- read_csv(GEM_COMMISSIONING, locale = locale(encoding = "UTF-8"),
+                        show_col_types = FALSE, progress = FALSE) |>
+    filter(asset_group == "power",
+           fuel_type %in% FLEET_FUELS,
+           tolower(status) == "operating",
+           !is.na(lat), !is.na(lon))
+
+  # GIPT is unit-level; a solar farm built in three tranches is three rows. The
+  # map wants plants, and the plant's start year is its earliest unit's.
+  fleet <- fleet_raw |>
+    mutate(plant_key = coalesce(location_id, name)) |>
+    group_by(plant_key) |>
+    summarise(
+      gem_id             = first(gem_id),
+      plant_name         = first(name),
+      fuel_type          = first(fuel_type),
+      technology         = first(technology),
+      capacity_mw        = sum(capacity_mw, na.rm = TRUE),
+      units              = n(),
+      commissioning_year = suppressWarnings(min(start_year, na.rm = TRUE)),
+      operator           = first(na.omit(operator)),
+      owner              = first(na.omit(owner)),
+      lat = first(lat), lon = first(lon),
+      .groups = "drop"
+    ) |>
+    mutate(commissioning_year = if_else(is.infinite(commissioning_year),
+                                        NA_integer_, commissioning_year))
+
+  # Same province machinery as the facilities above, so a fleet plant and a
+  # facility in the same place get the same province.
+  fleet_sf <- st_as_sf(fleet, coords = c("lon", "lat"), crs = CRS_TARGET,
+                       remove = FALSE)
+  fleet_join <- st_join(fleet_sf, provinces_sf, join = st_within)
+
+  miss <- which(is.na(fleet_join$iso_3166_2))
+  if (length(miss) > 0) {
+    nr <- st_nearest_feature(fleet_join[miss, ], provinces_sf)
+    fleet_join$iso_3166_2[miss] <- provinces_sf$iso_3166_2[nr]
+  }
+
+  fleet_out <- fleet_join |>
+    st_drop_geometry() |>
+    left_join(provinces_ref, by = "iso_3166_2") |>
+    transmute(
+      fleet_id     = paste0("GEM", gem_id),
+      plant_name, fuel_type, technology,
+      capacity_mw, units, commissioning_year,
+      operator, owner,
+      lat, lon, province_code, province_name_tr, nuts2_code, nuts2_name_tr,
+      country_iso3 = "TUR",
+      source       = "gem",
+      # No gas basis: these plants are here for capacity and commissioning year,
+      # not emissions. Leaving it NA rather than writing a zero keeps them out of
+      # any emissions total by construction.
+      gas_basis    = NA_character_
+    ) |>
+    arrange(fuel_type, desc(capacity_mw))
+
+  saveRDS(fleet_out, file.path(DIR_PROCESSED, "fleet_renewables.rds"))
+
+  message("      ", nrow(fleet_out), " renewable plants, ",
+          round(sum(fleet_out$capacity_mw, na.rm = TRUE) / 1000, 1), " GW")
+} else {
+  message("      GEM absent — no renewable fleet context written")
+}
+
 # Diagnostics travel separately so the main table stays clean, but they are
 # committed: a province assignment nobody can check is not evidence.
 geocoded |>

@@ -79,11 +79,23 @@ function(input, output, session) {
   # user's pan and zoom, which is both slow and infuriating.
 
   output$map <- renderLeaflet({
-    leaflet(options = leafletOptions(preferCanvas = TRUE)) |>
+    leaflet(options = leafletOptions(
+      preferCanvas = TRUE,
+      # The atlas is about Türkiye. Letting the view drift into the Atlantic
+      # makes it look unfinished and invites the reader to look for data that
+      # was never claimed. maxBounds pins panning; minZoom stops the country
+      # shrinking to a dot. A world view belongs to a future trade layer with
+      # its own map, not to this one.
+      minZoom = 5, maxZoom = 14
+    )) |>
       # CartoDB.Positron: neutral enough that facility points carry the colour.
       addProviderTiles(providers$CartoDB.Positron) |>
-      # Türkiye's extent, widened north to include Black Sea offshore assets.
-      fitBounds(lng1 = 25.6, lat1 = 35.8, lng2 = 44.8, lat2 = 43.2) |>
+      fitBounds(lng1 = MAP_BOUNDS$lng1, lat1 = MAP_BOUNDS$lat1,
+                lng2 = MAP_BOUNDS$lng2, lat2 = MAP_BOUNDS$lat2) |>
+      # A little slack beyond the data so coastal facilities are not pinned to
+      # the very edge of the viewport.
+      setMaxBounds(lng1 = MAP_BOUNDS$lng1 - 1.5, lat1 = MAP_BOUNDS$lat1 - 1.0,
+                   lng2 = MAP_BOUNDS$lng2 + 1.5, lat2 = MAP_BOUNDS$lat2 + 1.0) |>
       addLegend(
         position = "bottomright",
         colors   = unname(SECTOR_COLOURS),
@@ -136,6 +148,61 @@ function(input, output, session) {
           ifelse(is.na(commissioning_year), "bilinmiyor", commissioning_year), "<br/>",
           "<b>İl:</b> ", province_name_tr, " (", province_code, ")<br/>",
           "<b>Yükümlülük:</b> ", unname(LIABILITY_SHORT[liability_class])
+        )
+      )
+  })
+
+
+  # ---------------------------------------------------------------------------
+  # Renewable fleet — a separate register, drawn as context
+  # ---------------------------------------------------------------------------
+  # Off by default and in its own layer group, because these plants are not part
+  # of the modelled population. They emit essentially nothing, they come from
+  # GEM rather than Climate TRACE, and they are here to answer one question:
+  # where the rest of Türkiye's generation is. Drawn smaller and semi-
+  # transparent so they read as background against the emitting facilities.
+
+  observe({
+    proxy <- leafletProxy("map") |> clearGroup("fleet")
+
+    if (is.null(fleet_renewables) || !isTRUE(input$show_fleet)) {
+      return(invisible(NULL))
+    }
+
+    df <- fleet_renewables
+    if (length(input$provinces) > 0) {
+      df <- df |> filter(province_name_tr %in% input$provinces)
+    }
+    if (nrow(df) == 0) return(invisible(NULL))
+
+    proxy |>
+      addCircleMarkers(
+        data        = df,
+        lng         = ~lon,
+        lat         = ~lat,
+        group       = "fleet",
+        # Radius scales with capacity so a 600 MW dam does not read like a 1 MW
+        # rooftop array, but stays small enough to sit behind the facilities.
+        radius      = ~pmax(2, pmin(9, sqrt(pmax(capacity_mw, 0)) / 3)),
+        fillColor   = ~unname(FLEET_COLOURS[fuel_type]),
+        fillOpacity = 0.55,
+        color       = "#FFFFFF",
+        weight      = 0.5,
+        label       = ~plant_name,
+        popup       = ~paste0(
+          "<strong>", plant_name, "</strong><br/>",
+          "<em>", unname(FLEET_LABELS[fuel_type]), " — yenilenebilir filo</em>",
+          "<br/><br/>",
+          "<b>Kapasite:</b> ", round(capacity_mw, 1), " MW",
+          ifelse(units > 1, paste0(" (", units, " ünite)"), ""), "<br/>",
+          "<b>Devreye giriş:</b> ",
+          ifelse(is.na(commissioning_year), "bilinmiyor", commissioning_year), "<br/>",
+          "<b>İl:</b> ", province_name_tr, "<br/>",
+          "<b>Kaynak:</b> Global Energy Monitor<br/><br/>",
+          "<span style='color:#666;'>Bu tesis modellenen 300 kaydın parçası ",
+          "değildir. Emisyon üretmediği için emisyon tablolarında yer almaz; ",
+          "haritada, Climate TRACE'in elektrik kütüğünün göremediği üretimi ",
+          "göstermek için bulunur.</span>"
         )
       )
   })
@@ -289,6 +356,55 @@ function(input, output, session) {
         "taşımaz. Yılı bilinmeyen tesisler, 2021 öncesi filo animasyonundan ",
         tags$b("görünür şekilde dışlanmalıdır"), "; her zaman var oldukları ",
         "varsayılmamalıdır."
+      )
+    )
+  })
+
+
+  output$fleet_summary <- renderUI({
+    if (is.null(fleet_renewables)) {
+      return(tags$p("Yenilenebilir filo verisi üretilmedi. Çalıştırın: ",
+                    tags$code("Rscript scripts/02_build_facilities.R")))
+    }
+
+    by_fuel <- fleet_renewables |>
+      group_by(fuel_type) |>
+      summarise(plants = n(),
+                gw = sum(capacity_mw, na.rm = TRUE) / 1000,
+                .groups = "drop") |>
+      arrange(desc(gw))
+
+    tagList(
+      tags$table(
+        style = "width:100%; font-size:13px;",
+        lapply(seq_len(nrow(by_fuel)), function(i) {
+          ft <- by_fuel$fuel_type[i]
+          tags$tr(
+            tags$td(style = paste0("padding:4px 0; border-left:4px solid ",
+                                   FLEET_COLOURS[[ft]], "; padding-left:8px;"),
+                    FLEET_LABELS[[ft]]),
+            tags$td(style = "text-align:right;", by_fuel$plants[i]),
+            tags$td(style = "text-align:right; font-weight:600;",
+                    paste0(round(by_fuel$gw[i], 1), " GW"))
+          )
+        }),
+        tags$tr(
+          tags$td(style = "padding-top:8px; border-top:1px solid #ddd;",
+                  tags$b("Toplam")),
+          tags$td(style = "text-align:right; padding-top:8px; border-top:1px solid #ddd;",
+                  tags$b(nrow(fleet_renewables))),
+          tags$td(style = "text-align:right; padding-top:8px; border-top:1px solid #ddd;",
+                  tags$b(paste0(round(sum(by_fuel$gw), 1), " GW")))
+        )
+      ),
+      tags$p(
+        style = "margin-top:10px; font-size:12px; color:#666;",
+        tags$b("Bu tesisler modellenen 300 kaydın parçası değildir. "),
+        "Global Energy Monitor'den gelirler, emisyon üretmezler ve emisyon ",
+        "tablolarında yer almazlar. Haritada bulunma sebepleri tek bir soruyu ",
+        "cevaplamaktır: Climate TRACE'in elektrik kütüğünün göremediği üretim ",
+        "nerede? Kütük ulusal üretimin yaklaşık yarısını görüyor ve görmediği ",
+        "yarı, büyük ölçüde burada duruyor."
       )
     )
   })

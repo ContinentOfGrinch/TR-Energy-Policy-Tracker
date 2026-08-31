@@ -188,3 +188,47 @@ N_WITH_YEAR   <- sum(!is.na(facilities$commissioning_year))
 COMMISSION_PCT <- round(100 * N_WITH_YEAR / N_FACILITIES)
 
 YEAR_RANGE <- range(facilities$commissioning_year, na.rm = TRUE)
+
+# Map extent. Türkiye's land border reaches 42.1°N; the northern bound is 43.2
+# because Black Sea offshore gas production sits at about 42.94°N and would
+# otherwise fall outside the initial view. Defined once here so the initial view
+# and the pan limit cannot drift apart.
+MAP_BOUNDS <- list(lng1 = 25.6, lat1 = 35.8, lng2 = 44.8, lat2 = 43.2)
+
+
+# =============================================================================
+# 4. FLEET CONTEXT — renewables, if built
+# =============================================================================
+# A SEPARATE register with a different epistemic status, deliberately not merged
+# into `facilities`.
+#
+# The 300 facilities are what this project models: they emit, they come from
+# Climate TRACE, and they carry a gas basis. Renewable plants come from GEM,
+# emit essentially nothing, and exist here to answer one question — where the
+# rest of Türkiye's generation is. Folding them into the same table would put
+# 3,000 zero-emission dots into a register whose whole purpose is emissions, and
+# would make every "300 facilities" statement in the documentation wrong for no
+# analytical gain.
+#
+# They are the visible answer to ROADMAP E1: Climate TRACE's power register sees
+# 52% of national generation, and this is the half it cannot see.
+
+FLEET_PATH <- file.path(PROJECT_ROOT, "data", "processed", "fleet_renewables.rds")
+
+fleet_renewables <- if (file.exists(FLEET_PATH)) readRDS(FLEET_PATH) else NULL
+
+FLEET_LABELS <- c(
+  "hydropower"          = "Hidroelektrik",
+  "utility-scale solar" = "Güneş",
+  "wind"                = "Rüzgâr",
+  "geothermal"          = "Jeotermal",
+  "nuclear"             = "Nükleer"
+)
+
+FLEET_COLOURS <- c(
+  "hydropower"          = "#3690C0",
+  "utility-scale solar" = "#FEC44F",
+  "wind"                = "#78C679",
+  "geothermal"          = "#DD3497",
+  "nuclear"             = "#8C6BB1"
+)

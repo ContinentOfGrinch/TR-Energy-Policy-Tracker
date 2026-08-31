@@ -1,32 +1,50 @@
 # karbon-atlasi-turkiye
 
-**Facility-level EU CBAM exposure for Türkiye.**
+**A facility-level atlas of Türkiye's carbon-intensive infrastructure.**
 
-An open-source R Shiny dashboard that maps individual carbon-intensive industrial
-installations in Türkiye and estimates their exposure to the EU Carbon Border Adjustment
-Mechanism (CBAM) under user-defined carbon price scenarios.
+An open-source R Shiny atlas that maps 300 individual installations — 88 industrial plants
+in the EU CBAM sectors and 212 energy assets — and assembles the evidence linking them:
+the grid carbon intensity that industrial indirect emissions depend on, and the fleet that
+produces it.
 
-> **Status: v0.1 in development.** The data pipeline and facility map work. The emissions
-> panel, the CBAM liability calculation and the time slider are not built yet. See
-> [ROADMAP.md](ROADMAP.md) for what is deliberately out of scope and what is simply not
-> done.
+> ### What works today, and what does not
+>
+> **Built and verified:** the acquisition pipeline with a full provenance chain, the
+> coverage audit that fixes `t₀` empirically, the 300-facility register with province and
+> İBBS-2 assignment, commissioning years from GEM, three cross-validated estimates of grid
+> carbon intensity, and an interactive map of both populations.
+>
+> **Not built:** the CBAM liability calculation, the emissions panel, and the time slider.
+> The regulatory parameters they need are in place and cited; the modelling decisions they
+> rest on are not made. See [ROADMAP.md](ROADMAP.md).
+>
+> **This tool does not yet produce a CBAM exposure figure.** When it does, this paragraph
+> will say so.
 
 ---
 
 ## Türkçe özet
 
-Bu proje, Türkiye'deki karbon yoğun sanayi tesislerini **tesis düzeyinde** haritalayan ve
-bunların **Sınırda Karbon Düzenleme Mekanizması (SKDM)** karşısındaki maruziyetini
-kullanıcı tanımlı karbon fiyatı senaryolarına göre tahmin eden açık kaynaklı bir R Shiny
-panosudur.
+Bu proje, Türkiye'nin karbon yoğun altyapısını **tesis düzeyinde** haritalayan açık
+kaynaklı bir R Shiny atlasıdır. Birbirinden ayrı incelenen iki popülasyonu ve aralarındaki
+bağı bir araya getirir:
 
-Kapsam: demir-çelik, çimento ve alüminyum — 88 tesis, 2021–2026.
+- **88 sanayi tesisi** — demir-çelik, çimento, alüminyum (SKDM sektörleri)
+- **212 enerji varlığı** — 157 elektrik santrali, 38 kömür ocağı, 17 petrol-gaz tesisi
 
-**Önemli:** Bu araç bir **vergi hesaplayıcısı değildir.** SKDM sertifikalarını AB'deki
-ithalatçı satın alır, Türk üretici değil. Üretilen rakam, tesisin AB'ye giden üretimine
-gömülü emisyonun yarattığı **maliyet baskısıdır** — tesise kesilecek bir fatura değil.
-Bu maliyetin ne kadarının üreticiye yansıyacağı bir pazarlık gücü sorusudur ve bu modelin
-dışındadır.
+Bağ şudur: sanayi tesislerinin **dolaylı** emisyonu, tükettikleri elektriğin karbon
+yoğunluğuna bağlıdır; o yoğunluğu da haritalanabilir bir filo üretir.
+
+**Bugün ne var, ne yok.** Veri boru hattı, tesis kütüğü, devreye giriş yılları, şebeke
+yoğunluğunun üç bağımsız tahmini ve harita çalışıyor. **SKDM maruziyet hesabı, emisyon
+paneli ve zaman slider'ı henüz yok** — gerekli mevzuat parametreleri hazır ve kaynaklı,
+ama dayandıkları modelleme kararları verilmedi.
+
+**Önemli — bu araç bir vergi hesaplayıcısı değildir.** SKDM sertifikalarını AB'deki
+ithalatçı satın alır, Türk üretici değil. Hesap eklendiğinde üretilecek rakam, tesisin
+AB'ye giden üretimine gömülü emisyonun yarattığı **maliyet baskısı** olacaktır — tesise
+kesilecek bir fatura değil. Bu maliyetin ne kadarının üreticiye yansıyacağı bir pazarlık
+gücü sorusudur ve bu modelin dışındadır.
 
 Tüm emisyon rakamları **modellenmiş tahmindir.** Türkiye'de tesis düzeyinde doğrulanmış
 sera gazı raporları kamuya açık değildir.
@@ -50,13 +68,20 @@ is commodity.
 
 ### What is covered
 
-| Dimension | v0.1 |
+| Dimension | Current |
 |---|---|
-| Sectors | Iron & steel, cement, aluminium |
-| Facilities | 88 (cement 58, iron & steel 27, aluminium 3) |
+| Industrial sectors | Iron & steel 27, cement 58, aluminium 3 — **88 facilities**, CO₂ basis |
+| Energy assets | Electricity generation 157, coal mining 38, oil & gas 17 — **212 facilities**, CO₂e basis |
+| Total | **300 records at 290 distinct locations** |
 | Geography | Türkiye, facility → province → İBBS-2 region → national |
-| Years | 2021–2026 (`t₀ = 2021`, established empirically; 2026 partial at 5 months) |
+| Emissions years | 2021–2026 (`t₀ = 2021`, established empirically; 2026 partial at 5 months) |
+| Commissioning years | 78% populated, back to 1911, from GEM |
 | Regime | EU CBAM |
+
+**The two populations use different gas bases and are never summed.** CBAM is a CO₂
+instrument, so industrial figures are CO₂. Only 18% of Turkish coal mining's footprint is
+CO₂ — the rest is fugitive methane — so energy figures are CO₂e over 100 years. A total
+spanning both would be meaningless, and the interface says so before the idea forms.
 
 ### What is not covered, and why
 
@@ -158,34 +183,56 @@ source, this project would be dead within two years.
 | Source | Use | Licence |
 |---|---|---|
 | [Climate TRACE](https://climatetrace.org) | Facility emissions, production, capacity, technology | CC BY 4.0 |
+| [Global Energy Monitor](https://globalenergymonitor.org) | Commissioning years, captive-plant status, cross-validation | CC BY 4.0 |
+| [Ember](https://ember-energy.org) | National generation by fuel, grid carbon intensity | CC BY 4.0 |
 | [Natural Earth](https://www.naturalearthdata.com) | Province and İBBS-2 assignment | Public domain |
 | European Commission | CBAM phase-in factors, certificate prices | — |
 
-Full provenance — release tags, SHA-256 digests, retrieval dates and the complete
-attribution chain — is in [data/processed/SOURCES.md](data/processed/SOURCES.md),
-regenerated by the fetch script.
+**No ShareAlike anywhere in the chain**, which is why geoBoundaries was rejected for
+province boundaries: its Turkey layer is CC BY-SA 2.0 and ShareAlike would have propagated
+into this project's CC BY 4.0 derived data.
 
-Climate TRACE is CC BY 4.0. **Attribution is a licence condition.** If you redistribute
+Full provenance — release tags, SHA-256 digests, retrieval dates and the complete
+attribution chain — is in [SOURCES.md](data/processed/SOURCES.md),
+[SOURCES_GEM.md](data/processed/SOURCES_GEM.md) and
+[SOURCES_EMBER.md](data/processed/SOURCES_EMBER.md), each regenerated by the script that
+fetches it.
+
+**Attribution is a licence condition, not a courtesy**, and naming the source is not
+enough: CC BY 4.0 §3(1)(a)(ii) requires stating *that* the material was modified, and §4
+attaches the condition to derived databases. Those statements are generated on every
+ingest and a test fails the build if data is present without them. If you redistribute
 data derived from this project, carry the chain forward.
 
 ---
 
 ## Known data-quality issues
 
-Published rather than hidden, because a tool that shows 88 confident dots while knowing
+Published rather than hidden, because a tool that shows 300 confident dots while knowing
 some of them are uncertain is overstating what it knows.
 
-- **22 of 88 facilities** sit within 2 km of a province boundary or were snapped from
-  offshore port locations. Every facility carries a `geocode_quality` flag, and per-facility
-  distances are in `data/processed/facilities_geocode_report.csv`.
-- **Possible double count in Kars.** Two cement records sit 71 m apart with independent
-  full time series under operators consistent with one plant recorded twice across an
-  ownership change. Unresolved; neither record has been dropped on suspicion.
+- **80 of 300 facilities** sit within 2 km of a province boundary, were snapped to the
+  nearest polygon, or are offshore. Every facility carries a `geocode_quality` flag and
+  per-facility distances are in `data/processed/facilities_geocode_report.csv`.
+- **Twelve same-subsector near-duplicates**, including four coal-mine pairs at identical
+  coordinates and the Kars cement pair 71 m apart whose operators are consistent with one
+  plant recorded twice across an ownership change. Unresolved; nothing has been dropped on
+  suspicion. See ROADMAP E7.
+- **300 records are 290 places.** Climate TRACE lists each oil and gas field twice, under
+  production and under transport, at one location. Correct accounting, misleading
+  cartography — both counts are reported.
 - **One probable province misassignment.** Koç Metalurji Toprakkale was assigned to Hatay
-  while two neighbouring plants 600 m away went to Osmaniye. Both provinces are İBBS-2
-  TR63, so regional figures are unaffected.
+  while two neighbouring plants 600 m away went to Osmaniye. Both are İBBS-2 TR63, so
+  regional figures are unaffected.
+- **Renewables are absent from the mapped energy layer.** Climate TRACE's Turkish power
+  register lists combustion plants only. It covers 52% of national generation, and the
+  missing half is almost exactly the renewable half — which is why a grid factor computed
+  from it alone runs 57% high. The correct denominator comes from Ember instead.
 - **The İBBS-2 mapping is transcribed, not fetched** from an authoritative file, and
   carries a verification marker pending a citation to the official TÜİK classification.
+- **Two carbon price scenarios lack a citation.** `policies/carbon_price_scenarios.json`
+  flags them `citation_required: true`. Until that is resolved the project is in breach of
+  its own rule that a regulatory number without a source is unusable.
 
 ---
 

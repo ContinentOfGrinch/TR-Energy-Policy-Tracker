@@ -347,11 +347,46 @@ from the mapped fleet alone would have **overstated industrial indirect emission
 57%** — and it would have done so silently, because the arithmetic is correct and only the
 denominator is incomplete.
 
-**Decision (2026-08-19): complete the denominator from TEİAŞ.** Numerator stays Climate
-TRACE (fossil fleet emissions); denominator becomes TEİAŞ's official annual generation by
-source, which includes hydro, wind and solar. This keeps the claim that the energy layer
-explains the grid factor, rather than borrowing a number. TEİAŞ enters `SOURCES.md` as a
-third upstream source with its own licence and retrieval date.
+**Decision (2026-08-19), revised 2026-08-28: complete the denominator from Ember, with
+TEİAŞ as the cross-check.**
+
+TEİAŞ is the national authority but publishes PDF and spreadsheet reports. Ember (Ember
+Energy Research CIC) compiles national data, publishes CC BY 4.0, exposes a single CSV, and
+carries a fuel-level series back to 2000. Having already accepted one manual download for
+GEM, a second was not worth the reproducibility cost — and the numbers say it is not
+needed.
+
+**Three independent estimates of Turkish grid intensity, gCO₂/kWh:**
+
+| year | Ember published | Climate TRACE reported | CT fleet, naive | Ember vs CT |
+|---|---|---|---|---|
+| 2021 | 502 | 508 | 664 | +1.3% |
+| 2022 | 489 | 501 | 725 | +2.5% |
+| 2023 | 495 | 489 | 737 | −1.3% |
+| 2024 | 471 | 477 | 748 | +1.3% |
+| 2025 | 476 | 491 | 719 | +3.2% |
+
+The first two come from unrelated methods and agree within 3.2% across five years. That
+agreement is the evidence that Ember can carry the denominator without distorting the
+result. TEİAŞ remains the manual verification, recorded in METHODOLOGY — the same
+arrangement as GEM against Climate TRACE.
+
+**And the coverage gap is now measured rather than inferred:**
+
+| year | national generation | Climate TRACE covers | coverage | renewable share |
+|---|---|---|---|---|
+| 2021 | 327.9 TWh | 196.8 | 60% | 34% |
+| 2024 | 341.2 TWh | 177.2 | 52% | 43% |
+| 2025 | 353.9 TWh | 188.5 | 53% | 41% |
+
+Climate TRACE's power register sees roughly half of Turkish generation, and the missing
+half is almost exactly the renewable half. The naive estimate is not slightly high; it is
+high by a factor that tracks the renewable share year by year.
+
+`policies/grid_emission_factor.json` is now live and records all three estimates with the
+rejected one marked `diagnostic_not_for_use`, so nobody recomputes it later and mistakes it
+for the project's own number. `selection.chosen` is deliberately `null`: which estimate
+enters `co2_indirect_t` is author work under §9.
 
 **Decision (2026-08-19): renewables are added to the map from GEM.** Hydro, wind, solar and
 geothermal plants come from the GEM Global Integrated Power Tracker with coordinates and

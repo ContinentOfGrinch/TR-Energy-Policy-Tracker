@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "grid_emission_factor",
+  "description": "Which grid carbon intensity estimate is authoritative, and why. The schema's job is keeping the three estimates distinguishable and keeping `selection.chosen` an explicit decision rather than a default that drifts in.",
+  "type": "object",
+  "required": ["meta", "estimates", "captive_generation", "selection"],
+
+  "properties": {
+    "_comment": { "type": "string" },
+
+    "meta": {
+      "type": "object",
+      "required": ["parameter_set", "retrieved_date", "unit", "source_url", "status"],
+      "properties": {
+        "parameter_set":  { "const": "grid_emission_factor" },
+        "regime_id":      { "type": "string" },
+        "version":        { "type": "string" },
+        "retrieved_date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "unit":           { "const": "gCO2 per kWh" },
+        "value_type": {
+          "type": "string",
+          "enum": ["observed", "legislated", "scenario", "projected", "assumption"]
+        },
+        "source_url":        { "type": "string", "minLength": 1 },
+        "generated_series":  { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["estimates_published_selection_pending", "selected"],
+          "description": "Two known states only, so the file cannot claim a selection it has not made."
+        }
+      }
+    },
+
+    "why_this_matters": {
+      "type": "object",
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "channel": { "type": "string" }
+      }
+    },
+
+    "estimates": {
+      "type": "object",
+      "minProperties": 2,
+      "description": "All candidates, including rejected ones. Recording only the winner would hide why it won.",
+      "properties": {
+        "_comment": {
+          "type": "string",
+          "description": "Underscore-prefixed keys are prose for the reader, not parameters. Declared explicitly so additionalProperties below applies only to actual estimates."
+        }
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["value_type", "method", "role"],
+        "properties": {
+          "label_tr":   { "type": "string" },
+          "value_type": {
+            "type": "string",
+            "enum": ["observed", "assumption", "diagnostic_not_for_use"],
+            "description": "diagnostic_not_for_use marks a figure kept as a warning rather than a candidate."
+          },
+          "method":     { "type": "string", "minLength": 1 },
+          "source":     { "type": "string" },
+          "source_url": { "type": "string" },
+          "licence":    { "type": "string" },
+          "example_2024_g_per_kwh": { "type": "number", "exclusiveMinimum": 0 },
+          "role":       { "type": "string", "minLength": 1 },
+          "why_wrong":  { "type": "string" }
+        }
+      }
+    },
+
+    "cross_check": {
+      "type": "object",
+      "required": ["source", "status"],
+      "properties": {
+        "source":     { "type": "string" },
+        "source_url": { "type": "string" },
+        "status":     { "type": "string", "enum": ["not_yet_performed", "performed"] },
+        "note":       { "type": "string" }
+      }
+    },
+
+    "captive_generation": {
+      "type": "object",
+      "required": ["rule", "rationale", "applied"],
+      "properties": {
+        "rule": {
+          "type": "string",
+          "enum": ["exclude_from_both_numerator_and_denominator", "include", "flag_only"]
+        },
+        "rationale":      { "type": "string", "minLength": 1 },
+        "identification": { "type": "string" },
+        "turkish_operating_captive": {
+          "type": "object",
+          "properties": {
+            "units":       { "type": "integer", "minimum": 0 },
+            "capacity_gw": { "type": "number", "minimum": 0 }
+          }
+        },
+        "applied": {
+          "type": "boolean",
+          "description": "Whether the rule has actually been applied to a published figure. Stating the rule is not the same as having applied it."
+        },
+        "applied_note": { "type": "string" }
+      }
+    },
+
+    "selection": {
+      "type": "object",
+      "required": ["chosen"],
+      "properties": {
+        "chosen": {
+          "type": ["string", "null"],
+          "description": "null while the choice is outstanding. Section 9 reserves it for the author; a default here would make the decision by omission."
+        },
+        "chosen_note": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "_comment": "Grid carbon intensity: which estimate is authoritative, and why. LIVE as of 2026-08-19, no longer a v2 placeholder — the scope merge made the indirect-emissions channel part of v1 (KARBON_ATLASI.md section 7). This file holds the DECISION and its citations; the yearly numbers are generated into data/processed/grid_intensity.csv by scripts/01d_fetch_ember.R so they cannot drift from the data.",
+
+  "meta": {
+    "parameter_set": "grid_emission_factor",
+    "regime_id": "EU_CBAM",
+    "version": "2026-08-28",
+    "retrieved_date": "2026-08-28",
+    "unit": "gCO2 per kWh",
+    "value_type": "observed",
+    "source_url": "https://ember-energy.org/data/yearly-electricity-data/",
+    "generated_series": "data/processed/grid_intensity.csv",
+    "status": "estimates_published_selection_pending"
+  },
+
+  "why_this_matters": {
+    "summary": "Grid carbon intensity converts an industrial facility's electricity_use into its indirect emissions. It is a multiplier on roughly half of what CBAM measures for an electric-arc steel plant, so an error here is not a rounding difference.",
+    "channel": "facility electricity_use (MWh) x grid intensity (tCO2/MWh) = co2_indirect_t"
+  },
+
+  "estimates": {
+    "_comment": "Three figures from three methods. The file records all three because the disagreement is itself a result (KARBON_ATLASI.md section 7), and because publishing only the chosen one would hide why it was chosen.",
+
+    "ember_published": {
+      "label_tr": "Ember yayımlanan",
+      "value_type": "observed",
+      "method": "Ember's own power-sector CO2 intensity for Türkiye, compiled from national sources.",
+      "source": "Ember (Ember Energy Research CIC), Yearly Electricity Data",
+      "source_url": "https://ember-energy.org/data/yearly-electricity-data/",
+      "licence": "CC BY 4.0",
+      "example_2024_g_per_kwh": 471,
+      "role": "operational default — machine-readable, fuel-level series back to 2000"
+    },
+
+    "climate_trace_reported": {
+      "label_tr": "Climate TRACE raporlanan",
+      "value_type": "observed",
+      "method": "The grid_emissions_intensity field Climate TRACE carries in its INDUSTRIAL records; the value its own indirect-emissions estimate already uses.",
+      "source": "Climate TRACE country package, manufacturing subsectors",
+      "source_url": "https://climatetrace.org",
+      "licence": "CC BY 4.0",
+      "example_2024_g_per_kwh": 477,
+      "role": "independent corroboration — agrees with Ember to within about 1-3% across 2021-2025 by an unrelated method"
+    },
+
+    "computed_from_ct_fleet": {
+      "label_tr": "CT filosundan hesaplanan",
+      "value_type": "diagnostic_not_for_use",
+      "method": "Total emissions divided by total generation across Climate TRACE's power register.",
+      "example_2024_g_per_kwh": 748,
+      "role": "RETAINED AS A WARNING, NOT A CANDIDATE.",
+      "why_wrong": "Climate TRACE's Turkish power register lists combustion plants only — no hydro, wind, solar, geothermal or nuclear. It covers 52% of national generation in 2024 while renewables are 43%. The arithmetic is correct and the denominator is incomplete, so the figure runs roughly 57% high. It is recorded so nobody recomputes it and mistakes it for the project's own number. See ROADMAP.md, E1."
+    }
+  },
+
+  "cross_check": {
+    "source": "TEİAŞ Türkiye Elektrik Üretim-İletim İstatistikleri",
+    "source_url": "https://www.teias.gov.tr/turkiye-elektrik-uretim-iletim-istatistikleri",
+    "status": "not_yet_performed",
+    "note": "TEİAŞ is the national authority but publishes PDF and spreadsheet reports rather than a machine-readable series. Ember is the operational source and TEİAŞ the manual verification, the same arrangement used for GEM against Climate TRACE. Record the comparison year and result in METHODOLOGY when done."
+  },
+
+  "captive_generation": {
+    "rule": "exclude_from_both_numerator_and_denominator",
+    "rationale": "A plant serving an industrial host does not feed the grid, so including it inflates generation nobody else could draw on. Its host's electricity does not carry grid intensity either, so applying the grid factor to a self-generating facility is wrong exactly where the error is largest.",
+    "identification": "GEM's Global Integrated Power Tracker declares this directly in `Captive Industry Type` and `Captive Industry Use`. A 1.5 km spatial heuristic was considered and dropped in favour of the stated field; the spatial check is retained only as a cross-check.",
+    "turkish_operating_captive": { "units": 34, "capacity_gw": 4.46 },
+    "applied": false,
+    "applied_note": "Not yet netted out of any published figure. Doing so is analytical core work reserved for the author (section 9)."
+  },
+
+  "selection": {
+    "chosen": null,
+    "chosen_note": "DELIBERATELY NULL. Which estimate enters co2_indirect_t, and whether it is applied per-year or as a single vintage, is a modelling decision reserved for the author under KARBON_ATLASI.md section 9. The evidence is assembled; the choice is not made here."
+  }
+}

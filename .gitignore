@@ -10,6 +10,15 @@
 # (decisions and open questions).
 MEMORY.md
 
+# FINDINGS.md is the author's private record of what the data turned out to be:
+# defects in the upstream sources, structural traps, and dead ends, each with
+# the measurement behind it. Untracked at the author's decision on 2026-09-01,
+# because several of these findings generalise beyond this project and are
+# intended to be written up by the author before they are published.
+# When that write-up exists, the findings reach the public through
+# METHODOLOGY.md and the README's known-issues section — not through this file.
+FINDINGS.md
+
 # --- Generated validation reports -------------------------------------------
 # pointblank writes a ~200 KB self-contained HTML report with inline CSS/JS and
 # a fresh timestamp on every run. Tracking it would churn git history on each

@@ -211,6 +211,13 @@ data derived from this project, carry the chain forward.
 Published rather than hidden, because a tool that shows 300 confident dots while knowing
 some of them are uncertain is overstating what it knows.
 
+One of these is not specific to Türkiye and is worth stating plainly for anyone doing
+similar work: **a national grid carbon intensity derived from Climate TRACE's
+`electricity-generation` register alone will run high wherever the fleet is substantially
+renewable**, because that register is combustion-only. The size of the error tracks the
+renewable share, so it is largest in the countries decarbonising fastest. The full
+argument, with its measurements, will appear in `METHODOLOGY.md`.
+
 - **80 of 300 facilities** sit within 2 km of a province boundary, were snapped to the
   nearest polygon, or are offshore. Every facility carries a `geocode_quality` flag and
   per-facility distances are in `data/processed/facilities_geocode_report.csv`.

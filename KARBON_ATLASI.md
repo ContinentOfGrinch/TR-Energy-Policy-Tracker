@@ -12,6 +12,15 @@ Companion documents:
   (so they are not re-derived), and the traps already paid for. Keep it current in the
   same commit as the work it describes.
 - `ROADMAP.md` — the authoritative record of scope decisions and deferred features
+- `FINDINGS.md` — **local only, gitignored, will not exist in a fresh clone.** What the
+  data turned out to be: defects, structural traps and dead ends discovered while building,
+  each with the measurement that supports it. Distinct from `ROADMAP.md`, which records
+  *decisions*: this file records *observations about the sources*. Untracked at the
+  author's decision on 2026-09-01, because several findings generalise beyond this project
+  and are to be written up by him before they are published; they reach the public through
+  `METHODOLOGY.md`, not through this file. If it is present on disk, read it — when a new
+  anomaly is found it goes here with its number, not into a commit message where it will
+  be lost.
 - `MEMORY.md` — **local only, gitignored, will not exist in a fresh clone.** A chronological
   working journal: what was built in what order, which approaches were tried and abandoned,
   and which mistakes were made. If it is present on disk, read it after `STATUS.md` — it
@@ -109,7 +118,8 @@ scripts/
 
 Root files: `README.md`, `KARBON_ATLASI.md`, `CLAUDE.md` (pointer only), `STATUS.md`,
 `METHODOLOGY.md`, `ROADMAP.md`, `CITATION.cff`, `LICENSE`, `renv.lock`, `.gitignore`,
-`.gitattributes`.
+`.gitattributes`. Two further root files exist on the author's machine only and are
+gitignored: `MEMORY.md` and `FINDINGS.md`.
 
 **Hard rules:**
 - Never create new top-level directories without asking.

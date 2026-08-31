@@ -332,7 +332,15 @@ MEMORY.md              LOCAL ONLY, gitignored, absent from a fresh clone.
                        Chronological working journal: what was built in what
                        order, approaches tried and abandoned, mistakes made.
                        Read it after this file if it exists on disk.
-ROADMAP.md             decisions with reasoning, open questions 1-8 and E1-E4
+ROADMAP.md             decisions with reasoning, open questions 1-8 and E1-E7
+FINDINGS.md            LOCAL ONLY, gitignored, absent from a fresh clone.
+                       What the data turned out to be: source defects, structural
+                       traps and dead ends, each with its measurement. ROADMAP
+                       records decisions; this records observations. Untracked
+                       2026-09-01 — the generalisable findings are the author's
+                       to write up first, and reach the public through
+                       METHODOLOGY. Add new anomalies here, not to a commit
+                       message where they will be lost.
 README.md              public-facing; Turkish summary block
 METHODOLOGY.md         NOT YET WRITTEN — author's prose only (§9)
 CITATION.cff           ORCID recorded
@@ -345,14 +353,23 @@ app/server.R           selected_facilities() is the single filter reactive —
 
 scripts/_sources.R     shared acquisition, SHA-256, archive inspection.
                        Approved exception to the numbering convention (§3)
+scripts/_validate.R    tiered pipeline gates — STOP on structural impossibility,
+                       WARN on data quality. Approved exception (§3)
 scripts/00_…           coverage audit -> t0
 scripts/01_…           all raw acquisition -> SOURCES.md
 scripts/01b_…          Eurostat Comext trade
-scripts/02_…           facilities.rds
+scripts/01c_…          GEM ingest -> commissioning years, SOURCES_GEM.md.
+                       NEEDS A MANUAL DOWNLOAD; stops rather than proceeding empty
+scripts/01d_…          Ember -> grid_intensity.csv, SOURCES_EMBER.md
+scripts/02_…           facilities.rds + fleet_renewables.rds
 scripts/03_…           DOES NOT EXIST — the panel, blocked on B1/B2
 
-policies/*.json        4 files, all with source_url + retrieval date
-data/processed/        facilities.rds, coverage matrices, SOURCES.md, geocode report
+tests/                 testthat; data-property assertions, not unit tests.
+                       Skip rather than fail when an artefact is unbuilt
+policies/*.json        5 files, all with source_url + retrieval date,
+                       each validated against a schema in policies/_schema/
+data/processed/        facilities.rds, fleet_renewables.rds, coverage matrices,
+                       grid_intensity.csv, SOURCES*.md, geocode report
 data/raw/              gitignored
 ```
 
@@ -361,7 +378,11 @@ data/raw/              gitignored
 ## 10. Resuming
 
 1. `KARBON_ATLASI.md` loads automatically via the `CLAUDE.md` pointer.
-2. Read this file, then `ROADMAP.md` open questions.
+2. Read this file, then `ROADMAP.md` open questions, then — **if they exist on disk** —
+   `MEMORY.md` and `FINDINGS.md`. Both are gitignored, so a fresh clone has neither.
+   `FINDINGS.md` is what stops a resuming session from rediscovering a source defect that
+   was already measured and paid for; if it is absent, assume that knowledge is gone and
+   ask the author before re-deriving anything.
 3. `git log --oneline` — commit messages carry the reasoning for each decision.
 4. Ask the author what changed on the B track; work done in his head is not on disk.
 

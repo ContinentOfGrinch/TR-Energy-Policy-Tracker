@@ -111,10 +111,20 @@ test_that("derived-data licence is compatible with every upstream licence", {
 
   txt <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
 
-  # The chain is CC BY 4.0 (Climate TRACE) + CC BY 4.0 (GEM) + public domain
-  # (Natural Earth) -> CC BY 4.0 derived. No ShareAlike anywhere, which is why
-  # geoBoundaries was rejected for boundaries; see ROADMAP.md.
+  # The chain is CC BY 4.0 (Climate TRACE, GEM, Ember) + public domain (Natural
+  # Earth) -> CC BY 4.0 derived. No ShareAlike anywhere.
   expect_match(txt, "CC BY 4.0", fixed = TRUE)
-  expect_false(grepl("CC BY-SA", txt, fixed = TRUE),
-               label = "README must not claim a ShareAlike upstream")
+
+  # The check is that no source IN USE is ShareAlike — not that the string never
+  # appears. The README names CC BY-SA precisely to explain why geoBoundaries
+  # was rejected for province boundaries, and an assertion that forbids the
+  # string outright punishes the project for documenting the decision. Only the
+  # rows of the sources table are examined.
+  lines <- readLines(path, warn = FALSE, encoding = "UTF-8")
+  table_rows <- lines[grepl("^\\|", lines) & grepl("CC BY|domain|Public", lines)]
+
+  offending <- table_rows[grepl("CC BY-SA", table_rows, fixed = TRUE)]
+  expect_equal(length(offending), 0L,
+               info = paste("ShareAlike source listed in use:",
+                            paste(offending, collapse = " / ")))
 })

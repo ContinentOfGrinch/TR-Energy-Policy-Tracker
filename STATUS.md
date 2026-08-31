@@ -4,7 +4,7 @@
 this file says where it *got to*, what runs, what is blocked, and which traps have already
 been paid for.
 
-Last updated: **2026-08-28** · 27 commits · **~58% complete** · 133 assertions passing
+Last updated: **2026-09-01** · 32 commits · **~58% complete** · 133 assertions passing
 
 > The figure moved 53% → 35% → 58%. The drop was the scope merge on 2026-08-19 growing the
 > denominator, not work being lost; the recovery is the energy half being built. Both
@@ -27,9 +27,10 @@ infrastructure at facility level and links two populations that are normally stu
 
 - **88 industrial installations** (iron & steel, cement, aluminium) and their EU CBAM /
   SKDM exposure under user-defined carbon price scenarios;
-- **210 energy assets** (157 power stations, 38 coal mines, 15 oil & gas facilities) which
+- **212 energy assets** (157 power stations, 38 coal mines, 17 oil & gas facilities) which
   carry their own emissions *and* set the grid carbon intensity that produces the
-  industrial installations' indirect emissions.
+  industrial installations' indirect emissions. The 17 sit at 11 locations: each of the
+  six fields is listed twice, under production and under transport.
 
 R Shiny, `shinydashboard`, `leaflet`, `sf`. Author: Selahattin İlhan, ORCID
 0009-0007-4824-752X. Destination: Zenodo DOI, then JOSS.
@@ -46,28 +47,35 @@ resolution, with an audit trail, is what is unoccupied.
 
 ### What works end to end
 
-- Acquisition, provenance and integrity checks for all raw sources
-- Coverage audit that establishes `t₀` from evidence rather than assumption
-- `facilities.rds` — 88 facilities with province and İBBS-2 assignment, verified
-- Policy parameters as JSON, all carrying `source_url` and retrieval date
-- EU trade fetch from Eurostat Comext
-- Shiny app: facility map, sector and province filters, geocode-quality panel, sources tab
+- Acquisition, provenance and integrity checks for all raw sources — Climate TRACE (both
+  gas packages), GEM, Ember, Natural Earth, Eurostat Comext
+- Coverage audit that establishes `t₀` from evidence rather than assumption, for both
+  populations
+- `facilities.rds` — **300 records at 290 locations**, both populations, with province and
+  İBBS-2 assignment verified against 18 known locations
+- `fleet_renewables.rds` — 3,136 operating renewable plants, 58.8 GW, deliberately kept
+  out of the emissions register and drawn as an optional context layer
+- Commissioning years from GEM: **78.3% of the register**, earliest 1911
+- Three independent grid carbon intensity estimates, assembled and reconciled
+- Policy parameters as JSON — 5 files, all carrying `source_url` and a retrieval date, each
+  validated against a schema in `policies/_schema/`
+- Tiered pipeline gates (`_validate.R`) plus 133 testthat assertions
+- Shiny app: both populations on one Türkiye-bounded map, sector/province/captive filters,
+  grid-intensity tab, geocode-quality and commissioning panels, sources tab
 
-Everything above covers the **industrial half only**. The energy half is decided and
-specified but nothing has been fetched.
+**Both halves are now built.** What is missing is no longer a data layer; it is the panel
+and the arithmetic on top of it.
 
 ### What does not exist yet
 
 | Missing | Blocked on |
 |---|---|
-| **Energy assets (210 facilities)** | nothing — ready to build |
-| **GEM commissioning years** | nothing — required for the 2000–2026 fleet timeline |
-| **Grid emission factor** | the energy fetch above |
 | `facility_panel.rds` | Author decisions **B1** (direct/indirect split) and **B2** (annual aggregation) |
 | CBAM liability figure | Author decisions **B7** (`eu_export_share`) and **B9** (the calculation) |
-| Time slider, cost layer, energy layer, audit-trail panel | the panel above |
+| Grid factor **selection** | Author decision — three estimates exist, `selection.chosen` is deliberately `null` |
+| Time slider, cost layer, audit-trail panel | the panel above |
+| The 2000–2026 fleet timeline | the panel; commissioning years are ingested and joined |
 | `METHODOLOGY.md` | author writes the prose (§9) |
-| `tests/` | **author's permission still outstanding** — §3 forbids new top-level directories |
 
 ### Progress by component
 
@@ -119,12 +127,23 @@ Rscript -e "renv::restore()"
 Rscript scripts/00_coverage_audit.R       # optional; regenerates the t0 evidence
 Rscript scripts/01_fetch_climate_trace.R  # all raw acquisition + SOURCES.md
 Rscript scripts/01b_fetch_eu_trade.R      # Eurostat Comext trade quantities
-Rscript scripts/02_build_facilities.R     # -> facilities.rds
+Rscript scripts/01c_ingest_gem.R          # commissioning years + captive flags
+Rscript scripts/01d_fetch_ember.R         # national generation -> grid intensity
+Rscript scripts/02_build_facilities.R     # -> facilities.rds + fleet_renewables.rds
 # scripts/03_build_panel.R                # DOES NOT EXIST YET (blocked on B1/B2)
+
+# tests — run these SEPARATELY from any commit
+Rscript tests/testthat.R
 
 # app
 Rscript -e "shiny::runApp('app', port=3838, launch.browser=TRUE)"
 ```
+
+**`01c` needs a manual download.** GEM distributes its trackers behind a form, not a URL.
+Put the Global Integrated Power Tracker workbook (and optionally the Global Coal Mine
+Tracker) unrenamed into `data/raw/gem/`. The script stops with instructions if the file is
+absent and never proceeds with an empty table. Use `--profile-only` to inspect a workbook's
+sheets and columns before trusting a parser against it.
 
 `data/raw/` is gitignored. Reproducibility comes from re-running `01`, not from committed
 binaries. First run downloads ~60 MB and takes a few minutes; afterwards everything is
@@ -136,19 +155,24 @@ cached and re-runs take seconds.
 
 | Fact | Value | Evidence |
 |---|---|---|
-| Energy assets available | electricity-generation **157**, coal-mining **38**, oil-and-gas production / refining / transport **5 each** | Climate TRACE API, counted 2026-08-19 |
-| Total target population | **298** = 88 industrial + 210 energy | same |
+| Energy assets built | electricity-generation **157**, coal-mining **38**, oil-and-gas production **6** / refining **5** / transport **6** = **212** | `facilities.rds` |
+| Total population | **300** records at **290** locations = 88 industrial + 212 energy | same |
 | `t₀` | **2021** | `data/processed/coverage_audit_summary.md` |
 | Last complete year | 2025 | same |
 | 2026 | partial, **5 of 12 months** | same |
-| Facilities | **88** — cement 58, iron & steel 27, aluminium 3 | `facilities.rds` |
+| Industrial facilities | **88** — cement 58, iron & steel 27, aluminium 3 | `facilities.rds` |
+| Gas basis | industrial **CO₂** (88), energy **CO₂e(100yr)** (212) — **never summed** | same |
+| Commissioning years | **78.3%** overall; industrial 87.5%, energy 74.5%; oil & gas **0%**; earliest **1911** | measured 2026-09-01 |
+| Captive plants | **27** flagged in the register; GEM declares 34 operating units / 4.46 GW fleet-wide | `is_captive` |
+| Renewable fleet (context only) | **3,136** operating plants, **58.8 GW** | `fleet_renewables.rds` |
+| Grid intensity 2024 | naive fleet **748**, Ember **471**, Climate TRACE reported **477** gCO₂/kWh | `grid_intensity.csv` |
 | Source release | Climate TRACE **v5_9_0** | `SOURCES.md` |
 | CBAM phase-in | 2026 **2.5%** → 2034 **100%** | `policies/cbam_phase_in.json` |
 | CBAM certificate price | Q1 2026 **€75.36**, Q2 2026 **€75.28** | verified against the Commission price page |
 | CBAM de minimis | 50 t per importer per year | recorded, deliberately **not applied** |
 | TR-ETS | Law 7552, pilot 2026–27, 50,000 tCO₂e threshold, 100% free allocation | `policies/tr_ets.json` |
-| Geocode quality | 66 within province, 18 near a border, 4 snapped from offshore (max 1,087 m) | `facilities_geocode_report.csv` |
-| Verification | 34 checks pass, 0 fail, 3 flagged | run 2026-08-19 |
+| Geocode quality | **220** within province, **64** boundary-proximate, **12** snapped to nearest, **4** offshore | `facilities_geocode_report.csv` |
+| Verification | **133 assertions**, 0 failures | `Rscript tests/testthat.R` |
 
 ---
 
@@ -216,19 +240,32 @@ Numbered as in `ROADMAP.md`. The author-facing task list is published at
   entirely** (see §7 below).
 - **B9** Write the liability calculation, retaining every intermediate for the audit trail.
 
-**Raised by the merge — buildable now, blocked on nobody:**
+**Raised by the merge — E1, E2, E4, E5 and E6 are now CLOSED with evidence.** Do not reopen
+them; the answers are in `ROADMAP.md` and, with their measurements, in `FINDINGS.md` if it
+is on disk.
 
-- **E1** Does `electricity-generation` include zero-emission plants? If Climate TRACE lists
-  only emitting assets, a grid factor computed as emissions ÷ generation is wrong, because
-  the denominator omits hydro, wind and solar. **Settle this before computing any grid
-  factor.**
-- **E2** How many of the 210 energy assets have a GEM commissioning year? Thin coverage
-  means the 2000–2026 timeline claim has to be scaled back.
+- ~~**E1**~~ **Answered: no.** `electricity-generation` is combustion-only — 158 plants,
+  zero hydro/wind/solar/geothermal/nuclear. It covers 52% of 2024 national generation and
+  the missing half is almost exactly the renewable half, so a fleet-derived factor gives
+  748 against 471–477 gCO₂/kWh. Ember carries the denominator instead; the wrong figure is
+  kept as `diagnostic_not_for_use`.
+- ~~**E2**~~ **Answered:** 78.3% overall (see §4). WRI's GPPD was measured as the open
+  alternative and rejected at 15% coverage frozen at 2017.
 - **E3** How far apart are Climate TRACE's reported `grid_emissions_intensity` and the
-  project's own computed figure? The gap is a result, not an error to tune away.
-- **E4** Do coal mines and oil & gas assets belong in the same panel? Their emissions are
-  largely fugitive methane — a different gas on a different accounting basis from the CO₂
-  the rest of the project handles. Adding them into a CO₂-denominated total would be wrong.
+  project's own computed figure? **Partly answered** — Ember and Climate TRACE agree within
+  3.2% across five years, which isolates the naive fleet estimate as the outlier. What
+  remains is the author's choice of which to use: `grid_emission_factor.json` carries
+  `selection.chosen: null` deliberately.
+- ~~**E4**~~ **Answered: no, not on one basis.** Coal mining is 18% CO₂ and 82% fugitive
+  methane; a CO₂ basis understates it 5.6×. Energy runs on CO₂e(100yr), industrial on CO₂,
+  and the two are never summed — the interface says so before the idea forms.
+- ~~**E5**~~ **Answered:** GEM declares captive status directly (`Captive Industry Type`),
+  34 operating units / 4.46 GW. The 1.5 km spatial heuristic was demoted to a cross-check.
+- ~~**E6**~~ **Answered:** the `co2` and `co2e_100yr` packages carry different registers and
+  neither is a subset of the other. `co2e_100yr` is authoritative for energy; the eight
+  omissions are listed rather than silently reconciled.
+- **E7** Twelve same-subsector near-duplicates remain unresolved — four coal-mine pairs at
+  0 m and seven power-station pairs within 450 m, plus Kars. Nothing dropped on suspicion.
 
 **Blocking publication only** — short tasks, but v0.1 cannot be tagged with any outstanding:
 
@@ -246,8 +283,16 @@ Numbered as in `ROADMAP.md`. The author-facing task list is published at
 
 ## 7. Known data-quality issues
 
-Published rather than hidden. A tool showing 88 confident dots while knowing some are
-uncertain overstates what it knows.
+Published rather than hidden. A tool showing 300 confident dots while knowing some are
+uncertain overstates what it knows. The fuller record, with the measurement behind each,
+is in `FINDINGS.md` — local only, absent from a fresh clone.
+
+- **80 of 300 facilities** are not cleanly inside a province polygon: 64 boundary-proximate,
+  12 snapped to nearest, 4 offshore. Every record carries `geocode_quality`.
+- **300 records are 290 places.** Each of the six oil and gas fields is listed twice, under
+  production and under transport, at identical coordinates. Correct accounting, misleading
+  cartography — report both counts.
+- **Twelve same-subsector near-duplicates** (E7), including four coal-mine pairs at 0 m.
 
 - **Possible double count in Kars.** `Bozkale Cement Plant` (source_id 1897859) and
   `Kars Cement Plant` (42547309) sit **71 m apart**, both `integrated dry`, both with full
@@ -386,6 +431,7 @@ data/raw/              gitignored
 3. `git log --oneline` — commit messages carry the reasoning for each decision.
 4. Ask the author what changed on the B track; work done in his head is not on disk.
 
-The verification suite that produced the 34 checks in §4 was written in a scratch
-directory and **was not kept** — it needs `tests/`, which requires the author's permission
-under §3. Recreating it is a known cost.
+That scratch verification suite is now superseded: `tests/` was approved and built, and
+the checks live there permanently as 133 assertions. Run them **as their own command**,
+never chained onto a commit — PowerShell has no `&&`, so `Rscript tests/testthat.R; git
+commit` means "commit regardless", and that is how a failing test once reached a commit.

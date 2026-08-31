@@ -1,0 +1,38 @@
+gem_id,name,country,equipment,status,start_date,cap_crude,cap_bof,cap_eaf,cap_bf,cap_dri,gem_tracker,gem_source_file,start_year
+P100000120882,Aba Iron and Steel Payas plant,Türkiye,EAF,operating,1983.0,1100.0,N/A,1100.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1983
+P100000120886,Toscelik Iskenderun steel plant,Türkiye,EAF,operating,2023.0,4000.0,N/A,4000.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2023
+P100000120891,Asil Celik Orhangazi steel plant,Türkiye,EAF,operating,1979.0,730.0,N/A,730.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1979
+P100001047724,Cag Celik steel plant,Türkiye,EAF,announced,unknown,1000.0,N/A,1000.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,NA
+P100000120892,Cebitas steel plant,Türkiye,EAF,operating,1989.0,860.0,N/A,860.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1989
+P100000120867,Colakoglu Metallurgical Dilovasi steel plant,Türkiye,EAF,operating,1969.0,4500.0,N/A,4500.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1969
+P100000120868,Diler Iron and Steel Dilovasi plant,Türkiye,EAF,operating,1984.0,1300.0,N/A,1300.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1984
+P100000120869,Ege Steel Aliaga plant,Türkiye,EAF,operating,2001.0,1200.0,N/A,1200.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2001
+P100000120869,Ege Steel Aliaga plant,Türkiye,EAF,mothballed,2001.0,800.0,N/A,800.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2001
+P100000120870,Ekinciler Iron and Steel Iskenderun plant,Türkiye,EAF,operating,1989.0,1250.0,N/A,1250.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1989
+P100000120871,Erdemir Eregli steel plant,Türkiye,BF; BOF,operating,1965.0,3801.0,3801.0,N/A,3575.0,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1965
+P100000120871,Erdemir Eregli steel plant,Türkiye,EAF,announced,2030.0,1400.0,N/A,1400.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2030
+P100000120871,Erdemir Eregli steel plant,Türkiye,BF,retired,1965.0,N/A,N/A,N/A,1420.0,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1965
+P100000120887,Yazici Iron and Steel Iskenderun plant,Türkiye,EAF,operating,1994.0,1050.0,N/A,1050.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1994
+P100000120872,Habas Aliaga steel plant,Türkiye,EAF,operating,1987.0,4500.0,N/A,4500.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1987
+P100000120873,İÇDAŞ Biga steel plant,Türkiye,EAF,operating,1970.0,5000.0,N/A,5000.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1970
+P100000120874,İDÇ Izdemir Aliaga steel plant,Türkiye,EAF,operating,1987.0,3100.0,N/A,3100.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1987
+P100000120875,Isdemir Payas steel plant,Türkiye,BF; BOF,operating,1975.0,5800.0,5800.0,N/A,8100.0,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1975
+P100000120875,Isdemir Payas steel plant,Türkiye,EAF,announced,2030.0,2500.0,N/A,2500.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2030
+P100000120875,Isdemir Payas steel plant,Türkiye,BF,retired,1975.0,N/A,N/A,N/A,>0,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1975
+P100001061390,Vertra Celik Sarımazı steel plant,Türkiye,EAF,operating,45933.0,800.0,N/A,800.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,NA
+P100000120876,Kaptan Ereglisi steel plant,Türkiye,EAF,operating,2002.0,1400.0,N/A,1400.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2002
+P100000120876,Kaptan Ereglisi steel plant,Türkiye,EAF,construction,unknown,2000.0,N/A,2000.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,NA
+P100000120894,Kardemir Celik Sanayi Izmir steel plant,Türkiye,EAF,operating,2022.0,1250.0,N/A,1250.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2022
+P100000120877,Kardemir Merkez steel plant,Türkiye,BF; BOF,operating,14498.0,3501.0,3501.0,N/A,3520.0,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,NA
+P100000120877,Kardemir Merkez steel plant,Türkiye,BF,cancelled,14498.0,N/A,N/A,N/A,1000.0,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,NA
+P100001044901,Kocaer Çelik Aliaga steel plant,Türkiye,EAF,announced,2028.0,1250.0,N/A,1250.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2028
+P100000120878,Koc Metallurgical Toprakkale steel plant,Türkiye,EAF,operating,2012.0,1200.0,N/A,1200.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2012
+P100000120885,Toscelik Toprakkale steel plant,Türkiye,EAF,operating,2009.0,2000.0,N/A,2000.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2009
+P100000120879,Kroman Steel Darica plant,Türkiye,EAF,operating,1969.0,1500.0,N/A,1500.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1969
+P100000121241,Yildiz Iron and Steel Kocaeli plant,Türkiye,EAF,announced,2026.0,4000.0,N/A,4000.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2026
+P100000120888,Yesilyurt Iron and Steel Tekkekoy plant,Türkiye,EAF,operating,1997.0,1300.0,N/A,1300.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,1997
+P100000120881,Mescier Iron and Steel Bartin plant,Türkiye,EAF,operating,2020.0,1000.0,N/A,1000.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2020
+P100000120880,MMK Türkiye Metallurgical Payas steel plant,Türkiye,EAF,operating,2011.0,2300.0,N/A,2300.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2011
+P100000120883,Ozkan Iron and Steel Aliaga plant,Türkiye,EAF,operating,2010.0,1200.0,N/A,1200.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2010
+P100000120889,Tosyali Toprakkale steel plant,Türkiye,EAF,mothballed,2010.0,2000.0,N/A,2000.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2010
+P100000120884,Siddik Kardesler Dilovasi steel plant,Türkiye,EAF,operating,2016.0,690.0,N/A,690.0,N/A,N/A,Global Iron and Steel Tracker,Plant-level_data_Global_Iron_and_Steel_Tracker_June_2026_V1.xlsx,2016

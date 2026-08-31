@@ -393,6 +393,25 @@ be stated: a fresh clone cannot run the pipeline end to end without that downloa
 JOSS reviewer will see the manual step. The alternative was a timeline built on 15%
 coverage, which is not a trade worth making.
 
+**Ingested 2026-08-28 and the trade paid off.** GEM Global Integrated Power Tracker
+(August 2026) and Global Coal Mine Tracker (August 2026):
+
+| | GEM | WRI, for comparison |
+|---|---|---|
+| Start year populated, operating power | **90%** | 15% |
+| Start year populated, coal mines | **82%** | — |
+| Earliest / latest year | 1913 / 2030 | 1975 / 2017 |
+| Units commissioned 2000 or later | 3,182 | 18 |
+
+The 2000–2026 timeline is comfortably supported. Two cautions are built into the reader:
+
+- **GIPT is one row per unit or phase, not per plant.** Türkiye has 4,130 rows and 3,783
+  distinct plants. The plant count is what compares to Climate TRACE's 157 records.
+- **It covers every status from announced to cancelled.** The rows sum to 242 GW, of which
+  **99.5 GW is cancelled projects that were never built**. Only `operating` is the fleet:
+  **107.4 GW across 3,293 plants**, which matches Türkiye's real installed capacity. Any
+  figure quoted from this file must state its status filter.
+
 **E3. Reported versus computed grid intensity — how far apart?**
 Climate TRACE publishes `grid_emissions_intensity` per industrial facility (0.52 tCO₂/MWh
 in the steel sample). The project will also compute its own from the mapped fleet. The gap
@@ -445,10 +464,23 @@ has three consequences for this project:
    its `electricity_use` by the grid factor is wrong for exactly the plants where the
    error is largest.
 
-**Decision: flag with a `captive_of` field naming the industrial facility, keep them on
-the map paired with their parent, and exclude them from both the numerator and denominator
-of the grid emission factor.** The 1.5 km threshold is a judgement call, not a standard,
-and must be stated in METHODOLOGY along with the pair list.
+**Decision: flag them, keep them on the map paired with their parent, and exclude them
+from both the numerator and denominator of the grid emission factor.**
+
+**Superseded 2026-08-28 — GEM declares this outright.** The Global Integrated Power Tracker
+carries `Captive Industry Type` and `Captive Industry Use`. A 1.5 km distance threshold was
+never going to be more than a proxy for a fact the source already states, and a threshold
+is a judgement call that would have had to be defended. It is replaced by the declared
+field.
+
+Turkish operating captive plants, as GEM classifies them: **34 units, 4.46 GW** — iron &
+steel 10, pulp & paper 8, cement & building 6, chemicals 6, textiles 5, automobiles 4,
+oil & refining 1, agriculture 1, other 4. Two of those industries are this project's own
+CBAM sectors, so the exclusion matters most exactly where it was hardest to justify by
+distance alone.
+
+The spatial diagnostic is retained as a cross-check: where GEM declares a plant captive it
+should also sit close to an industrial facility, and a disagreement is worth inspecting.
 
 ---
 

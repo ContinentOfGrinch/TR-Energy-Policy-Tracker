@@ -4,7 +4,7 @@
 this file says where it *got to*, what runs, what is blocked, and which traps have already
 been paid for.
 
-Last updated: **2026-09-01** · 33 commits · **~69% complete** · 174 assertions passing
+Last updated: **2026-09-01** · 34 commits · **~69% complete** · 180 assertions passing
 
 > The figure moved 53% → 35% → 58% → 69%. The drop was the scope merge on 2026-08-19
 > growing the denominator, not work being lost. The recoveries are the energy half, and
@@ -75,7 +75,7 @@ and the arithmetic on top of it.
 | CBAM liability figure | Author decisions **B7** (`eu_export_share`) and **B9** (the calculation) |
 | Grid factor **selection** | Author decision — three estimates exist, `selection.chosen` is deliberately `null` |
 | Time slider, cost layer, audit-trail panel | nothing — the panel now exists, this is buildable |
-| The 2000–2026 fleet timeline | **A6** first: 9 facilities report emissions before their GEM commissioning year, and the timeline is built on that field |
+| The 2000–2026 fleet timeline | nothing — **A6 is resolved.** The timeline can be drawn on 197 dated facilities, with the 103 undated ones visibly excluded rather than assumed to have always existed (§6) |
 | `METHODOLOGY.md` | author writes the prose (§9) |
 
 **B2 is closed.** The monthly→annual aggregation rule was decided 2026-09-01 and is
@@ -169,7 +169,8 @@ cached and re-runs take seconds.
 | Temporal granularity | **monthly** — every source row is one asset-month. This is why B2 is a real blocker, not a formality | same |
 | Industrial facilities | **88** — cement 58, iron & steel 27, aluminium 3 | `facilities.rds` |
 | Gas basis | industrial **CO₂** (88), energy **CO₂e(100yr)** (212) — **never summed** | same |
-| Commissioning years | **78.3%** overall; industrial 87.5%, energy 74.5%; oil & gas **0%**; earliest **1911** | measured 2026-09-01 |
+| Commissioning years | **65.7%** overall; industrial 81.8%, energy 59%. Aluminium, refining and oil & gas are **0% by construction** — GEM publishes no tracker for them | measured 2026-09-01, after the A6 fix |
+| Why it fell from 78.3% | the earlier figure was inflated: 25 of 235 matches were the wrong plant, mostly small solar farms, and 15 more were contested claims on one GEM site. See A6 | same |
 | Captive plants | **27** flagged in the register; GEM declares 34 operating units / 4.46 GW fleet-wide | `is_captive` |
 | Renewable fleet (context only) | **3,136** operating plants, **58.8 GW** | `fleet_renewables.rds` |
 | Grid intensity 2024 | naive fleet **748**, Ember **471**, Climate TRACE reported **477** gCO₂/kWh | `grid_intensity.csv` |
@@ -183,8 +184,9 @@ cached and re-runs take seconds.
 | Emissions 2024 | industrial **74.9 Mt CO₂**, energy **172 Mt CO₂e** — **never summed** | same |
 | **Release revision** | the identical 151 power stations carry **+12.4%** more generation in v5_10_0 than v5_9_0 (2024). Activity is gas-independent, so this is a version revision, not a gas difference | measured 2026-09-01 |
 | Coverage of national generation | **52% on v5_9_0, 58% on v5_10_0** — release-dependent, always cite which | derived from the above |
-| GEM vs Climate TRACE conflict | **9 facilities** report emissions before their GEM commissioning year | panel gate, every build |
-| Verification | **174 assertions**, 0 failures | `Rscript tests/testthat.R` |
+| GEM vs Climate TRACE conflict | **1 facility** reports emissions before its GEM commissioning year, down from 9 once the match was fixed | panel gate, every build |
+| GEM match quality | median distance **0 m** coal mines, **13 m** power, 82 m cement, 183 m steel; **no GEM site claimed twice** | 02 build log |
+| Verification | **180 assertions**, 0 failures | `Rscript tests/testthat.R` |
 
 ---
 

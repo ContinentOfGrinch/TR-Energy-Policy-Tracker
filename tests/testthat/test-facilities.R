@@ -184,3 +184,93 @@ test_that("Turkish characters survive the pipeline", {
   # source is itself the kind of encoding damage being tested for.
   expect_false(any(str_detect(f$province_name_tr, "Ã|Â|�")))
 })
+
+
+# =============================================================================
+# The GEM commissioning-year join
+# =============================================================================
+# This join silently attached the wrong plant's date to 25 of 235 facilities
+# until 2026-09-01: Türkiye has 2,944 utility-scale solar plants and "nearest
+# GEM plant within 2 km" kept resolving to one of them. Nothing errored, the
+# years were plausible, and the coverage statistic went up. These assertions
+# exist so it cannot come back quietly.
+
+test_that("no GEM site is claimed by two facilities", {
+  f <- read_processed("facilities.rds")
+
+  # Nearest-feature matching is not injective. If one GEM site is the match for
+  # two Climate TRACE facilities then at least one of them is not that plant,
+  # because two facilities cannot both be the same site.
+  matched <- f |> dplyr::filter(!is.na(gem_id))
+  expect_equal(anyDuplicated(matched$gem_id), 0)
+})
+
+
+test_that("sectors with no GEM register carry no commissioning year", {
+  f <- read_processed("facilities.rds")
+
+  # GEM publishes no aluminium, refining or oil-and-gas tracker. A facility in
+  # those sectors has no register that could legitimately date it, so it must
+  # carry NA. A year appearing here means the match pool has been widened and
+  # some other register is dating them by proximity alone.
+  no_register <- c("aluminum", "oil-and-gas-production",
+                   "oil-and-gas-refining", "oil-and-gas-transport")
+
+  offenders <- f |>
+    dplyr::filter(sector %in% no_register, !is.na(commissioning_year))
+
+  expect_equal(nrow(offenders), 0,
+               info = paste("dated without an eligible register:",
+                            paste(offenders$facility_name_tr, collapse = ", ")))
+})
+
+
+test_that("no combustion plant is dated from a zero-carbon GEM plant", {
+  f <- read_processed("facilities.rds")
+
+  gem_path <- file.path(PROCESSED, "gem_commissioning.csv")
+  skip_if_not(file.exists(gem_path), "GEM data not ingested")
+
+  # Renamed on the way in. facilities.rds carries its own `fuel_type` from
+  # Climate TRACE's source_type, so joining on the GEM column under the same
+  # name silently produces fuel_type.x / fuel_type.y and the filter below then
+  # refers to a column that no longer exists.
+  # guess_max = Inf: the coal-only columns are empty for the first 4,130 rows,
+  # so readr's default sample types them as logical and then NAs the real values
+  # below, emitting a parse warning that testthat counts.
+  gem <- read_csv(gem_path, locale = locale(encoding = "UTF-8"),
+                  show_col_types = FALSE, progress = FALSE,
+                  guess_max = Inf) |>
+    dplyr::select(gem_id, gem_fuel_type = fuel_type) |>
+    dplyr::distinct(gem_id, .keep_all = TRUE)
+
+  # Climate TRACE's power register is combustion-only — no hydro, wind, solar,
+  # geothermal or nuclear (finding E1). So a CT power plant matched to a GEM
+  # renewable is impossible by construction, not merely improbable, and needs
+  # no threshold to reject.
+  zero_carbon <- c("utility-scale solar", "solar", "wind", "hydropower",
+                   "geothermal", "nuclear")
+
+  bad <- f |>
+    dplyr::filter(sector == "electricity-generation", !is.na(gem_id)) |>
+    dplyr::left_join(gem, by = "gem_id") |>
+    dplyr::filter(gem_fuel_type %in% zero_carbon)
+
+  expect_equal(nrow(bad), 0,
+               info = paste("combustion plants dated from renewables:",
+                            paste(bad$facility_name_tr, collapse = ", ")))
+})
+
+
+test_that("a commissioning year always records how it was matched", {
+  f <- read_processed("facilities.rds")
+
+  # commissioning_source exists so a GEM-derived year is never mistaken for an
+  # observation (§6), and it carries the match distance so a reader can apply
+  # their own scepticism. A year without one is untraceable.
+  dated <- f |> dplyr::filter(!is.na(commissioning_year))
+
+  expect_true(all(!is.na(dated$commissioning_source)))
+  expect_true(all(!is.na(dated$gem_match_distance_m)))
+  expect_true(all(dated$gem_match_distance_m <= 2000))
+})

@@ -78,7 +78,7 @@ is commodity.
 | Total | **300 records at 290 distinct locations** |
 | Geography | Türkiye, facility → province → İBBS-2 region → national |
 | Emissions years | 2021–2026 (`t₀ = 2021`, established empirically; 2026 partial at 5 months) |
-| Commissioning years | 78% populated, back to 1911, from GEM |
+| Commissioning years | **66% populated**, back to 1911, from GEM. Aluminium, refining and oil & gas are 0% because GEM publishes no tracker for them |
 | Regime | EU CBAM |
 
 **The two populations use different gas bases and are never summed.** CBAM is a CO₂
@@ -256,6 +256,15 @@ argument, with its measurements, will appear in `METHODOLOGY.md`.
   `co2e_100yr` after 6. The panel counts months from the data rather than assuming twelve
   and stores the count, because a bar labelled "2026" beside another labelled "2026"
   asserts a comparability that does not hold here. 2026 is never annualised by scaling.
+- **Commissioning years come from a spatial join, and 34% of facilities have none.** GEM
+  and Climate TRACE are matched by proximity, which is not identity, so every dated
+  facility carries `commissioning_source` with the match distance. Three rules keep the
+  join honest: zero-carbon plants are excluded from the pool (Climate TRACE's power
+  register is combustion-only, so they can never be the right answer), a facility matches
+  only a register that covers its own sector, and a GEM site may be claimed by only one
+  facility. Aluminium, refining and oil & gas have no GEM tracker at all and carry `NA`
+  rather than a borrowed date. An earlier version of this join had none of those rules and
+  dated 25 of 235 facilities from small neighbouring solar farms.
 - **The İBBS-2 mapping is transcribed, not fetched** from an authoritative file, and
   carries a verification marker pending a citation to the official TÜİK classification.
 - **Two carbon price scenarios lack a citation.** `policies/carbon_price_scenarios.json`

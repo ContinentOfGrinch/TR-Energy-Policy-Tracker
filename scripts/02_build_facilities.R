@@ -417,8 +417,69 @@ message("[4/5] Assembling facilities table")
 # proximity is not identity — the match rate and the distance distribution are
 # both reported so the join can be judged rather than trusted.
 #
-# Only combustion plants and coal mines are matched. GEM's renewables have no
-# Climate TRACE counterpart by construction, which is the whole of finding E1.
+# DEFECT FOUND AND FIXED 2026-09-01. The paragraph that used to sit here said
+# "only combustion plants and coal mines are matched, GEM's renewables have no
+# Climate TRACE counterpart by construction". That was the intent. It was never
+# implemented: the pool was the whole of gem_commissioning.csv, of which 3,717
+# of 4,174 Turkish rows are solar, wind, hydro, geothermal or nuclear.
+#
+# Türkiye has 2,944 utility-scale solar plants, many of them sitting on or
+# beside the industrial sites this project maps, so "nearest GEM plant within
+# 2 km" resolved to a small anonymous solar farm again and again. The result was
+# a cement works taking its commissioning year from "Tekirdağ solar project XIV"
+# and a steel plant from "Osmaniye solar project II". Nothing errored. The years
+# were plausible, the coverage statistic went up, and 25 of 235 matched
+# facilities — 10.6% — carried the wrong plant's date.
+#
+# It surfaced only because the panel gate compared commissioning years against
+# the emissions record and found 9 facilities emitting before they existed. That
+# check sees just the subset where the wrong plant happened to be newer; the
+# rest were silent.
+#
+# TWO TYPE RULES NOW GOVERN THE POOL, and they are rules rather than thresholds
+# because neither involves a judgement about how close is close enough:
+#
+#   1. Renewables are excluded. Climate TRACE's power register is combustion
+#      only (finding E1), so a CT power plant matching a GEM solar farm is
+#      impossible by construction, not merely unlikely.
+#   2. A facility matches only a register that covers facilities of its kind.
+#      A cement works takes its date from the cement tracker, never from the
+#      captive power station in its own yard — spatially correct, wrong entity,
+#      since the power station's start year is not the cement plant's.
+#
+# Rule 2 is enforced at SECTOR level, not asset-class level. An asset-class rule
+# was tried first and was not enough: it still let a steel plant take its date
+# from a cement works 1,484 m away, and it still let three separate refineries
+# and power stations all match the single Aliağa EÜAŞ power station. One GEM
+# site claimed by several Climate TRACE facilities is the clearest possible
+# signal that proximity is not identity.
+#
+# The consequence is that some sectors have NO eligible register and must carry
+# NA. GEM publishes no refinery or oil-and-gas tracker and no aluminium tracker,
+# so those facilities get no commissioning year at all. That is the correct
+# outcome: §6 requires a facility without a year to carry NA and be visibly
+# excluded from the pre-2021 fleet animation, and a wrong year is worse than no
+# year precisely because it is invisible.
+#
+# The distance threshold still matters and is still a judgement call, but it is
+# now the last line of defence rather than the only one.
+
+# GEM fuel types with no Climate TRACE counterpart. Matching against these is
+# what produced the defect above; they stay in fleet_renewables.rds, which is
+# where they belong.
+GEM_ZERO_CARBON_FUELS <- c("utility-scale solar", "solar", "wind", "hydropower",
+                           "geothermal", "nuclear")
+
+# Which GEM register may supply a commissioning year for each Climate TRACE
+# sector. A sector absent from this map matches nothing and carries NA:
+# aluminium, refining, and oil and gas production and transport have no GEM
+# tracker, so there is no register that could legitimately date them.
+GEM_REGISTER_FOR_SECTOR <- c(
+  "cement"                 = "cement",
+  "iron-and-steel"         = "steel",
+  "electricity-generation" = "power",
+  "coal-mining"            = "coal_mine"
+)
 
 gem_matched <- tibble(source_id = character(), commissioning_year = integer(),
                       commissioning_source = character(),
@@ -428,9 +489,31 @@ gem_matched <- tibble(source_id = character(), commissioning_year = integer(),
 if (file.exists(GEM_COMMISSIONING)) {
   message("      joining GEM commissioning years")
 
+  # guess_max = Inf, and it is not defensive padding. This file is ordered by
+  # tracker: 4,130 power rows first, then the coal mines. The coal-only columns
+  # (`cmm_co2e_100`, `capacity_mtpa`, `ch4_reported`) are empty for every row
+  # readr's default 1,000-row sample sees, so it types them as logical and then
+  # silently NAs every real value further down. Nothing here reads those columns
+  # today, which is exactly why it would have gone unnoticed until something
+  # did.
   gem <- read_csv(GEM_COMMISSIONING, locale = locale(encoding = "UTF-8"),
-                  show_col_types = FALSE, progress = FALSE) |>
+                  show_col_types = FALSE, progress = FALSE,
+                  guess_max = Inf) |>
     filter(!is.na(lat), !is.na(lon), !is.na(start_year))
+
+  # Rule 1. Drop the plants that cannot correspond to a Climate TRACE facility.
+  n_before <- nrow(gem)
+  gem <- gem |> filter(!fuel_type %in% GEM_ZERO_CARBON_FUELS |
+                         is.na(fuel_type))
+  message("      excluded ", n_before - nrow(gem), " zero-carbon GEM plants ",
+          "from the match pool (no Climate TRACE counterpart); ",
+          nrow(gem), " remain")
+
+  # Rule 2 needs each pool row to declare which register it belongs to. The
+  # power and coal trackers arrive in the same file and are separated by
+  # asset_group, which 01c already records.
+  gem <- gem |> mutate(gem_register = if_else(asset_group == "coal_mine",
+                                              "coal_mine", "power"))
 
   # The power and coal trackers cover the energy half. The steel and cement
   # trackers carry `Start date` for the industrial half, and without them
@@ -446,7 +529,7 @@ if (file.exists(GEM_COMMISSIONING)) {
       p <- file.path(DIR_PROCESSED, paste0("gem_crosscheck_", nm, ".csv"))
       if (!file.exists(p)) return(NULL)
       read_csv(p, locale = locale(encoding = "UTF-8"),
-               show_col_types = FALSE, progress = FALSE) |>
+               show_col_types = FALSE, progress = FALSE, guess_max = Inf) |>
         filter(!is.na(lat), !is.na(lon), !is.na(start_year)) |>
         transmute(location_id = NA_character_,
                   name        = as.character(name),
@@ -454,6 +537,9 @@ if (file.exists(GEM_COMMISSIONING)) {
                   start_year  = as.integer(start_year),
                   is_captive  = FALSE,
                   captive_type = NA_character_,
+                  # Each crosscheck tracker is its own register, so a steel
+                  # plant cannot take its date from a cement works.
+                  gem_register = nm,
                   lat, lon)
     }) |>
     compact() |>
@@ -464,7 +550,7 @@ if (file.exists(GEM_COMMISSIONING)) {
             " industrial sites from the steel and cement trackers")
     gem <- bind_rows(
       gem |> select(location_id, name, gem_id, start_year, is_captive,
-                    captive_type, lat, lon),
+                    captive_type, gem_register, lat, lon),
       crosscheck_years)
   }
 
@@ -477,26 +563,62 @@ if (file.exists(GEM_COMMISSIONING)) {
               start_year    = min(start_year, na.rm = TRUE),
               is_captive    = any(is_captive, na.rm = TRUE),
               captive_type  = first(na.omit(captive_type)),
+              gem_register  = first(gem_register),
               lat = first(lat), lon = first(lon),
               .groups = "drop")
 
-  ct_pts  <- st_as_sf(geocoded, coords = c("lon", "lat"), crs = CRS_TARGET,
-                      remove = FALSE)
-  gem_pts <- st_as_sf(gem_sites, coords = c("lon", "lat"), crs = CRS_TARGET,
-                      remove = FALSE)
+  # Rule 2, applied here. The nearest-neighbour search runs ONCE PER SECTOR
+  # against only the register that may date that sector. Searching per sector
+  # rather than filtering afterwards matters: a filter would leave the facility
+  # unmatched, where this gives it the nearest *eligible* site.
+  match_within_register <- function(ct_sector) {
+    ct_sub <- geocoded |> filter(sector == ct_sector)
+    if (nrow(ct_sub) == 0) return(NULL)
 
-  nearest <- st_nearest_feature(ct_pts, gem_pts)
-  dist_m  <- st_distance(ct_pts, gem_pts[nearest, ], by_element = TRUE) |>
-    as.numeric()
+    # Single-bracket, not double: `[[` on a named vector raises "subscript out
+    # of bounds" for an absent name, and an absent name is the normal case here
+    # — it is how a sector declares that no register may date it.
+    reg     <- unname(GEM_REGISTER_FOR_SECTOR[ct_sector])
+    gem_sub <- if (is.na(reg)) gem_sites[0, ]
+               else gem_sites |> filter(gem_register == reg)
 
-  gem_matched <- tibble(
-    source_id            = geocoded$source_id,
-    gem_id               = gem_sites$gem_id[nearest],
-    gem_match_distance_m = dist_m,
-    commissioning_year   = gem_sites$start_year[nearest],
-    is_captive           = gem_sites$is_captive[nearest],
-    captive_industry     = gem_sites$captive_type[nearest]
-  ) |>
+    # No eligible register, or an empty one: NA rather than a wrong year.
+    if (nrow(gem_sub) == 0) {
+      message("      ", ct_sector, ": no eligible GEM register (",
+              if (is.na(reg)) "none defined" else reg, ") — ",
+              nrow(ct_sub), " facilities carry NA")
+      return(tibble(source_id = ct_sub$source_id,
+                    gem_id = NA_character_, gem_match_distance_m = NA_real_,
+                    commissioning_year = NA_integer_,
+                    is_captive = NA, captive_industry = NA_character_))
+    }
+
+    ct_pts  <- st_as_sf(ct_sub,  coords = c("lon", "lat"), crs = CRS_TARGET,
+                        remove = FALSE)
+    gem_pts <- st_as_sf(gem_sub, coords = c("lon", "lat"), crs = CRS_TARGET,
+                        remove = FALSE)
+
+    nearest <- st_nearest_feature(ct_pts, gem_pts)
+    dist_m  <- st_distance(ct_pts, gem_pts[nearest, ], by_element = TRUE) |>
+      as.numeric()
+
+    message("      ", ct_sector, ": ", nrow(ct_sub), " facilities against ",
+            nrow(gem_sub), " '", reg, "' sites, median ",
+            round(median(dist_m)), " m")
+
+    tibble(
+      source_id            = ct_sub$source_id,
+      gem_id               = gem_sub$gem_id[nearest],
+      gem_match_distance_m = dist_m,
+      commissioning_year   = gem_sub$start_year[nearest],
+      is_captive           = gem_sub$is_captive[nearest],
+      captive_industry     = gem_sub$captive_type[nearest]
+    )
+  }
+
+  gem_matched <- map(sort(unique(geocoded$sector)), match_within_register) |>
+    compact() |>
+    list_rbind() |>
     # Beyond the radius the nearest GEM site is simply a different plant.
     # Carrying its year would be worse than carrying none.
     mutate(across(c(gem_id, commissioning_year, captive_industry),
@@ -508,6 +630,61 @@ if (file.exists(GEM_COMMISSIONING)) {
              !is.na(commissioning_year),
              paste0("GEM (matched at ", round(gem_match_distance_m), " m)"),
              NA_character_))
+
+  # A GEM site claimed by more than one Climate TRACE facility. Nearest-feature
+  # matching is not injective, so this is possible, and when it happens at least
+  # one of the claims is wrong: two facilities cannot both be the same plant.
+  # It is the clearest available signal that proximity has stopped meaning
+  # identity, and it was found by eye before it was found by code.
+  contested <- gem_matched |>
+    filter(!is.na(gem_id)) |>
+    count(gem_id, name = "claimed_by") |>
+    filter(claimed_by > 1)
+
+  if (nrow(contested) > 0) {
+    detail <- gem_matched |>
+      filter(gem_id %in% contested$gem_id) |>
+      left_join(geocoded |> select(source_id, source_name), by = "source_id") |>
+      arrange(gem_id, gem_match_distance_m)
+
+    # RESOLUTION: a GEM site may be claimed once. The nearest claimant keeps it;
+    # every other claimant carries NA.
+    #
+    # The distance pattern makes this easy to justify — the losing claim is
+    # almost always far, against a winner at 0 m: Tekirdağ A at 0 m against
+    # Tekirdağ B at 1,200 m, Aliağa EÜAŞ at 0 m against İzmir Refinery at 825 m.
+    #
+    # It is not always so clean. Manisa OSB at 54 m and Mosbio at 85 m are both
+    # plausibly the same site, and those two are already on the E7 list of
+    # possible Climate TRACE near-duplicates. Where the data cannot say which
+    # facility a site belongs to, NA is the honest answer: giving both the same
+    # year would assert they are one plant, which is the very thing E7 has not
+    # established.
+    losers <- detail |>
+      group_by(gem_id) |>
+      slice(-1) |>            # arranged by distance, so the first is nearest
+      ungroup()
+
+    warning(nrow(contested), " GEM sites were each claimed by more than one ",
+            "Climate TRACE facility (", nrow(detail), " facilities). The ",
+            "nearest claim was kept and ", nrow(losers),
+            " facilities were reset to NA:\n",
+            paste0("  KEPT/DROPPED  ", detail$source_name, " -> ",
+                   detail$gem_id, " at ",
+                   round(detail$gem_match_distance_m), " m",
+                   collapse = "\n"),
+            immediate. = TRUE)
+
+    gem_matched <- gem_matched |>
+      mutate(across(c(gem_id, commissioning_year, captive_industry,
+                      commissioning_source),
+                    ~ if_else(source_id %in% losers$source_id, .x[NA_integer_],
+                              .x)),
+             is_captive = if_else(source_id %in% losers$source_id, NA,
+                                  is_captive),
+             gem_match_distance_m = if_else(source_id %in% losers$source_id,
+                                            NA_real_, gem_match_distance_m))
+  }
 
   n_match <- sum(!is.na(gem_matched$commissioning_year))
   message("      matched ", n_match, " of ", nrow(geocoded),
@@ -636,7 +813,8 @@ if (file.exists(GEM_COMMISSIONING)) {
   message("      building renewable fleet context")
 
   fleet_raw <- read_csv(GEM_COMMISSIONING, locale = locale(encoding = "UTF-8"),
-                        show_col_types = FALSE, progress = FALSE) |>
+                        show_col_types = FALSE, progress = FALSE,
+                        guess_max = Inf) |>
     filter(asset_group == "power",
            fuel_type %in% FLEET_FUELS,
            tolower(status) == "operating",

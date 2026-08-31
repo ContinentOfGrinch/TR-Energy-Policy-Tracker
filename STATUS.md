@@ -4,12 +4,15 @@
 this file says where it *got to*, what runs, what is blocked, and which traps have already
 been paid for.
 
-Last updated: **2026-08-19** · 12 commits · **~35% complete**
+Last updated: **2026-08-28** · 27 commits · **~58% complete** · 133 assertions passing
 
-> **The percentage dropped from 53% to 35% and no work was lost.** The scopes were merged
-> on 2026-08-19 and the denominator grew: 88 facilities became 298, and the energy layer,
-> the grid emission factor and the fleet timeline joined the target. Same numerator, bigger
-> target.
+> The figure moved 53% → 35% → 58%. The drop was the scope merge on 2026-08-19 growing the
+> denominator, not work being lost; the recovery is the energy half being built. Both
+> populations are now on the map. What remains is disproportionately the analytical core,
+> which §9 reserves for the author.
+
+**Published:** <https://github.com/ContinentOfGrinch/TR-Energy-Policy-Tracker>
+(rename to `karbon-atlasi-turkiye` still outstanding)
 
 > Keep this file current. When a milestone lands or a decision changes, update the
 > relevant section here in the same commit. A stale STATUS.md is worse than none, because
@@ -75,25 +78,32 @@ specified but nothing has been fetched.
 | Coverage audit + t₀ (industrial) | 5 | ✅ |
 | Fetch + provenance chain (industrial) | 5 | ✅ |
 | `facilities.rds` (industrial, 88) | 5 | ✅ |
-| `policies/*.json` | 4 | ✅ |
+| `policies/*.json` + JSON schemas | 4 | ✅ |
 | README + CITATION.cff | 2 | ✅ |
-| App shell + industrial map | 5 | ✅ |
+| App shell + map | 5 | ✅ |
+| `tests/` + pipeline validation gates | 3 | ✅ |
+| Energy coverage audit + fetch (5 subsectors) | 6 | ✅ |
+| Energy facilities (212, merged to 300) | 6 | ✅ |
+| GEM commissioning years → 2000 timeline | 5 | ◐ 50% — ingested and joined at 78%, but the timeline is not drawn |
+| Grid emission factor | 6 | ◐ 60% — three estimates assembled, selection pending |
 | `eu_export_share` | 4 | ◐ 50% — fetch works, definition pending |
-| **Energy coverage audit + fetch (5 subsectors)** | 6 | ❌ |
-| **Energy facilities (210)** | 6 | ❌ |
-| **GEM commissioning years → 2000 timeline** | 5 | ❌ |
-| **Grid emission factor** | 6 | ❌ |
-| **Energy emissions panel** | 6 | ❌ |
+| App phase 2 (slider, cost, energy layer, audit trail) | 8 | ◐ 30% — energy layer and grid tab done; no slider, cost or audit trail |
+| Energy emissions panel | 6 | ❌ |
 | `facility_panel.rds` (industrial) | 8 | ❌ |
 | CBAM calculation core | 8 | ❌ |
-| App phase 2 (slider, cost, energy layer, audit trail) | 8 | ❌ |
 | `METHODOLOGY.md` | 5 | ❌ |
-| `tests/` | 3 | ❌ |
 | Zenodo / JOSS packaging | 2 | ❌ |
 
-Of the remaining ~65 points, **21 are explicitly the author's own work** under §9
-(the calculation core, the decomposition, the export-share definition, METHODOLOGY).
-The other ~44 are buildable without waiting on anyone.
+**Of the remaining ~42 points, about 25 are the author's own work** under §9 — the
+direct/indirect decomposition, the annual aggregation rule, the `eu_export_share`
+definition, the grid-factor selection, the CBAM calculation, and METHODOLOGY.
+
+The other ~17 are buildable without waiting: the energy emissions panel, the rest of the
+app once the panel exists, the fleet timeline, and release packaging.
+
+**The remaining work is now more author-blocked than builder-blocked, which was not true a
+week ago.** Every source is fetched, every register is built, every gate is in place. What
+is missing is mostly decisions about what the numbers mean.
 
 ---
 

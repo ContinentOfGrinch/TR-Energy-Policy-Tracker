@@ -411,6 +411,31 @@ without a citation is not usable in this project.
 - Documentation and derived data: **CC BY 4.0**
 - Upstream data retains its original licence; maintain the attribution chain in
   `data/processed/SOURCES.md`.
+
+**The upstream chain, and why it works.** Climate TRACE is CC BY 4.0, Global Energy Monitor
+is CC BY 4.0, Natural Earth is public domain. **No ShareAlike anywhere**, which is the whole
+reason geoBoundaries was rejected for province boundaries — its Turkey layer is CC BY-SA 2.0
+and ShareAlike would have propagated into this project's CC BY 4.0 derived data. Before
+adding any new source, check for ShareAlike first.
+
+**CC BY 4.0 attribution is a licence condition, not a courtesy, and naming the source is not
+enough.** Three clauses are easy to miss and all three apply here:
+
+- **§3(1)(a)** — the notice must carry the creator, a licence notice, the warranty
+  disclaimer and a URI. Not just a name.
+- **§3(1)(a)(ii)** — you must state **that the material was modified**. This project filters
+  to Türkiye, renames columns, joins registers and derives province and İBBS-2, so the
+  statement is mandatory.
+- **§4** — these trackers are *databases*. Incorporating a substantial portion into
+  `facilities.rds` makes that table Adapted Material under §4(2), and the attribution
+  condition attaches to it. Anyone redistributing our derived data must carry the notice
+  forward.
+- **§2(5)(c)** — never imply the upstream provider endorses this project.
+
+These are **generated, not remembered**: `01c_ingest_gem.R` writes
+`data/processed/SOURCES_GEM.md` on every ingest, and `tests/testthat/test-attribution.R`
+fails the build if GEM data exists without its attribution. Any future source added under a
+CC licence must be wired the same way.
 - Release path: working v0.1 → git tag → Zenodo DOI → preprint → JOSS submission.
 - JOSS will require: working installation instructions, tests, documentation, example data,
   and a contribution guide. Build toward these from the start rather than retrofitting.

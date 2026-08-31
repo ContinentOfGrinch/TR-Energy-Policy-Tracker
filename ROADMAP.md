@@ -371,12 +371,78 @@ in the steel sample). The project will also compute its own from the mapped flee
 between them is a result, not an error to be tuned away, and belongs in METHODOLOGY.
 *Closed by:* the grid factor script, reported in `grid_emission_factor.json`
 
-**E4. Do coal mines and oil & gas assets belong in the same panel?**
-They are `neutral` — outside both the CBAM calculation and the grid factor. Their emissions
-are largely fugitive methane, a different gas with a different accounting basis from the
-CO₂ the rest of the project handles. Including them in a CO₂-denominated total would be
-wrong. Decide whether they are a separate map layer with their own units or are dropped.
-*Closed by:* the author, when the energy panel is designed
+**E4. Do coal mines and oil & gas assets belong in the same panel? — Yes, on a
+different gas basis.**
+*Closed 2026-08-28 by comparing the `co2` and `co2e_100yr` country packages.*
+
+The suspicion was right and the magnitude is larger than expected. 2024, Mt:
+
+| subsector | CO₂ | CO₂e(100yr) | CO₂ share |
+|---|---|---|---|
+| electricity-generation | 132.50 | 152.43 | 87% |
+| oil-and-gas-refining | 9.05 | 9.08 | 99.6% |
+| **coal-mining** | **1.42** | **7.97** | **18%** |
+| oil-and-gas-production | 1.28 | 2.34 | 55% |
+| oil-and-gas-transport | 0.52 | 0.60 | 87% |
+
+Rendering coal mines on a CO₂ basis would show them at roughly one sixth of their climate
+impact — not a rounding difference but a systematic erasure of Türkiye's methane emissions.
+
+**Decision: industrial stays CO₂, energy uses CO₂e(100yr), and the two are never summed.**
+CBAM liability is CO₂ because the instrument is; the fleet is CO₂e because the physics is.
+Every figure carries its unit and any total spanning both populations is refused rather
+than computed.
+
+**Oil and gas production and transport publish no activity or capacity** — upstream marks
+them `license restricted`. Emissions are published, production is not. They are retained
+with activity `NA` and flagged, never imputed (§8.1).
+
+---
+
+**E5. Captive power stations at industrial sites — 29 pairs within 1.5 km.**
+*Surfaced 2026-08-28 by a spatial join of the power register against `facilities.rds`.*
+
+Many are the same company: İzdemir Enerji sits 185 m from İDÇ İzdemir's steel plant,
+Kardemir Karabük 313 m from Kardemir Merkez, İÇDAŞ Biga 612 m from İÇDAŞ Biga at
+63,460 kt CO₂e, Çolakoğlu-1 887 m from Çolakoğlu Dilovası.
+
+This is **not** a double count in Climate TRACE's accounting: a power station's combustion
+emissions and a steel plant's process emissions are genuinely different emissions. But it
+has three consequences for this project:
+
+1. On a map, two points 185 m apart read as duplication.
+2. **A captive plant feeds its own site, not the grid.** Including it in the grid emission
+   factor's denominator inflates generation that was never available to anyone else.
+3. **A self-generating facility's electricity does not carry grid intensity.** Multiplying
+   its `electricity_use` by the grid factor is wrong for exactly the plants where the
+   error is largest.
+
+**Decision: flag with a `captive_of` field naming the industrial facility, keep them on
+the map paired with their parent, and exclude them from both the numerator and denominator
+of the grid emission factor.** The 1.5 km threshold is a judgement call, not a standard,
+and must be stated in METHODOLOGY along with the pair list.
+
+---
+
+**E6. The two gas packages carry different facility registers.**
+*Surfaced 2026-08-28.*
+
+Neither is a subset of the other. `co2` has 158 power plants and 39 coal mines; `co2e_100yr`
+has 157 and 38. Seven power plants and one coal mine (Alpagut) appear only in `co2`; six
+power plants appear only in `co2e_100yr`, several of them captive plants at industrial sites
+— İzmit Kartonsan, Kırıkkale Refinery, Çanakkale Çimento.
+
+This undermines the assumption that "the country package" is one coherent register, and it
+means the facility count depends on which gas you read.
+
+**Decision: the `co2e_100yr` register is authoritative for energy assets** — 212 assets,
+consistent with the basis that layer is reported on. The eight facilities present only in
+`co2` are listed as a known omission in `SOURCES.md`; six of them are zero-emission biomass
+records, so the emissions consequence is small, but the count discrepancy must be visible
+rather than quietly resolved.
+
+**Total population: 88 industrial + 212 energy = 300 facilities.** Earlier documents said
+298 based on API counts; the bulk package is the authority and the figure is corrected.
 
 ---
 

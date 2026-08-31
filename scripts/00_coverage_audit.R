@@ -63,22 +63,54 @@ source(file.path("scripts", "_sources.R"))
 # --- Source -----------------------------------------------------------------
 # Country packages are published per gas. Verified available for TUR:
 # co2, co2e_100yr, co2e_20yr, n2o, ch4, bc, co. There is NO pfc package.
-#
-# We take co2. CBAM covers CO2 for cement and iron & steel, and CO2 plus PFCs
-# for aluminium. The PFC component is therefore UNAVAILABLE and aluminium
-# exposure will be an underestimate. This is propagated as a documented gap,
-# never silently filled (§8.1).
-CT_GAS      <- "co2"
-CT_COUNTRY  <- "TUR"
+CT_COUNTRY <- "TUR"
 
-# Subsectors retained for v0.1. Note the US spelling of "aluminum" — this is
-# Climate TRACE's vocabulary and must be passed through verbatim.
+# --- The two populations, and why they use different gas bases ---------------
 #
-# Fertilisers are absent by design, not omission: Climate TRACE publishes no
-# fertiliser-PRODUCTION subsector. `synthetic-fertilizer-application` is N2O
-# from fertiliser applied to soils — a different emission source, and not what
-# CBAM regulates. See ROADMAP.md, "Closed questions".
-CT_SUBSECTORS <- c("iron-and-steel", "cement", "aluminum")
+# INDUSTRIAL — CO2. CBAM is a CO2-denominated instrument for cement and iron &
+#   steel, and CO2 plus PFCs for aluminium. The PFC component is UNAVAILABLE
+#   (no pfc package), so aluminium exposure is an underestimate carried as a
+#   documented gap, never silently filled (§8.1).
+#
+#   Fertilisers are absent by design, not omission: Climate TRACE publishes no
+#   fertiliser-PRODUCTION subsector. `synthetic-fertilizer-application` is N2O
+#   from fertiliser applied to soils — a different emission source, and not what
+#   CBAM regulates. See ROADMAP.md, "Closed questions".
+#
+# ENERGY — CO2e over 100 years. Measured 2026-08-28, only 18% of Turkish coal
+#   mining's footprint is CO2; the other 82% is fugitive methane. Rendering coal
+#   mines on a CO2 basis would show them at roughly one sixth of their actual
+#   climate impact, which is not a rounding difference but a systematic erasure
+#   of Türkiye's methane emissions. Oil and gas production is likewise only 55%
+#   CO2.
+#
+# THE TWO BASES ARE NEVER SUMMED. Every figure carries its unit, and any total
+# spanning both populations is refused rather than computed. Mixing a
+# CO2-denominated CBAM liability with a CO2e fleet total would be meaningless.
+CT_ASSET_CLASSES <- list(
+  industrial = list(
+    gas        = "co2",
+    subsectors = c("iron-and-steel", "cement", "aluminum")
+  ),
+  energy = list(
+    gas        = "co2e_100yr",
+    # Note the US spelling of "aluminum" above — Climate TRACE's vocabulary,
+    # passed through verbatim.
+    subsectors = c("electricity-generation", "coal-mining",
+                   "oil-and-gas-production", "oil-and-gas-refining",
+                   "oil-and-gas-transport")
+  )
+)
+
+# Subsectors whose `activity` and `capacity` are withheld upstream as
+# "license restricted". Their emissions are published; their production is not.
+# They are retained with activity NA and flagged, rather than dropped (§8.1).
+CT_ACTIVITY_RESTRICTED <- c("oil-and-gas-production", "oil-and-gas-transport")
+
+# Retained for backwards compatibility with the sections below that predate the
+# energy layer and still speak only of the CBAM population.
+CT_GAS        <- CT_ASSET_CLASSES$industrial$gas
+CT_SUBSECTORS <- CT_ASSET_CLASSES$industrial$subsectors
 
 
 # --- t0 decision rule — FIXED IN ADVANCE ------------------------------------
@@ -443,6 +475,90 @@ if (is.na(t0)) {
 
 
 # =============================================================================
+# 7b. ENERGY ASSET AUDIT
+# =============================================================================
+# Everything above concerns the CBAM population and its t0, which is what the
+# liability calculation depends on. The energy assets are a separate population
+# with a separate purpose — they set the grid carbon intensity that produces the
+# industrial installations' indirect emissions, and they carry the fleet
+# timeline — so they are audited alongside rather than folded in.
+#
+# They are read on the CO2e(100yr) basis for the reason given in section 1. The
+# two bases are never combined; this section reports its own totals in its own
+# unit and the summary labels them.
+
+message("[7b] Auditing energy assets (CO2e basis)")
+
+energy_cfg   <- CT_ASSET_CLASSES$energy
+energy_pkg   <- ct_download_package(energy_cfg$gas, CT_COUNTRY, DIR_RAW)
+energy_mem   <- ct_sector_files(energy_pkg$path, energy_cfg$subsectors)
+energy_files <- ct_extract(energy_pkg$path, energy_mem,
+                           file.path(DIR_EXTRACT, energy_cfg$gas))
+
+energy_raw <- energy_files |>
+  imap(function(path, subsector_key) {
+    read_csv(path,
+             locale    = locale(encoding = "UTF-8"),
+             col_types = cols(.default = col_character(),
+                              lat = col_double(), lon = col_double(),
+                              emissions_quantity = col_double(),
+                              activity = col_double(),
+                              emissions_factor = col_double(),
+                              capacity = col_double(),
+                              capacity_factor = col_double()),
+             progress  = FALSE) |>
+      # `subsector_key` rather than `subsector`: the CSV has its own `sector`
+      # and `subsector` columns, and assigning to a name a column already holds
+      # resolves to the column instead of the argument. That exact mistake
+      # tripled a denominator earlier in this project.
+      mutate(subsector_key = .env$subsector_key,
+             year  = as.integer(str_sub(start_time, 1, 4)),
+             month = as.integer(str_sub(start_time, 6, 7)))
+  }) |>
+  list_rbind()
+
+stopifnot("No energy rows read" = nrow(energy_raw) > 0)
+
+energy_summary <- energy_raw |>
+  group_by(subsector = subsector_key) |>
+  summarise(
+    facilities     = n_distinct(source_id),
+    rows           = n(),
+    year_min       = min(year, na.rm = TRUE),
+    year_max       = max(year, na.rm = TRUE),
+    activity_units = paste(unique(na.omit(activity_units)), collapse = "; "),
+    has_activity   = any(!is.na(activity) & activity > 0),
+    .groups = "drop"
+  ) |>
+  mutate(
+    activity_restricted = subsector %in% CT_ACTIVITY_RESTRICTED
+  ) |>
+  arrange(desc(facilities))
+
+# Emissions on the CO2e basis for the last complete year, so the summary can
+# state magnitudes rather than only counts.
+energy_emissions <- energy_raw |>
+  filter(year == max(energy_raw$year[energy_raw$month == 12], na.rm = TRUE)) |>
+  group_by(subsector = subsector_key) |>
+  summarise(co2e_Mt = sum(emissions_quantity, na.rm = TRUE) / 1e6,
+            .groups = "drop") |>
+  arrange(desc(co2e_Mt))
+
+# Fuel/technology composition. For electricity this is the fleet mix that the
+# grid factor and the policy narrative both rest on.
+energy_types <- energy_raw |>
+  distinct(subsector = subsector_key, source_id, source_type) |>
+  count(subsector, source_type, name = "facilities") |>
+  arrange(subsector, desc(facilities))
+
+energy_year_max <- max(energy_raw$year, na.rm = TRUE)
+
+message("      ", sum(energy_summary$facilities), " energy assets across ",
+        nrow(energy_summary), " subsectors, ",
+        min(energy_summary$year_min), "-", energy_year_max)
+
+
+# =============================================================================
 # 8. WRITE OUTPUTS
 # =============================================================================
 # write_csv emits UTF-8 without BOM, which §2 requires and which R on Windows
@@ -451,6 +567,8 @@ if (is.na(t0)) {
 write_csv(coverage_panel,    file.path(DIR_PROCESSED, "coverage_matrix_panel.csv"))
 write_csv(coverage_facility, file.path(DIR_PROCESSED, "coverage_matrix_facility.csv"))
 write_csv(other_profile,     file.path(DIR_PROCESSED, "coverage_other_fields.csv"))
+write_csv(energy_summary,    file.path(DIR_PROCESSED, "coverage_energy_assets.csv"))
+write_csv(energy_types,      file.path(DIR_PROCESSED, "coverage_energy_types.csv"))
 
 md <- c(
   "# Coverage audit — Climate TRACE",
@@ -509,6 +627,54 @@ md <- c(
   "|---|---|",
   paste0("| ", names(table(facilities$sector)), " | ",
          as.integer(table(facilities$sector)), " |"),
+  "",
+  "## Energy assets — a separate population on a separate gas basis",
+  "",
+  paste0("Read from the `", energy_cfg$gas, "` country package, not `",
+         CT_GAS, "`. Only 18% of Turkish coal mining's footprint is CO2; the rest"),
+  "is fugitive methane. A CO2-denominated map would show coal mines at roughly one",
+  "sixth of their climate impact, which erases Türkiye's methane emissions rather",
+  "than rounding them.",
+  "",
+  "**The two bases are never summed.** CBAM liability is CO2 because the instrument",
+  "is; the fleet is CO2e because the physics is. Any total spanning both",
+  "populations is refused rather than computed.",
+  "",
+  "| subsector | facilities | years | activity units | activity published |",
+  "|---|---|---|---|---|",
+  paste0("| ", energy_summary$subsector, " | ", energy_summary$facilities, " | ",
+         energy_summary$year_min, "-", energy_summary$year_max, " | ",
+         ifelse(nzchar(energy_summary$activity_units),
+                energy_summary$activity_units, "—"), " | ",
+         ifelse(energy_summary$activity_restricted,
+                "**no — licence restricted**",
+                ifelse(energy_summary$has_activity, "yes", "no")), " |"),
+  "",
+  paste0("Total energy assets: **", sum(energy_summary$facilities), "**. ",
+         "With ", nrow(facilities), " industrial installations that is **",
+         sum(energy_summary$facilities) + nrow(facilities), "** facilities."),
+  "",
+  "### Emissions by subsector, last complete year, CO2e(100yr)",
+  "",
+  "| subsector | Mt CO2e |",
+  "|---|---|",
+  paste0("| ", energy_emissions$subsector, " | ",
+         sprintf("%.2f", energy_emissions$co2e_Mt), " |"),
+  "",
+  "### Known limits of this population",
+  "",
+  "- **Renewables are absent.** `electricity-generation` lists combustion plants",
+  "  only — no hydro, wind, solar, geothermal or nuclear. A grid emission factor",
+  "  computed as emissions divided by generation over this fleet omits roughly a",
+  "  third of Turkish output from its denominator and overstates the factor by",
+  "  about 57%. The denominator must be completed from TEİAŞ; see ROADMAP.md, E1.",
+  "- **Oil and gas production and transport publish no activity or capacity.**",
+  "  Upstream marks them `license restricted`. Emissions are published, production",
+  "  is not. They are retained with activity NA and flagged, never imputed (§8.1).",
+  "- **No commissioning years.** Neither the power nor the coal-mining records",
+  "  carry a start year, so the 2000–2026 fleet timeline still depends on GEM.",
+  "  Coal mining does already carry GEM-derived metadata — coal type, reserves,",
+  "  mine depth, even a GEM Wiki link — but not a start year. See ROADMAP.md, E2.",
   "",
   "## other* slot semantics — SECTOR-SPECIFIC",
   "",
@@ -589,8 +755,27 @@ print(arithmetic_check)
 cat("\nother* fields discovered:\n")
 print(other_profile |> distinct(sector, slot, label) |> arrange(sector, slot), n = Inf)
 
+cat("\n", strrep("-", 72), "\n", sep = "")
+cat("ENERGY ASSETS — ", energy_cfg$gas, " basis, NOT summable with the above\n", sep = "")
+cat(strrep("-", 72), "\n", sep = "")
+print(energy_summary |>
+        select(subsector, facilities, year_min, year_max, activity_restricted))
+
+cat("\nEmissions, last complete year (Mt CO2e):\n")
+print(energy_emissions |> mutate(co2e_Mt = round(co2e_Mt, 2)))
+
+cat("\nElectricity fleet composition:\n")
+print(energy_types |> filter(subsector == "electricity-generation") |>
+        select(source_type, facilities), n = Inf)
+
+cat("\nTOTAL POPULATION: ", nrow(facilities), " industrial + ",
+    sum(energy_summary$facilities), " energy = ",
+    nrow(facilities) + sum(energy_summary$facilities), " facilities\n", sep = "")
+
 cat("\nWritten:\n",
     "  ", file.path(DIR_PROCESSED, "coverage_matrix_panel.csv"), "\n",
     "  ", file.path(DIR_PROCESSED, "coverage_matrix_facility.csv"), "\n",
     "  ", file.path(DIR_PROCESSED, "coverage_other_fields.csv"), "\n",
+    "  ", file.path(DIR_PROCESSED, "coverage_energy_assets.csv"), "\n",
+    "  ", file.path(DIR_PROCESSED, "coverage_energy_types.csv"), "\n",
     "  ", file.path(DIR_PROCESSED, "coverage_audit_summary.md"), "\n", sep = "")

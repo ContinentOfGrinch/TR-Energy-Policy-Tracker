@@ -1,0 +1,6 @@
+subsector,facilities,rows,year_min,year_max,activity_units,has_activity,activity_restricted
+electricity-generation,157,10362,2021,2026,MWh,TRUE,FALSE
+coal-mining,38,2508,2021,2026,t of coal,TRUE,FALSE
+oil-and-gas-production,6,396,2021,2026,license restricted,FALSE,TRUE
+oil-and-gas-transport,6,396,2021,2026,license restricted,FALSE,TRUE
+oil-and-gas-refining,5,330,2021,2026,BBL,TRUE,FALSE

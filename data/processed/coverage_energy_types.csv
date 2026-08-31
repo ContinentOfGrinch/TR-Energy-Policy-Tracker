@@ -1,0 +1,22 @@
+subsector,source_type,facilities
+coal-mining,Surface,15
+coal-mining,Underground,15
+coal-mining,Underground & Surface,8
+electricity-generation,biomass,49
+electricity-generation,"gas, other_fossil",45
+electricity-generation,coal,30
+electricity-generation,gas,15
+electricity-generation,oil,4
+electricity-generation,"other_fossil, gas",4
+electricity-generation,"gas, other_fossil, oil",3
+electricity-generation,"coal, gas",2
+electricity-generation,"oil, other_fossil",2
+electricity-generation,"coal, gas, oil",1
+electricity-generation,"coal, oil",1
+electricity-generation,"gas, oil",1
+oil-and-gas-production,NA,6
+oil-and-gas-refining,Deep Conversion,2
+oil-and-gas-refining,Deep Conversion- Resid HC,1
+oil-and-gas-refining,Hydroskimming,1
+oil-and-gas-refining,Medium Conversion,1
+oil-and-gas-transport,NA,6

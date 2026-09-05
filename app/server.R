@@ -11,8 +11,10 @@ function(input, output, session) {
   # ===========================================================================
   # 1. THE SINGLE FILTERED DATASET
   # ===========================================================================
-  # Everything downstream reads this. When the time slider arrives it plugs in
-  # here and nothing else has to change.
+  # Everything downstream reads this. Two reactives, layered: the register
+  # filter, then the year join. Splitting them means the map's geometry does not
+  # recompute when only the year changes, and the year join does not recompute
+  # when only a province is deselected.
 
   selected_facilities <- reactive({
     out <- facilities |>
@@ -30,10 +32,118 @@ function(input, output, session) {
     out
   })
 
+  # Debounced: dragging the slider fires an event per pixel, and each one would
+  # otherwise redraw 300 markers and a plot. 250 ms is short enough to feel
+  # immediate and long enough to collapse a drag into one redraw (§4).
+  current_year <- reactive({
+    if (is.null(input$year)) DEFAULT_YEAR else input$year
+  }) |> debounce(250)
+
+  # The selected facilities joined to the selected year. A left join, not an
+  # inner one: a facility with no panel row for that year must still appear on
+  # the map with its emissions unknown, rather than silently vanishing and
+  # making the fleet look smaller than it is.
+  selected_year_data <- reactive({
+    df <- selected_facilities()
+    if (is.null(panel) || nrow(df) == 0) {
+      return(df |> mutate(emissions_reported_t = NA_real_,
+                          production_activity  = NA_real_,
+                          emission_intensity   = NA_real_,
+                          months_covered       = NA_integer_,
+                          value_type           = NA_character_,
+                          status               = NA_character_,
+                          confidence_emissions = NA_character_))
+    }
+
+    yr <- current_year()
+
+    df |>
+      left_join(
+        panel |>
+          filter(year == yr) |>
+          select(facility_id, emissions_reported_t, production_activity,
+                 emission_intensity, months_covered, value_type, status,
+                 confidence_emissions),
+        by = "facility_id"
+      )
+  })
+
+  # Is the selected year a projection? Asked once, used by several outputs.
+  year_is_projected <- reactive({
+    !is.null(panel) && current_year() %in%
+      setdiff(PANEL_YEARS, OBSERVED_YEARS)
+  })
+
 
   # ===========================================================================
-  # 2. HEADLINE COUNTS
+  # 2. THE YEAR'S STATUS
   # ===========================================================================
+  # Two outputs, both driven by the same question: can this year be read the way
+  # a year is normally read? They stay silent when it can, so that when they
+  # speak they are still noticed.
+
+  output$year_status <- renderUI({
+    yr <- current_year()
+    vt <- if (year_is_projected()) "projected" else "observed"
+
+    badge_bg <- if (vt == "projected") "#7B1FA2" else "#4C9A2A"
+    depth    <- year_depth_note(yr)
+
+    tags$div(
+      style = "margin-top:-8px; font-size:12px; color:#c8d0d4;",
+      tags$span(class = "yr-badge",
+                style = paste0("background:", badge_bg, "; color:#fff;"),
+                unname(VALUE_TYPE_LABELS[vt])),
+      if (!is.null(depth)) {
+        tags$span(style = "margin-left:6px; color:#E8A33D;", depth)
+      }
+    )
+  })
+
+  output$year_warning <- renderUI({
+    yr    <- current_year()
+    depth <- year_depth_note(yr)
+    out   <- tagList()
+
+    # A projection rendered like an observation is the single most misleading
+    # thing this interface could do (§5), so it is stated in words, not colour.
+    if (year_is_projected()) {
+      out <- tagList(out, tags$div(
+        class = "projection-note",
+        tags$strong(yr, " bir KESTİRİM yılıdır."),
+        " Climate TRACE bu yıl için gözlem değil kestirim yayımlıyor. ",
+        "Haritadaki noktalar kesik çizgili ve soluk çizilir. ",
+        tags$b("Gerçekleşmiş rakam olarak okunmamalıdır.")
+      ))
+    }
+
+    # The 5-versus-6 month asymmetry. Not a footnote: a bar labelled 2026 beside
+    # another labelled 2026 asserts they are comparable, and here they are not.
+    if (!is.null(depth)) {
+      out <- tagList(out, tags$div(
+        class = "partial-note",
+        tags$strong(yr, " kısmi bir yıldır — ", depth, "."),
+        " İki popülasyonun bu yılı ", tags$b("aynı uzunlukta değildir"),
+        " ve doğrudan karşılaştırılamaz. Kısmi yıl, tam yıla ",
+        tags$b("ölçeklenerek tamamlanmaz"), ": çimento üretimi mevsimseldir, ",
+        "12/5 çarpanı rastgele değil sistematik sapma üretir."
+      ))
+    }
+
+    out
+  })
+
+
+  # ===========================================================================
+  # 3. HEADLINE FIGURES
+  # ===========================================================================
+  # The two populations get their own box each, because their figures are in
+  # different gases and a combined total would be meaningless (§6).
+
+  fmt_mt <- function(t) {
+    if (all(is.na(t))) return("—")
+    paste0(format(round(sum(t, na.rm = TRUE) / 1e6, 1), nsmall = 1), " Mt")
+  }
 
   output$box_total <- renderValueBox({
     df <- selected_facilities()
@@ -46,28 +156,38 @@ function(input, output, session) {
   })
 
   output$box_industrial <- renderValueBox({
-    n <- sum(selected_facilities()$asset_class == "industrial")
-    valueBox(n, "Sanayi tesisi — SKDM kapsamı",
-             icon = icon("industry"), color = "red")
+    df <- selected_year_data() |> filter(asset_class == "industrial")
+    valueBox(
+      value    = fmt_mt(df$emissions_reported_t),
+      subtitle = paste0("Sanayi CO₂ — ", nrow(df), " tesis, ", current_year()),
+      icon     = icon("industry"), color = "red"
+    )
   })
 
   output$box_energy <- renderValueBox({
-    n <- sum(selected_facilities()$asset_class == "energy")
-    valueBox(n, "Enerji varlığı", icon = icon("bolt"), color = "blue")
+    df <- selected_year_data() |> filter(asset_class == "energy")
+    valueBox(
+      value    = fmt_mt(df$emissions_reported_t),
+      subtitle = paste0("Enerji CO₂e — ", nrow(df), " varlık, ", current_year()),
+      icon     = icon("bolt"), color = "blue"
+    )
   })
 
+  # Deliberately NOT a CBAM cost. The box says what is missing rather than
+  # showing a zero that would be read as "no exposure".
   output$box_year <- renderValueBox({
-    df <- selected_facilities()
-    pct <- if (nrow(df) == 0) 0 else
-      round(100 * mean(!is.na(df$commissioning_year)))
-    valueBox(paste0("%", pct), "Devreye giriş yılı bilinen",
-             icon = icon("clock-rotate-left"), color = "olive")
+    valueBox(
+      value    = "—",
+      subtitle = "SKDM maruziyeti — hesap henüz yok",
+      icon     = icon("hourglass-half"), color = "olive"
+    )
   })
 
   output$map_title <- renderText({
-    df <- selected_facilities()
+    df    <- selected_facilities()
     sites <- nrow(dplyr::distinct(df, lat, lon))
-    paste0("Türkiye Karbon Atlası — ", nrow(df), " kayıt, ", sites, " ayrı konum")
+    paste0("Türkiye Karbon Atlası — ", current_year(), " · ",
+           nrow(df), " kayıt, ", sites, " ayrı konum")
   })
 
 
@@ -106,11 +226,14 @@ function(input, output, session) {
   })
 
   observe({
-    df <- selected_facilities()
+    df <- selected_year_data()
+    yr <- current_year()
 
     proxy <- leafletProxy("map", data = df) |> clearGroup("facilities")
 
     if (nrow(df) == 0) return(invisible(NULL))
+
+    projected <- year_is_projected()
 
     # Uncertain geocodes get a dark outline when the user asks for it. The
     # underlying flag is always present in the popup regardless.
@@ -122,9 +245,34 @@ function(input, output, session) {
       ifelse(df$geocode_quality == "within_province", 1, 3)
     } else 1
 
-    # Industrial installations are the subject of the CBAM calculation, so they
-    # are drawn slightly larger than the fleet that surrounds them.
-    radius <- ifelse(df$asset_class == "industrial", 7, 5)
+    # AREA scales with emissions, so radius takes the square root. Scaling the
+    # radius directly would make a plant twice as dirty look four times as big,
+    # which is the standard way a bubble map lies.
+    #
+    # The two populations are scaled SEPARATELY, because their figures are in
+    # different gases and a shared scale would invite exactly the comparison
+    # §6 forbids. Within each half, area is comparable; across them, only
+    # position is.
+    scaled_radius <- function(v, cls) {
+      out <- rep(NA_real_, length(v))
+      for (k in unique(cls)) {
+        i <- cls == k
+        top <- suppressWarnings(max(v[i], na.rm = TRUE))
+        if (!is.finite(top) || top <= 0) { out[i] <- 4; next }
+        out[i] <- 4 + 11 * sqrt(pmax(v[i], 0) / top)
+      }
+      # A facility with no emissions figure for this year still has to be
+      # visible and must not be mistaken for a zero-emission one.
+      out[is.na(out)] <- 3
+      out
+    }
+
+    radius <- scaled_radius(df$emissions_reported_t, df$asset_class)
+
+    # A projection is drawn dashed and desaturated. Never identical to an
+    # observation (§5) — colour alone is not enough, so the outline changes too.
+    dash <- if (projected) "3,4" else NULL
+    fill_opacity <- if (projected) 0.45 else 0.85
 
     proxy |>
       addCircleMarkers(
@@ -134,14 +282,42 @@ function(input, output, session) {
         group        = "facilities",
         radius       = radius,
         fillColor    = ~unname(SECTOR_COLOURS[sector]),
-        fillOpacity  = 0.85,
+        fillOpacity  = fill_opacity,
         color        = stroke_colour,
         weight       = stroke_weight,
-        label        = ~facility_name_tr,
+        dashArray    = dash,
+        label        = ~paste0(facility_name_tr, " — ",
+                               ifelse(is.na(emissions_reported_t), "veri yok",
+                                      paste0(format(round(emissions_reported_t / 1000, 1),
+                                                    nsmall = 1), " kt"))),
         popup        = ~paste0(
           "<strong>", facility_name_tr, "</strong><br/>",
           "<em>", unname(SECTOR_LABELS[sector]), " · ",
           unname(ASSET_CLASS_LABELS[asset_class]), "</em><br/><br/>",
+
+          "<b>", yr, " emisyonu:</b> ",
+          ifelse(is.na(emissions_reported_t), "veri yok",
+                 paste0(format(round(emissions_reported_t / 1000, 1), nsmall = 1),
+                        " kt ", unname(GAS_LABELS[gas_basis]))),
+          ifelse(is.na(value_type), "",
+                 paste0(" <span style='color:",
+                        ifelse(value_type == "projected", "#7B1FA2", "#4C9A2A"),
+                        ";'>(", unname(VALUE_TYPE_LABELS[value_type]), ")</span>")),
+          "<br/>",
+
+          "<b>Üretim:</b> ",
+          ifelse(is.na(production_activity), "yayımlanmıyor",
+                 format(round(production_activity), big.mark = ".",
+                        decimal.mark = ",")),
+          "<br/>",
+          "<b>Yoğunluk:</b> ",
+          ifelse(is.na(emission_intensity), "hesaplanamıyor",
+                 format(round(emission_intensity, 3), nsmall = 3)),
+          "<br/>",
+          "<b>Güven (emisyon):</b> ",
+          ifelse(is.na(confidence_emissions), "—", confidence_emissions),
+          "<br/><br/>",
+
           "<b>İşletmeci:</b> ", ifelse(is.na(operator_name), "—", operator_name), "<br/>",
           "<b>Teknoloji:</b> ", ifelse(is.na(technology), "—", technology), "<br/>",
           "<b>Devreye giriş:</b> ",
@@ -209,6 +385,121 @@ function(input, output, session) {
 
 
   # ===========================================================================
+  # 3b. THE SERIES
+  # ===========================================================================
+  # What a single year cannot show. Base graphics deliberately: neither ggplot2
+  # nor plotly is in renv.lock, and adding a dependency to draw six points would
+  # be a poor trade.
+  #
+  # The two populations are drawn on SEPARATE axes — left for industrial CO2,
+  # right for energy CO2e — because they are different gases. Sharing one axis
+  # would put them in the same visual space and invite the sum that §6 forbids.
+
+  trend_series <- reactive({
+    req(!is.null(panel))
+    ids <- selected_facilities()$facility_id
+    if (length(ids) == 0) return(NULL)
+
+    panel |>
+      filter(facility_id %in% ids) |>
+      group_by(gas_basis, year) |>
+      summarise(mt         = sum(emissions_reported_t, na.rm = TRUE) / 1e6,
+                months     = first(months_covered),
+                value_type = first(value_type),
+                .groups = "drop")
+  })
+
+  output$trend_plot <- renderPlot({
+    s <- trend_series()
+    if (is.null(s) || nrow(s) == 0) {
+      plot.new()
+      text(0.5, 0.5, "Seçili tesis yok", col = "#888", cex = 1.1)
+      return(invisible(NULL))
+    }
+
+    op <- par(mar = c(3.2, 4.0, 0.6, 4.0), cex.axis = 0.8, cex.lab = 0.85,
+              mgp = c(2.3, 0.6, 0), tcl = -0.25, las = 1)
+    on.exit(par(op), add = TRUE)
+
+    yrs <- sort(unique(s$year))
+
+    draw_one <- function(basis, colour, side, first) {
+      d <- s[s$gas_basis == basis, ]
+      if (nrow(d) == 0) return(invisible(NULL))
+      d <- d[order(d$year), ]
+
+      if (first) {
+        plot(d$year, d$mt, type = "n", xlab = "", ylab = "",
+             xlim = range(yrs), ylim = c(0, max(d$mt) * 1.15),
+             xaxt = "n", yaxt = "n", bty = "n")
+        axis(1, at = yrs, labels = yrs, col = "#ccc", col.axis = "#555")
+        grid(nx = NA, ny = NULL, col = "#eee", lty = 1)
+      } else {
+        par(new = TRUE)
+        plot(d$year, d$mt, type = "n", xlab = "", ylab = "",
+             xlim = range(yrs), ylim = c(0, max(d$mt) * 1.15),
+             axes = FALSE, bty = "n")
+      }
+      axis(side, col = colour, col.axis = colour)
+      mtext(unname(GAS_LABELS[basis]), side = side, line = 2.4,
+            col = colour, cex = 0.8)
+
+      # Observed and projected are drawn as two segments of one line: solid up
+      # to the last observed year, dashed beyond it. The join point is repeated
+      # in both so the line does not break.
+      obs  <- d[d$value_type == "observed", ]
+      proj <- d[d$value_type == "projected", ]
+
+      if (nrow(obs) > 0) {
+        lines(obs$year, obs$mt, col = colour, lwd = 2.4)
+        points(obs$year, obs$mt, col = colour, pch = 19, cex = 1.0)
+      }
+      if (nrow(proj) > 0) {
+        bridge <- rbind(obs[nrow(obs), , drop = FALSE], proj)
+        lines(bridge$year, bridge$mt, col = colour, lwd = 2.0, lty = 2)
+        # Hollow points for projections: a different shape as well as a
+        # different line, because line style alone is easy to miss.
+        points(proj$year, proj$mt, col = colour, pch = 21, bg = "white",
+               cex = 1.0, lwd = 1.8)
+      }
+
+      # A partial year is marked on the plot itself, not only in the caption.
+      part <- d[!is.na(d$months) & d$months < 12, ]
+      if (nrow(part) > 0) {
+        text(part$year, part$mt, labels = paste0(part$months, "a"),
+             pos = 3, col = "#E8A33D", cex = 0.75, font = 2)
+      }
+    }
+
+    first <- TRUE
+    for (b in c("co2", "co2e_100yr")) {
+      if (any(s$gas_basis == b)) {
+        draw_one(b, if (b == "co2") "#B2182B" else "#2166AC",
+                 if (first) 2 else 4, first)
+        first <- FALSE
+      }
+    }
+
+    abline(v = current_year(), col = "#33333355", lwd = 1.5, lty = 3)
+  })
+
+  output$trend_note <- renderUI({
+    s <- trend_series()
+    if (is.null(s) || nrow(s) == 0) return(NULL)
+
+    tags$p(
+      style = "font-size:12px; color:#666; margin:8px 0 0 0;",
+      tags$b("İki ayrı eksen, iki ayrı gaz."), " Sol eksen sanayi CO₂, sağ ",
+      "eksen enerji CO₂e. Eğriler aynı grafikte ama ",
+      tags$b("aynı ölçekte değildir"), " ve toplanmaz. ",
+      "Dolu nokta ve düz çizgi gözlem, içi boş nokta ve kesik çizgi kestirimdir. ",
+      "Nokta üstündeki turuncu etiket, o yılın kaç aylık veriyle hesaplandığını ",
+      "gösterir. Dikey noktalı çizgi slider'ın bulunduğu yıldır."
+    )
+  })
+
+
+  # ===========================================================================
   # 4. SELECTED FACILITY DETAIL
   # ===========================================================================
 
@@ -263,6 +554,61 @@ function(input, output, session) {
         row("Kaynak",   paste0("Climate TRACE ", f$source_release)),
         row("Kaynak ID", f$source_id)
       ),
+
+      # The selected year's figures for this facility, with their vintage. Kept
+      # in its own block so the time-varying numbers are visibly separate from
+      # the attributes that do not change — the same split the data model makes
+      # between facilities.rds and facility_panel.rds (§6).
+      if (!is.null(panel)) {
+        p <- panel |> filter(facility_id == selected_id(), year == current_year())
+        if (nrow(p) == 0) {
+          tags$p(style = "font-size:12px; color:#888; margin-top:10px;",
+                 current_year(), " için panel kaydı yok.")
+        } else {
+          tags$div(
+            style = paste0("margin-top:12px; padding:10px; background:#fafafa;",
+                           " border:1px solid #eee;"),
+            tags$div(
+              style = "font-size:12px; color:#666; margin-bottom:6px;",
+              tags$b(current_year()),
+              tags$span(class = "yr-badge",
+                        style = paste0("margin-left:6px; background:",
+                                       if (p$value_type == "projected")
+                                         "#7B1FA2" else "#4C9A2A",
+                                       "; color:#fff;"),
+                        unname(VALUE_TYPE_LABELS[p$value_type])),
+              if (!is.na(p$months_covered) && p$months_covered < 12)
+                tags$span(style = "margin-left:6px; color:#E8A33D;",
+                          paste0(p$months_covered, "/12 ay"))
+            ),
+            tags$table(
+              class = "kv", style = "width:100%;",
+              row("Emisyon",
+                  paste0(format(round(p$emissions_reported_t / 1000, 1),
+                                nsmall = 1),
+                         " kt ", GAS_LABELS[[p$gas_basis]])),
+              row("Üretim",
+                  if (is.na(p$production_activity)) "yayımlanmıyor"
+                  else paste0(format(round(p$production_activity),
+                                     big.mark = ".", decimal.mark = ","), " ",
+                              ifelse(is.na(p$activity_units), "",
+                                     p$activity_units))),
+              row("Yoğunluk",
+                  if (is.na(p$emission_intensity)) "hesaplanamıyor"
+                  else format(round(p$emission_intensity, 3), nsmall = 3)),
+              row("Güven", ifelse(is.na(p$confidence_emissions), "—",
+                                  p$confidence_emissions)),
+              row("Sürüm", p$vintage)
+            ),
+            tags$p(
+              style = "font-size:11px; color:#888; margin:8px 0 0 0;",
+              tags$b("SKDM maruziyeti hesaplanmıyor."), " Doğrudan/dolaylı ",
+              "ayrıştırma yapılmadan bu tesise bir maliyet baskısı rakamı ",
+              "atanamaz; boş bırakmak, uydurmaktan iyidir."
+            )
+          )
+        }
+      },
 
       # The field the whole merge turns on, spelled out rather than coded.
       tags$div(

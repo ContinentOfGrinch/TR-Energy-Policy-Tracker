@@ -6,10 +6,14 @@
 #
 # SCOPE OF THIS VERSION
 #   Both populations on one map: 88 industrial installations and 212 energy
-#   assets. No time slider and no CBAM liability figure yet —
-#   `facility_panel.rds` does not exist, because the direct/indirect
-#   decomposition is author work (KARBON_ATLASI.md §9). Nothing here fabricates
-#   a value to fill that gap.
+#   assets, now over time — `facility_panel.rds` supplies 1,800 facility-years
+#   and the time slider drives them.
+#
+#   Still absent: the CBAM liability figure. The panel's `co2_direct_t` and
+#   `co2_indirect_t` columns are deliberately NA pending the direct/indirect
+#   decomposition, which is author work (KARBON_ATLASI.md §9). Nothing here
+#   fabricates a value to fill that gap, and the interface says so rather than
+#   leaving an empty box to be read as zero.
 # =============================================================================
 
 # Windows defaults to a non-UTF-8 encoding. Turkish UI labels break silently
@@ -63,6 +67,12 @@ if (!file.exists(FACILITIES_PATH)) {
 }
 
 facilities <- readRDS(FACILITIES_PATH)
+
+# The panel. Required for the time slider; the app still runs without it, with
+# the slider hidden and a notice in its place, so a half-built clone is honest
+# rather than broken.
+PANEL_PATH <- file.path(PROJECT_ROOT, "data", "processed", "facility_panel.rds")
+panel <- if (file.exists(PANEL_PATH)) readRDS(PANEL_PATH) else NULL
 
 # Optional: the grid intensity comparison, if 01d has run. The app degrades
 # rather than failing when it is absent.
@@ -149,9 +159,95 @@ GAS_LABELS <- c(
   "co2e_100yr" = "CO₂e (100 yıl)"
 )
 
+# value_type is epistemic, not decorative. An observation and a projection must
+# never be rendered identically (§5), so each one carries its own label, colour
+# and marker treatment, defined here once.
+VALUE_TYPE_LABELS <- c(
+  "observed"  = "Gözlem",
+  "projected" = "Kestirim"
+)
+
+VALUE_TYPE_LONG <- c(
+  "observed"  = paste0("Gözlem yılı — Climate TRACE'in modellenmiş tahmini. ",
+                       "Doğrulanmış tesis raporu değildir."),
+  "projected" = paste0("KESTİRİM YILI — Climate TRACE bu yıl için gözlem değil ",
+                       "kestirim yayımlıyor. Gerçekleşmiş rakam olarak ",
+                       "okunmamalıdır.")
+)
+
 
 # =============================================================================
-# 3. DERIVED CONSTANTS
+# 3. THE TIME AXIS
+# =============================================================================
+# Three decisions live here, all of them made once and recorded rather than
+# scattered through the interface.
+
+if (!is.null(panel)) {
+
+  PANEL_YEARS <- sort(unique(panel$year))
+
+  # Months of data behind each year, per gas basis. Counted from the panel,
+  # never assumed to be 12: the two populations do not agree on how much of
+  # 2026 exists — the co2 package stops after 5 months and co2e_100yr after 6 —
+  # and that is a property of the upstream release which a version bump changes
+  # without changing any code.
+  PANEL_DEPTH <- panel |>
+    distinct(gas_basis, year, months_covered) |>
+    arrange(year, gas_basis)
+
+  # Years where both populations carry a full twelve months. Only these are
+  # safely comparable across the two halves of the atlas.
+  COMPLETE_YEARS <- PANEL_DEPTH |>
+    group_by(year) |>
+    summarise(complete = all(months_covered == 12), .groups = "drop") |>
+    filter(complete) |>
+    pull(year)
+
+  OBSERVED_YEARS <- panel |>
+    filter(value_type == "observed") |>
+    pull(year) |>
+    unique()
+
+  # DEFAULT YEAR. The slider opens on the most recent year that is BOTH observed
+  # and complete — currently 2024.
+  #
+  # Not 2026, even though it is the year CBAM's definitive regime applies and
+  # the obvious "latest" choice: it holds five months for one population and six
+  # for the other, and opening there would put a partial year in front of every
+  # first-time reader as though it were a year.
+  #
+  # Not 2025 either. It is complete but Climate TRACE publishes it as an
+  # estimate rather than an observation, and §5 is explicit that a projection
+  # must never be the thing a reader meets first.
+  DEFAULT_YEAR <- max(intersect(OBSERVED_YEARS, COMPLETE_YEARS))
+
+  # How much of a given year each population actually carries, as a sentence.
+  # Used wherever a year is labelled, so the 5-versus-6-month asymmetry cannot
+  # hide behind a number that looks like a year.
+  year_depth_note <- function(yr) {
+    d <- PANEL_DEPTH[PANEL_DEPTH$year == yr, ]
+    if (nrow(d) == 0) return(NULL)
+    if (all(d$months_covered == 12)) return(NULL)
+    paste0(
+      vapply(seq_len(nrow(d)), function(i) {
+        pop <- if (d$gas_basis[i] == "co2") "sanayi" else "enerji"
+        paste0(pop, " ", d$months_covered[i], "/12 ay")
+      }, character(1)),
+      collapse = " · ")
+  }
+
+} else {
+  PANEL_YEARS    <- integer(0)
+  PANEL_DEPTH    <- NULL
+  COMPLETE_YEARS <- integer(0)
+  OBSERVED_YEARS <- integer(0)
+  DEFAULT_YEAR   <- NA_integer_
+  year_depth_note <- function(yr) NULL
+}
+
+
+# =============================================================================
+# 4. DERIVED CONSTANTS
 # =============================================================================
 # Computed once here rather than inside a reactive, because they never change.
 
@@ -197,7 +293,7 @@ MAP_BOUNDS <- list(lng1 = 25.6, lat1 = 35.8, lng2 = 44.8, lat2 = 43.2)
 
 
 # =============================================================================
-# 4. FLEET CONTEXT — renewables, if built
+# 5. FLEET CONTEXT — renewables, if built
 # =============================================================================
 # A SEPARATE register with a different epistemic status, deliberately not merged
 # into `facilities`.

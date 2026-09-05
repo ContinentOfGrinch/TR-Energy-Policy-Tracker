@@ -4,9 +4,12 @@
 # Turkish labels throughout; English code and identifiers (KARBON_ATLASI.md §2).
 #
 # SCOPE: both populations on one map — 88 industrial installations and 212
-# energy assets. No time slider yet: `facility_panel.rds` does not exist, so a
-# slider would have nothing to move. It takes the prominent sidebar position
-# once the panel is built.
+# energy assets — over 2021–2026, driven by the time slider.
+#
+# The slider sits ABOVE every other control and outside the collapsible block,
+# because KARBON_ATLASI.md §5 names it the most important control element. It is
+# the only input that changes what the numbers mean rather than which subset is
+# shown.
 # =============================================================================
 
 dashboardPage(
@@ -30,6 +33,43 @@ dashboardPage(
     ),
 
     tags$hr(style = "border-color: #4b5c66; margin: 10px 15px;"),
+
+    # --- THE TIME SLIDER ------------------------------------------------------
+    # First control, deliberately. Everything below it selects a subset; this
+    # selects a year, and the year changes what every figure on the page means.
+    tags$div(
+      style = "padding: 0 15px 4px 15px;",
+
+      if (length(PANEL_YEARS) > 0) {
+        tagList(
+          sliderInput(
+            inputId = "year",
+            label   = tags$span(style = "font-size:14px;", "Yıl"),
+            min     = min(PANEL_YEARS),
+            max     = max(PANEL_YEARS),
+            value   = DEFAULT_YEAR,
+            step    = 1,
+            sep     = "",            # 2024, not 2,024
+            ticks   = FALSE,
+            width   = "100%",
+            animate = animationOptions(interval = 1400, loop = FALSE)
+          ),
+          # Rendered server-side because what needs saying depends on the year:
+          # whether it is observed or a projection, and how many months it holds
+          # for each population.
+          uiOutput("year_status")
+        )
+      } else {
+        tags$div(
+          style = paste0("padding:10px; background:#3c4b52; font-size:12px;",
+                         " border-left:3px solid #E8A33D; color:#c8d0d4;"),
+          tags$b("Zaman serisi yok."), " Emisyon paneli üretilmemiş. ",
+          "Çalıştırın: ", tags$code("Rscript scripts/03_build_panel.R")
+        )
+      }
+    ),
+
+    tags$hr(style = "border-color: #4b5c66; margin: 6px 15px 10px 15px;"),
 
     tags$div(
       style = "padding: 0 15px;",
@@ -103,6 +143,20 @@ dashboardPage(
           background: #EAF2FA; border-left: 4px solid #2166AC;
           padding: 10px 14px; margin-bottom: 12px; font-size: 13px;
         }
+        /* A projection must never look like an observation (§5). The badge is
+           deliberately loud: it is easier to ignore a colour than a word. */
+        .projection-note {
+          background: #F3E5F5; border-left: 4px solid #7B1FA2;
+          padding: 10px 14px; margin-bottom: 12px; font-size: 13px;
+        }
+        .partial-note {
+          background: #FFF3E0; border-left: 4px solid #E8A33D;
+          padding: 10px 14px; margin-bottom: 12px; font-size: 13px;
+        }
+        .yr-badge {
+          display: inline-block; padding: 1px 7px; border-radius: 3px;
+          font-size: 11px; font-weight: 600; letter-spacing: .3px;
+        }
         .leaflet-container { background: #f4f6f9; }
         table.kv td { padding: 4px 10px 4px 0; font-size: 13px; }
       "))
@@ -136,6 +190,10 @@ dashboardPage(
           tags$b("Bu iki taban toplanmaz.")
         ),
 
+        # Fires only when the selected year is a projection or a partial year.
+        # Silent otherwise — a warning shown on every screen stops being read.
+        uiOutput("year_warning"),
+
         fluidRow(
           valueBoxOutput("box_total",      width = 3),
           valueBoxOutput("box_industrial", width = 3),
@@ -158,6 +216,14 @@ dashboardPage(
               width = NULL, status = "warning", solidHeader = TRUE,
               title = "Seçili Tesis",
               uiOutput("facility_detail")
+            ),
+            # The series a single year cannot show. Solid where observed,
+            # dashed where projected — the same distinction the markers make.
+            box(
+              width = NULL, status = "primary", solidHeader = TRUE,
+              title = "Emisyon Serisi — Seçili Kapsam",
+              plotOutput("trend_plot", height = 220),
+              uiOutput("trend_note")
             ),
             box(
               width = NULL, status = "info", solidHeader = TRUE,

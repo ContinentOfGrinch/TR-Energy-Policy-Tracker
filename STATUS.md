@@ -4,13 +4,16 @@
 this file says where it *got to*, what runs, what is blocked, and which traps have already
 been paid for.
 
-Last updated: **2026-09-01** · 34 commits · **~69% complete** · 180 assertions passing
+Last updated: **2026-09-01** · 35 commits · **~72% complete** · 182 assertions passing
 
-> The figure moved 53% → 35% → 58% → 69%. The drop was the scope merge on 2026-08-19
-> growing the denominator, not work being lost. The recoveries are the energy half, and
-> then the panel: `facility_panel.rds` was two weighted line items and it blocked the time
-> slider, the fleet timeline and the cost layer behind it. What remains is now
-> disproportionately the analytical core, which §9 reserves for the author.
+> The figure moved 53% → 35% → 58% → 69% → 72%. The drop was the scope merge on 2026-08-19
+> growing the denominator, not work being lost. The recoveries are the energy half, then
+> the panel, then the time slider the panel unblocked. What remains is now disproportionately
+> the analytical core, which §9 reserves for the author.
+>
+> **The slider is not the fleet timeline.** It moves over 2021–2026, which is the emissions
+> panel. The 2000–2026 fleet animation is a different thing, built on `commissioning_year`,
+> and it is not drawn yet.
 
 **Published:** <https://github.com/ContinentOfGrinch/TR-Energy-Policy-Tracker>
 (rename to `karbon-atlasi-turkiye` still outstanding)
@@ -61,8 +64,10 @@ resolution, with an audit trail, is what is unoccupied.
 - Policy parameters as JSON — 5 files, all carrying `source_url` and a retrieval date, each
   validated against a schema in `policies/_schema/`
 - Tiered pipeline gates (`_validate.R`) plus 133 testthat assertions
-- Shiny app: both populations on one Türkiye-bounded map, sector/province/captive filters,
-  grid-intensity tab, geocode-quality and commissioning panels, sources tab
+- Shiny app: both populations on one Türkiye-bounded map **driven by the time slider**
+  (2021–2026), marker area scaled to emissions and scaled separately per gas basis, a
+  two-axis emissions series, sector/province/captive filters, grid-intensity tab,
+  geocode-quality and commissioning panels, sources tab
 
 **Both halves are now built.** What is missing is no longer a data layer; it is the panel
 and the arithmetic on top of it.
@@ -74,7 +79,7 @@ and the arithmetic on top of it.
 | `co2_direct_t` / `co2_indirect_t` in the panel | Author decision **B1** (direct/indirect split). The panel is built and carries `emissions_reported_t`; these two columns are deliberately NA and the gate reports them on every build |
 | CBAM liability figure | Author decisions **B7** (`eu_export_share`) and **B9** (the calculation) |
 | Grid factor **selection** | Author decision — three estimates exist, `selection.chosen` is deliberately `null` |
-| Time slider, cost layer, audit-trail panel | nothing — the panel now exists, this is buildable |
+| Cost layer, audit-trail panel | **B9** — there is no liability figure to display yet |
 | The 2000–2026 fleet timeline | nothing — **A6 is resolved.** The timeline can be drawn on 197 dated facilities, with the 103 undated ones visibly excluded rather than assumed to have always existed (§6) |
 | `METHODOLOGY.md` | author writes the prose (§9) |
 
@@ -98,10 +103,10 @@ ratios are **recomputed from annual totals** rather than averaged across months.
 | `tests/` + pipeline validation gates | 3 | ✅ |
 | Energy coverage audit + fetch (5 subsectors) | 6 | ✅ |
 | Energy facilities (212, merged to 300) | 6 | ✅ |
-| GEM commissioning years → 2000 timeline | 5 | ◐ 50% — ingested and joined at 78%, but the timeline is not drawn |
+| GEM commissioning years → 2000 timeline | 5 | ◐ 50% — ingested and joined at 66%; the **2000–2026 fleet timeline is still not drawn**. The slider covers 2021–2026, which is the emissions panel, not the fleet animation |
 | Grid emission factor | 6 | ◐ 60% — three estimates assembled, selection pending |
 | `eu_export_share` | 4 | ◐ 50% — fetch works, definition pending |
-| App phase 2 (slider, cost, energy layer, audit trail) | 8 | ◐ 30% — energy layer and grid tab done; no slider, cost or audit trail |
+| App phase 2 (slider, cost, energy layer, audit trail) | 8 | ◐ 65% — slider, emissions-scaled markers, projection styling and the series are in; no cost layer or audit-trail panel, both blocked on B9 |
 | Energy emissions panel | 6 | ✅ |
 | `facility_panel.rds` (industrial) | 8 | ◐ 65% — built, gated and tested; `co2_direct_t` / `co2_indirect_t` await B1 |
 | CBAM calculation core | 8 | ❌ |

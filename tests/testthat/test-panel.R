@@ -197,6 +197,46 @@ test_that("columns reserved for author decisions are NA, not guessed", {
 })
 
 
+test_that("a year exists that is both observed and complete", {
+  panel <- read_processed("facility_panel.rds")
+
+  # The app opens the time slider on the most recent year that is BOTH observed
+  # and twelve months long, so that a first-time reader never meets a projection
+  # or a partial year as though it were a year (§5). If a future data refresh
+  # left no such year, `max()` over an empty set would give -Inf and the slider
+  # would open somewhere meaningless. This asserts the property the default
+  # depends on rather than the default itself.
+  complete <- panel |>
+    dplyr::group_by(year) |>
+    dplyr::summarise(all_full = all(months_covered == 12),
+                     any_obs  = any(value_type == "observed"),
+                     .groups = "drop") |>
+    dplyr::filter(all_full, any_obs)
+
+  expect_gt(nrow(complete), 0)
+})
+
+
+test_that("observed and projected years do not interleave", {
+  panel <- read_processed("facility_panel.rds")
+
+  # The series is drawn as a solid segment then a dashed one, joined at the last
+  # observed year. That rendering assumes the observed years form an unbroken
+  # block at the start. An observed year appearing after a projected one would
+  # draw a line that silently misrepresents which points are which.
+  yrs <- panel |>
+    dplyr::distinct(year, value_type) |>
+    dplyr::arrange(year)
+
+  obs <- yrs$year[yrs$value_type == "observed"]
+  prj <- yrs$year[yrs$value_type == "projected"]
+
+  if (length(obs) > 0 && length(prj) > 0) {
+    expect_lt(max(obs), min(prj))
+  }
+})
+
+
 test_that("vintage records the upstream release for every row", {
   panel <- read_processed("facility_panel.rds")
 

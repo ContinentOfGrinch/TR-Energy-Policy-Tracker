@@ -13,12 +13,14 @@ produces it.
 > coverage audit that fixes `t₀` empirically, the 300-facility register with province and
 > İBBS-2 assignment, commissioning years from GEM, three cross-validated estimates of grid
 > carbon intensity, the **1,800-row facility × year emissions panel** (2021–2026), and an
-> interactive map of both populations.
+> interactive map of both populations **driven by a time slider**, with projected years
+> drawn dashed and partial years labelled by their month count.
 >
-> **Not built:** the CBAM liability calculation, and the time slider that the panel now
-> makes possible. The panel's `co2_direct_t` and `co2_indirect_t` columns are deliberately
-> empty pending the direct/indirect decomposition, which is a modelling decision and not a
-> parsing one. The regulatory parameters are in place and cited. See
+> **Not built:** the CBAM liability calculation. The panel's `co2_direct_t` and
+> `co2_indirect_t` columns are deliberately empty pending the direct/indirect
+> decomposition, which is a modelling decision and not a parsing one. The 2000–2026 fleet
+> animation is also still absent — the time slider covers 2021–2026, which is the emissions
+> panel, not the fleet. The regulatory parameters are in place and cited. See
 > [ROADMAP.md](ROADMAP.md).
 >
 > **This tool does not yet produce a CBAM exposure figure.** When it does, this paragraph
@@ -39,9 +41,15 @@ Bağ şudur: sanayi tesislerinin **dolaylı** emisyonu, tükettikleri elektriği
 yoğunluğuna bağlıdır; o yoğunluğu da haritalanabilir bir filo üretir.
 
 **Bugün ne var, ne yok.** Veri boru hattı, tesis kütüğü, devreye giriş yılları, şebeke
-yoğunluğunun üç bağımsız tahmini ve harita çalışıyor. **SKDM maruziyet hesabı, emisyon
-paneli ve zaman slider'ı henüz yok** — gerekli mevzuat parametreleri hazır ve kaynaklı,
-ama dayandıkları modelleme kararları verilmedi.
+yoğunluğunun üç bağımsız tahmini, **1.800 satırlık tesis × yıl emisyon paneli (2021–2026)**
+ve **zaman slider'lı harita** çalışıyor. **SKDM maruziyet hesabı henüz yok** — gerekli
+mevzuat parametreleri hazır ve kaynaklı, ama dayandıkları modelleme kararları verilmedi.
+2000–2026 filo animasyonu da henüz yok; slider emisyon panelini sürüyor, filoyu değil.
+
+**Kestirim yılları gözlem gibi çizilmez.** 2025 ve 2026 Climate TRACE'in kestirimidir;
+haritada kesik çizgili ve soluk, grafikte içi boş noktayla gösterilir. 2026 üstelik
+**kısmi** bir yıldır ve iki popülasyon için farklı uzunluktadır — sanayi 5 ay, enerji 6 ay.
+Arayüz bunu her seferinde söyler; kısmi yıl tam yıla ölçeklenerek tamamlanmaz.
 
 **Önemli — bu araç bir vergi hesaplayıcısı değildir.** SKDM sertifikalarını AB'deki
 ithalatçı satın alır, Türk üretici değil. Hesap eklendiğinde üretilecek rakam, tesisin

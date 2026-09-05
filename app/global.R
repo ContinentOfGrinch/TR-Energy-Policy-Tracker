@@ -319,6 +319,34 @@ COMMISSION_PCT <- round(100 * N_WITH_YEAR / N_FACILITIES)
 
 YEAR_RANGE <- range(facilities$commissioning_year, na.rm = TRUE)
 
+# --- Basemap -----------------------------------------------------------------
+# NOT CartoDB, and the reason is a defect found by finally looking at the app in
+# a browser on 2026-09-01. CARTO now requires an API key for its basemaps and
+# serves WATERMARKED tiles without one: every tile carried "API KEY REQUIRED"
+# and "carto.com/basemaps/apikey" diagonally across it.
+#
+# This predates the move to a dark basemap — Positron is the same service and
+# the same watermark, so the app had been rendering that way for as long as it
+# has had a map. Nobody saw it because nobody had opened it in a browser and
+# looked. That is the whole argument for driving the app rather than trusting
+# that a reactive returned without error.
+#
+# Esri's Dark Gray Canvas is free, needs no key, and splits base from labels so
+# the labels can sit ABOVE the facility markers — which is better than CARTO
+# managed anyway, since a city name under a marker is unreadable. Note the
+# {z}/{y}/{x} order: Esri puts row before column, and getting it wrong yields a
+# map that loads tiles happily and shows the wrong part of the world.
+ESRI_BASE <- paste0("https://server.arcgisonline.com/ArcGIS/rest/services/",
+                    "Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}")
+ESRI_LABELS <- paste0("https://server.arcgisonline.com/ArcGIS/rest/services/",
+                      "Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}")
+
+# Attribution is a condition of use, not a courtesy — the same rule this project
+# applies to Climate TRACE, GEM and Ember.
+ESRI_ATTRIB <- paste0(
+  "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, ",
+  "&copy; OpenStreetMap contributors, and the GIS user community")
+
 # Map extent. Türkiye's land border reaches 42.1°N; the northern bound is 43.2
 # because Black Sea offshore gas production sits at about 42.94°N and would
 # otherwise fall outside the initial view. Defined once here so the initial view

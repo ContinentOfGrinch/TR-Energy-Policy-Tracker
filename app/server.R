@@ -208,12 +208,13 @@ function(input, output, session) {
       # its own map, not to this one.
       minZoom = 5, maxZoom = 14
     )) |>
-      # CartoDB.DarkMatter. The basemap recedes almost completely, so the
-      # facility points are the only saturated thing on screen and the eye goes
-      # to them rather than to roads and place names. The trade is that every
-      # marker colour has to be bright enough to survive a black ground — see
-      # SECTOR_COLOURS in global.R, which was recalibrated for exactly this.
-      addProviderTiles(providers$CartoDB.DarkMatter) |>
+      # Dark ground, so the basemap recedes almost completely and the facility
+      # points are the only saturated thing on screen. Base and labels are two
+      # layers: the labels are added AFTER the markers in the observer below, so
+      # a city name is never buried under a dot. See ESRI_BASE in global.R for
+      # why this is not CartoDB.
+      addTiles(urlTemplate = ESRI_BASE, attribution = ESRI_ATTRIB,
+               options = tileOptions(minZoom = 5, maxZoom = 14)) |>
       fitBounds(lng1 = MAP_BOUNDS$lng1, lat1 = MAP_BOUNDS$lat1,
                 lng2 = MAP_BOUNDS$lng2, lat2 = MAP_BOUNDS$lat2) |>
       # A little slack beyond the data so coastal facilities are not pinned to
@@ -331,7 +332,12 @@ function(input, output, session) {
           "<b>İl:</b> ", province_name_tr, " (", province_code, ")<br/>",
           "<b>Yükümlülük:</b> ", unname(LIABILITY_SHORT[liability_class])
         )
-      )
+      ) |>
+      # Place names go on top of the markers, not under them. Drawn here rather
+      # than with the base so the layer order survives every marker redraw.
+      clearGroup("labels") |>
+      addTiles(urlTemplate = ESRI_LABELS, group = "labels",
+               options = tileOptions(minZoom = 5, maxZoom = 14, opacity = 0.9))
   })
 
 
@@ -840,7 +846,8 @@ function(input, output, session) {
   output$fleet_map <- renderLeaflet({
     leaflet(options = leafletOptions(preferCanvas = TRUE,
                                      minZoom = 5, maxZoom = 12)) |>
-      addProviderTiles(providers$CartoDB.DarkMatter) |>
+      addTiles(urlTemplate = ESRI_BASE, attribution = ESRI_ATTRIB,
+               options = tileOptions(minZoom = 5, maxZoom = 12)) |>
       fitBounds(lng1 = MAP_BOUNDS$lng1, lat1 = MAP_BOUNDS$lat1,
                 lng2 = MAP_BOUNDS$lng2, lat2 = MAP_BOUNDS$lat2) |>
       setMaxBounds(lng1 = MAP_BOUNDS$lng1 - 1.5, lat1 = MAP_BOUNDS$lat1 - 1.0,
@@ -850,6 +857,18 @@ function(input, output, session) {
                 labels = c(unname(TL_LABELS), "Tarihi bilinmiyor"),
                 title = "Filo", opacity = 0.9)
   })
+
+  # Shiny suspends outputs in hidden tabs, so this map does not exist until the
+  # fleet tab is first opened — by which time the observer below has already
+  # fired and sent its markers to a leafletProxy with nothing behind it. The
+  # commands are dropped silently, the map opens empty, and it then fills in the
+  # moment anything re-triggers the observer, which makes it look intermittent
+  # rather than broken. Rendering it even while hidden is the fix.
+  #
+  # This call must come AFTER the assignment above: outputOptions() looks the
+  # output up by name and raises "not in list of output objects" if it does not
+  # exist yet.
+  outputOptions(output, "fleet_map", suspendWhenHidden = FALSE)
 
   observe({
     req(!is.null(fleet_timeline))
@@ -877,7 +896,11 @@ function(input, output, session) {
             "<b>Kapasite:</b> ",
             ifelse(is.na(mw), "bu görünümde ölçülmüyor",
                    paste0(round(mw, 1), " MW")))
-        )
+        ) |>
+        clearGroup("labels") |>
+        addTiles(urlTemplate = ESRI_LABELS, group = "labels",
+                 options = tileOptions(minZoom = 5, maxZoom = 12,
+                                       opacity = 0.9))
     }
 
     if (nrow(v$undated) > 0) {
@@ -1170,6 +1193,19 @@ function(input, output, session) {
 
       tags$h4("Natural Earth — idari sınırlar"),
       tags$p("Made with Natural Earth, ", tags$b("kamu malı"), "."),
+
+      tags$h4("Esri — altlık harita"),
+      tags$p("Dark Gray Canvas. ", HTML(ESRI_ATTRIB), "."),
+      tags$p(
+        style = "font-size:12px; color:#666;",
+        tags$b("Neden CartoDB değil: "),
+        "CARTO altlık haritaları için artık API anahtarı istiyor ve anahtarsız ",
+        "kullanımda karoların üstüne çapraz olarak ",
+        tags$code("API KEY REQUIRED"),
+        " filigranı basıyor. Bu, hem koyu (DarkMatter) hem açık (Positron) ",
+        "varyantı için geçerli. Kusur 2026-09-01'de, uygulama ilk kez tarayıcıda ",
+        "açılıp bakıldığında görüldü."
+      ),
 
       tags$p(style = "font-size:12px; color:#666;",
              "Atıf, CC BY 4.0'ın ", tags$b("hukuki koşuludur"),

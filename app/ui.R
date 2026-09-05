@@ -157,7 +157,30 @@ dashboardPage(
           display: inline-block; padding: 1px 7px; border-radius: 3px;
           font-size: 11px; font-weight: 600; letter-spacing: .3px;
         }
-        .leaflet-container { background: #f4f6f9; }
+        /* Dark basemap. The container colour matters while tiles load and
+           wherever they fail: a light gap on a dark map reads as a rendering
+           fault, and on a slow connection it is the first thing seen. */
+        .leaflet-container { background: #0E1418; }
+        /* Leaflet's legend and popups default to white panels, which punch
+           bright holes in a dark map. Restyled to sit on it instead. */
+        .leaflet-control .legend,
+        .leaflet-bottom .info.legend {
+          background: rgba(14,20,24,0.88) !important;
+          color: #DDE3E7 !important;
+          border: 1px solid #2A3339 !important;
+          border-radius: 3px;
+        }
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+          background: #161D22; color: #DDE3E7;
+          box-shadow: 0 2px 12px rgba(0,0,0,.5);
+        }
+        .leaflet-popup-content-wrapper a { color: #4CC9F0; }
+        .leaflet-tooltip {
+          background: rgba(14,20,24,0.92); color: #DDE3E7;
+          border: 1px solid #2A3339;
+        }
+        .leaflet-tooltip-left:before { border-left-color: #2A3339; }
+        .leaflet-tooltip-right:before { border-right-color: #2A3339; }
         table.kv td { padding: 4px 10px 4px 0; font-size: 13px; }
       "))
     ),

@@ -108,17 +108,33 @@ SECTOR_LABELS <- c(
 )
 
 # Warm hues for the CBAM subjects, cool for the energy fleet, so the two
-# populations separate at a glance before any legend is read. Colour-blind-safe
-# and legible on the light Positron basemap.
+# populations separate at a glance before any legend is read.
+#
+# CALIBRATED FOR CartoDB.DarkMatter, and that is not a cosmetic difference. The
+# previous palette was built for the light Positron basemap and several of its
+# colours fail outright on black: coal mining was #4D4D4D, a dark grey that is
+# very nearly the basemap itself, and refining was #01665E, dark enough to read
+# as a hole rather than a facility. Every hue here sits in the upper half of the
+# luminance range so it separates from the ground it is drawn on.
+#
+# The warm/cool split survives the move: industrial reds and ambers, energy
+# cyans, greens and violets, with coal mining as a light neutral because it is
+# the one energy asset that is neither combustion nor extraction of a flowing
+# fuel.
+# Iron-and-steel and cement were measured too close together at a first pass
+# (55 units of RGB distance, both red-orange) and pushed apart: steel toward
+# crimson, cement toward amber. They are the two largest industrial sectors and
+# sit side by side across the İskenderun and Marmara clusters, so confusing them
+# would misread the map's densest area.
 SECTOR_COLOURS <- c(
-  "iron-and-steel"         = "#B2182B",
-  "cement"                 = "#D6604D",
-  "aluminum"               = "#F4A582",
-  "electricity-generation" = "#2166AC",
-  "coal-mining"            = "#4D4D4D",
-  "oil-and-gas-production" = "#35978F",
-  "oil-and-gas-refining"   = "#01665E",
-  "oil-and-gas-transport"  = "#80CDC1"
+  "iron-and-steel"         = "#FF4D6D",
+  "cement"                 = "#FF9F1C",
+  "aluminum"               = "#FFD166",
+  "electricity-generation" = "#4CC9F0",
+  "coal-mining"            = "#ADB5BD",
+  "oil-and-gas-production" = "#57D9A3",
+  "oil-and-gas-refining"   = "#6C8AE4",
+  "oil-and-gas-transport"  = "#A78BFA"
 )
 
 # liability_class is the field the whole merge turns on, so it is shown to the
@@ -321,10 +337,15 @@ FLEET_LABELS <- c(
   "nuclear"             = "Nükleer"
 )
 
+# Also raised for the dark basemap, and raised further than the sector palette.
+# These are drawn at 55% opacity and behind the emitting facilities, so their
+# effective contrast is what counts, not their nominal colour — measured against
+# the blended result rather than the swatch. Hydropower and geothermal both
+# failed that test at a first pass and were brightened.
 FLEET_COLOURS <- c(
-  "hydropower"          = "#3690C0",
+  "hydropower"          = "#7FC4F5",
   "utility-scale solar" = "#FEC44F",
-  "wind"                = "#78C679",
-  "geothermal"          = "#DD3497",
-  "nuclear"             = "#8C6BB1"
+  "wind"                = "#8FD98A",
+  "geothermal"          = "#FF8AC4",
+  "nuclear"             = "#B197E8"
 )

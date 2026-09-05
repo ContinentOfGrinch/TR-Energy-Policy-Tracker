@@ -208,8 +208,12 @@ function(input, output, session) {
       # its own map, not to this one.
       minZoom = 5, maxZoom = 14
     )) |>
-      # CartoDB.Positron: neutral enough that facility points carry the colour.
-      addProviderTiles(providers$CartoDB.Positron) |>
+      # CartoDB.DarkMatter. The basemap recedes almost completely, so the
+      # facility points are the only saturated thing on screen and the eye goes
+      # to them rather than to roads and place names. The trade is that every
+      # marker colour has to be bright enough to survive a black ground — see
+      # SECTOR_COLOURS in global.R, which was recalibrated for exactly this.
+      addProviderTiles(providers$CartoDB.DarkMatter) |>
       fitBounds(lng1 = MAP_BOUNDS$lng1, lat1 = MAP_BOUNDS$lat1,
                 lng2 = MAP_BOUNDS$lng2, lat2 = MAP_BOUNDS$lat2) |>
       # A little slack beyond the data so coastal facilities are not pinned to
@@ -235,11 +239,14 @@ function(input, output, session) {
 
     projected <- year_is_projected()
 
-    # Uncertain geocodes get a dark outline when the user asks for it. The
-    # underlying flag is always present in the popup regardless.
+    # Outlines are inverted for the dark basemap. A thin near-black ring
+    # separates overlapping dots without adding brightness; the highlight for an
+    # uncertain geocode is a thick WHITE halo, because on this ground white is
+    # what draws the eye. The previous dark highlight was designed for a light
+    # basemap and would now be invisible against it.
     stroke_colour <- if (isTRUE(input$flag_uncertain)) {
-      ifelse(df$geocode_quality == "within_province", "#FFFFFF", "#111111")
-    } else "#FFFFFF"
+      ifelse(df$geocode_quality == "within_province", "#11161A", "#FFFFFF")
+    } else "#11161A"
 
     stroke_weight <- if (isTRUE(input$flag_uncertain)) {
       ifelse(df$geocode_quality == "within_province", 1, 3)
@@ -362,7 +369,7 @@ function(input, output, session) {
         radius      = ~pmax(2, pmin(9, sqrt(pmax(capacity_mw, 0)) / 3)),
         fillColor   = ~unname(FLEET_COLOURS[fuel_type]),
         fillOpacity = 0.55,
-        color       = "#FFFFFF",
+        color       = "#11161A",
         weight      = 0.5,
         label       = ~plant_name,
         popup       = ~paste0(

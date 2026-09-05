@@ -27,7 +27,14 @@ dashboardPage(
 
     sidebarMenu(
       id = "tab",
-      menuItem("Tesis Haritası",  tabName = "map",     icon = icon("map-location-dot")),
+      # Two time axes, and the labels say which is which. The map tab answers
+      # "who emits how much" over 2021–2026; the fleet tab answers "how did the
+      # fleet get here" over 2000–2026. Each carries its own slider so neither
+      # ever shows an empty range (decision 6b).
+      menuItem("Tesis Haritası · 2021–26", tabName = "map",
+               icon = icon("map-location-dot")),
+      menuItem("Filo Gelişimi · 2000–26",  tabName = "fleet",
+               icon = icon("chart-area")),
       menuItem("Şebeke Yoğunluğu", tabName = "grid",    icon = icon("bolt")),
       menuItem("Veri Kaynakları",  tabName = "sources", icon = icon("book"))
     ),
@@ -265,6 +272,93 @@ dashboardPage(
               title = "Yenilenebilir Filo — Bağlam Katmanı",
               collapsible = TRUE, collapsed = TRUE,
               uiOutput("fleet_summary")
+            )
+          )
+        )
+      ),
+
+      # ---- TAB: FLEET DEVELOPMENT ------------------------------------------
+      # The 2000–2026 axis. Its own slider, because the emissions panel starts
+      # in 2021 and a shared control would leave two decades of empty map.
+      tabItem(
+        tabName = "fleet",
+
+        tags$div(
+          class = "basis-note",
+          tags$strong("Bu eğri kümülatif devreye alıştır, çalışan filo değildir."),
+          " Global Energy Monitor 4.174 Türkiye kaydının yalnızca ikisinde ",
+          "kapanış yılı veriyor, dolayısıyla 2015'te kapanmış bir santral bu ",
+          "eğride sonsuza kadar durur. Ember'in gerçek kurulu gücü referans ",
+          "çizgisi olarak yanında duruyor: ",
+          tags$b("aradaki fark, eksik kapsama eksi modellenmemiş emekliliktir"),
+          " ve ikisi ters yönde çalıştığı için birine atfedilemez."
+        ),
+
+        fluidRow(
+          box(
+            width = 12, status = "primary", solidHeader = TRUE,
+            title = "Yıl",
+            if (length(TIMELINE_YEARS) > 0) {
+              tagList(
+                sliderInput(
+                  inputId = "fleet_year",
+                  label   = NULL,
+                  min     = min(TIMELINE_YEARS),
+                  max     = max(TIMELINE_YEARS),
+                  value   = TIMELINE_DEFAULT,
+                  step    = 1, sep = "", ticks = FALSE, width = "100%",
+                  animate = animationOptions(interval = 900, loop = FALSE)
+                ),
+                uiOutput("fleet_year_status")
+              )
+            } else {
+              tags$div(
+                class = "estimate-note",
+                tags$b("Filo serisi üretilmemiş."), " Çalıştırın: ",
+                tags$code("Rscript scripts/04_build_fleet_timeline.R")
+              )
+            }
+          )
+        ),
+
+        fluidRow(
+          valueBoxOutput("fbox_combustion", width = 3),
+          valueBoxOutput("fbox_renewable",  width = 3),
+          valueBoxOutput("fbox_share",      width = 3),
+          valueBoxOutput("fbox_undated",    width = 3)
+        ),
+
+        fluidRow(
+          column(
+            width = 7,
+            box(
+              width = NULL, status = "primary", solidHeader = TRUE,
+              title = textOutput("fleet_map_title", inline = TRUE),
+              leafletOutput("fleet_map", height = 470)
+            )
+          ),
+          column(
+            width = 5,
+            box(
+              width = NULL, status = "primary", solidHeader = TRUE,
+              title = "Kümülatif Kurulu Güç ve Tesis Sayısı",
+              # Two views of the same series. Cumulative answers "how big is the
+              # fleet"; annual additions answer "when did policy bite", and the
+              # second is far more legible for the 2020–24 collapse in
+              # combustion. Neither replaces the other.
+              radioButtons(
+                inputId = "fleet_chart_mode", label = NULL, inline = TRUE,
+                choices = c("Kümülatif" = "cum", "Yıllık ekleme" = "add"),
+                selected = "cum"
+              ),
+              plotOutput("fleet_plot", height = 300),
+              uiOutput("fleet_plot_note")
+            ),
+            box(
+              width = NULL, status = "warning", solidHeader = TRUE,
+              title = "Kapsama — bu eğriler ne kadarını görüyor",
+              collapsible = TRUE,
+              uiOutput("fleet_coverage_panel")
             )
           )
         )

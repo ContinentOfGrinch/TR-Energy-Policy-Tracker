@@ -14,7 +14,9 @@ produces it.
 > İBBS-2 assignment, commissioning years from GEM, three cross-validated estimates of grid
 > carbon intensity, the **1,800-row facility × year emissions panel** (2021–2026), and an
 > interactive map of both populations **driven by a time slider**, with projected years
-> drawn dashed and partial years labelled by their month count.
+> drawn dashed and partial years labelled by their month count, plus a second
+> **2000–2026 fleet development view** carrying its own slider, a coverage band and
+> Ember's national installed capacity as a reference line.
 >
 > **Not built:** the CBAM liability calculation. The panel's `co2_direct_t` and
 > `co2_indirect_t` columns are deliberately empty pending the direct/indirect
@@ -141,6 +143,7 @@ Rscript scripts/01c_ingest_gem.R         # commissioning years — NEEDS A MANUA
 Rscript scripts/01d_fetch_ember.R        # national generation, grid intensity
 Rscript scripts/02_build_facilities.R    # builds facilities.rds
 Rscript scripts/03_build_panel.R         # builds facility_panel.rds
+Rscript scripts/04_build_fleet_timeline.R # builds the 2000–2026 fleet series
 ```
 
 On Windows use `Rscript`, not `R` — in PowerShell `R` collides with the `Invoke-History`
@@ -264,6 +267,12 @@ argument, with its measurements, will appear in `METHODOLOGY.md`.
   `co2e_100yr` after 6. The panel counts months from the data rather than assuming twelve
   and stores the count, because a bar labelled "2026" beside another labelled "2026"
   asserts a comparability that does not hold here. 2026 is never annualised by scaling.
+- **The fleet timeline shows cumulative commissioning, not the operating fleet.** Global
+  Energy Monitor records a retirement year for 2 of 4,174 Turkish rows, so a plant that
+  closed in 2015 stays on the curve for ever. Ember's actual installed capacity is drawn
+  beside it: in 2025 this atlas accounts for 92.8 GW of Ember's 123.1 GW. Read that gap
+  carefully — it is incomplete coverage *minus* unmodelled retirement, and the two work in
+  opposite directions, so it cannot be attributed to either alone.
 - **Commissioning years come from a spatial join, and 34% of facilities have none.** GEM
   and Climate TRACE are matched by proximity, which is not identity, so every dated
   facility carries `commissioning_source` with the match distance. Three rules keep the

@@ -4,16 +4,16 @@
 this file says where it *got to*, what runs, what is blocked, and which traps have already
 been paid for.
 
-Last updated: **2026-09-01** · 35 commits · **~72% complete** · 182 assertions passing
+Last updated: **2026-09-01** · 37 commits · **~76% complete** · 215 assertions passing
 
-> The figure moved 53% → 35% → 58% → 69% → 72%. The drop was the scope merge on 2026-08-19
-> growing the denominator, not work being lost. The recoveries are the energy half, then
-> the panel, then the time slider the panel unblocked. What remains is now disproportionately
-> the analytical core, which §9 reserves for the author.
+> The figure moved 53% → 35% → 58% → 69% → 72% → 76%. The drop was the scope merge on
+> 2026-08-19 growing the denominator, not work being lost. The recoveries are the energy
+> half, the panel, the time slider the panel unblocked, and now the fleet timeline. What
+> remains is disproportionately the analytical core, which §9 reserves for the author.
 >
-> **The slider is not the fleet timeline.** It moves over 2021–2026, which is the emissions
-> panel. The 2000–2026 fleet animation is a different thing, built on `commissioning_year`,
-> and it is not drawn yet.
+> **Two time axes now, answering different questions.** The map tab runs 2021–2026 over the
+> emissions panel. The fleet tab runs 2000–2026 over `commissioning_year`. Each has its own
+> slider, because a shared one would leave twenty years of empty map.
 
 **Published:** <https://github.com/ContinentOfGrinch/TR-Energy-Policy-Tracker>
 (rename to `karbon-atlasi-turkiye` still outstanding)
@@ -80,7 +80,7 @@ and the arithmetic on top of it.
 | CBAM liability figure | Author decisions **B7** (`eu_export_share`) and **B9** (the calculation) |
 | Grid factor **selection** | Author decision — three estimates exist, `selection.chosen` is deliberately `null` |
 | Cost layer, audit-trail panel | **B9** — there is no liability figure to display yet |
-| The 2000–2026 fleet timeline | nothing — **A6 is resolved.** The timeline can be drawn on 197 dated facilities, with the 103 undated ones visibly excluded rather than assumed to have always existed (§6) |
+| Net operating fleet over time | **not buildable from these sources.** GEM records a retirement year for 2 of 4,174 Turkish rows, so the timeline is cumulative commissioning only — a plant that closed in 2015 stays on the curve. Ember's installed capacity is drawn alongside so the shortfall is visible, but it is coverage *minus* retirement and cannot be attributed to either |
 | `METHODOLOGY.md` | author writes the prose (§9) |
 
 **B2 is closed.** The monthly→annual aggregation rule was decided 2026-09-01 and is
@@ -103,10 +103,10 @@ ratios are **recomputed from annual totals** rather than averaged across months.
 | `tests/` + pipeline validation gates | 3 | ✅ |
 | Energy coverage audit + fetch (5 subsectors) | 6 | ✅ |
 | Energy facilities (212, merged to 300) | 6 | ✅ |
-| GEM commissioning years → 2000 timeline | 5 | ◐ 50% — ingested and joined at 66%; the **2000–2026 fleet timeline is still not drawn**. The slider covers 2021–2026, which is the emissions panel, not the fleet animation |
+| GEM commissioning years → 2000 timeline | 5 | ✅ — `04_build_fleet_timeline.R` and the Filo Gelişimi tab; cumulative capacity, coverage band, Ember reference |
 | Grid emission factor | 6 | ◐ 60% — three estimates assembled, selection pending |
 | `eu_export_share` | 4 | ◐ 50% — fetch works, definition pending |
-| App phase 2 (slider, cost, energy layer, audit trail) | 8 | ◐ 65% — slider, emissions-scaled markers, projection styling and the series are in; no cost layer or audit-trail panel, both blocked on B9 |
+| App phase 2 (slider, cost, energy layer, audit trail) | 8 | ◐ 80% — both time axes, emissions-scaled markers, projection styling, two series charts and the coverage band are in; no cost layer or audit-trail panel, both blocked on B9 |
 | Energy emissions panel | 6 | ✅ |
 | `facility_panel.rds` (industrial) | 8 | ◐ 65% — built, gated and tested; `co2_direct_t` / `co2_indirect_t` await B1 |
 | CBAM calculation core | 8 | ❌ |
@@ -142,6 +142,7 @@ Rscript scripts/01c_ingest_gem.R          # commissioning years + captive flags
 Rscript scripts/01d_fetch_ember.R         # national generation -> grid intensity
 Rscript scripts/02_build_facilities.R     # -> facilities.rds + fleet_renewables.rds
 Rscript scripts/03_build_panel.R          # -> facility_panel.rds (1,800 rows)
+Rscript scripts/04_build_fleet_timeline.R # -> fleet_timeline.csv (2000-2026)
 
 # tests — run these SEPARATELY from any commit
 Rscript tests/testthat.R

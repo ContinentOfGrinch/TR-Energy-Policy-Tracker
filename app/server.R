@@ -314,8 +314,7 @@ function(input, output, session) {
 
           "<b>Üretim:</b> ",
           ifelse(is.na(production_activity), "yayımlanmıyor",
-                 format(round(production_activity), big.mark = ".",
-                        decimal.mark = ",")),
+                 fmt_tr(production_activity)),
           "<br/>",
           "<b>Yoğunluk:</b> ",
           ifelse(is.na(emission_intensity), "hesaplanamıyor",
@@ -596,8 +595,7 @@ function(input, output, session) {
                          " kt ", GAS_LABELS[[p$gas_basis]])),
               row("Üretim",
                   if (is.na(p$production_activity)) "yayımlanmıyor"
-                  else paste0(format(round(p$production_activity),
-                                     big.mark = ".", decimal.mark = ","), " ",
+                  else paste0(fmt_tr(p$production_activity), " ",
                               ifelse(is.na(p$activity_units), "",
                                      p$activity_units))),
               row("Yoğunluk",
@@ -758,6 +756,322 @@ function(input, output, session) {
         "cevaplamaktır: Climate TRACE'in elektrik kütüğünün göremediği üretim ",
         "nerede? Kütük ulusal üretimin yaklaşık yarısını görüyor ve görmediği ",
         "yarı, büyük ölçüde burada duruyor."
+      )
+    )
+  })
+
+
+  # ===========================================================================
+  # 5b. FLEET DEVELOPMENT, 2000–2026
+  # ===========================================================================
+  # A second time axis with its own slider. It answers a different question from
+  # the map tab — how the fleet arrived, rather than who emits how much — and it
+  # reaches back twenty years further, into a period where no emissions data
+  # exists at all.
+
+  fleet_year <- reactive({
+    if (is.null(input$fleet_year)) TIMELINE_DEFAULT else input$fleet_year
+  }) |> debounce(250)
+
+  # Everything commissioned up to and including the selected year, from both
+  # registers, plus the undated facilities as their own state.
+  fleet_visible <- reactive({
+    req(!is.null(fleet_timeline))
+    yr <- fleet_year()
+
+    # Grouped exactly as 04_build_fleet_timeline.R groups them, so the map and
+    # the chart can never disagree about which population a facility is in.
+    ct <- facilities |>
+      transmute(
+        name = facility_name_tr, lat, lon, commissioning_year,
+        detail = paste0(unname(SECTOR_LABELS[sector])),
+        tl_group = case_when(
+          asset_class == "industrial"        ~ "industrial",
+          sector == "electricity-generation" ~ "ct_combustion",
+          TRUE                               ~ "energy_other"),
+        mw = NA_real_)
+
+    ren <- if (!is.null(fleet_renewables)) {
+      fleet_renewables |>
+        transmute(name = plant_name, lat, lon, commissioning_year,
+                  detail = unname(FLEET_LABELS[fuel_type]),
+                  tl_group = "renewable",
+                  mw = capacity_mw)
+    } else NULL
+
+    all_pts <- bind_rows(ct, ren)
+
+    list(
+      # Arrived: commissioned on or before the selected year.
+      arrived = all_pts |> filter(!is.na(commissioning_year),
+                                  commissioning_year <= yr),
+      # Not yet: commissioned later. Drawn nowhere, but counted so the reader
+      # can see the fleet is still growing beyond the cursor.
+      later   = all_pts |> filter(!is.na(commissioning_year),
+                                  commissioning_year > yr),
+      # Undated: shown at every year in their own neutral state. §6 requires
+      # them to be visibly excluded rather than assumed to have always existed,
+      # and a marker that never changes is what "we do not know when" looks like.
+      undated = all_pts |> filter(is.na(commissioning_year))
+    )
+  })
+
+  output$fleet_year_status <- renderUI({
+    req(!is.null(fleet_timeline))
+    v <- fleet_visible()
+    tags$p(
+      style = "margin:-6px 0 0; font-size:12.5px; color:#c8d0d4;",
+      tags$b(fleet_year()), " itibarıyla devreye alınmış: ",
+      tags$b(fmt_tr(nrow(v$arrived))), " tesis. ",
+      tags$span(style = "color:#E8A33D;",
+                fmt_tr(nrow(v$undated)),
+                " tesis tarihsiz ve hiçbir yıla ait değil."),
+      if (nrow(v$later) > 0) {
+        tags$span(style = "color:#8B99A3;", " · ",
+                  fmt_tr(nrow(v$later)), " tesis daha sonra.")
+      }
+    )
+  })
+
+  output$fleet_map_title <- renderText({
+    paste0("Filo — ", fleet_year(), "'e kadar devreye alınanlar")
+  })
+
+  output$fleet_map <- renderLeaflet({
+    leaflet(options = leafletOptions(preferCanvas = TRUE,
+                                     minZoom = 5, maxZoom = 12)) |>
+      addProviderTiles(providers$CartoDB.DarkMatter) |>
+      fitBounds(lng1 = MAP_BOUNDS$lng1, lat1 = MAP_BOUNDS$lat1,
+                lng2 = MAP_BOUNDS$lng2, lat2 = MAP_BOUNDS$lat2) |>
+      setMaxBounds(lng1 = MAP_BOUNDS$lng1 - 1.5, lat1 = MAP_BOUNDS$lat1 - 1.0,
+                   lng2 = MAP_BOUNDS$lng2 + 1.5, lat2 = MAP_BOUNDS$lat2 + 1.0) |>
+      addLegend(position = "bottomright",
+                colors = c(unname(TL_COLOURS), "#5A6670"),
+                labels = c(unname(TL_LABELS), "Tarihi bilinmiyor"),
+                title = "Filo", opacity = 0.9)
+  })
+
+  observe({
+    req(!is.null(fleet_timeline))
+    v <- fleet_visible()
+
+    proxy <- leafletProxy("fleet_map") |>
+      clearGroup("arrived") |> clearGroup("undated")
+
+    if (nrow(v$arrived) > 0) {
+      proxy <- proxy |>
+        addCircleMarkers(
+          data = v$arrived, lng = ~lon, lat = ~lat, group = "arrived",
+          # Renewables carry a capacity, so their radius can scale; the modelled
+          # facilities are drawn at a fixed size because their capacities are in
+          # four incompatible units and any shared scale would be a fiction.
+          radius = ~if_else(is.na(mw), 5,
+                            pmax(2.5, pmin(10, sqrt(pmax(mw, 0)) / 2.6))),
+          fillColor = ~unname(TL_COLOURS[tl_group]),
+          fillOpacity = 0.8, color = "#11161A", weight = 0.6,
+          label = ~paste0(name, " · ", commissioning_year),
+          popup = ~paste0(
+            "<strong>", name, "</strong><br/>",
+            "<em>", detail, "</em><br/><br/>",
+            "<b>Devreye giriş:</b> ", commissioning_year, "<br/>",
+            "<b>Kapasite:</b> ",
+            ifelse(is.na(mw), "bu görünümde ölçülmüyor",
+                   paste0(round(mw, 1), " MW")))
+        )
+    }
+
+    if (nrow(v$undated) > 0) {
+      proxy |>
+        addCircleMarkers(
+          data = v$undated, lng = ~lon, lat = ~lat, group = "undated",
+          # Hollow, neutral, and identical at every year. A third visual state
+          # for a third epistemic state, exactly as projected years get their
+          # own treatment on the emissions map.
+          radius = 4.5, fillOpacity = 0,
+          color = "#7C8A94", weight = 1.6, opacity = 0.9,
+          label = ~paste0(name, " — devreye giriş yılı bilinmiyor"),
+          popup = ~paste0(
+            "<strong>", name, "</strong><br/>",
+            "<em>", detail, "</em><br/><br/>",
+            "<b>Devreye giriş yılı bilinmiyor.</b><br/>",
+            "<span style='color:#93A1AB;'>Bu tesis hiçbir yıla atanmadı. ",
+            "Zaman çizelgesinin dışındadır ve her yılda aynı şekilde ",
+            "görünür — var olduğu varsayılmadığı için gizlenmedi, ",
+            "bilinmediği için de bir yıla yazılmadı.</span>")
+        )
+    }
+  })
+
+
+  # --- headline figures for the fleet tab -------------------------------------
+
+  tl_at <- reactive({
+    req(!is.null(fleet_timeline))
+    fleet_timeline[fleet_timeline$year == fleet_year(), ]
+  })
+
+  tl_pick <- function(d, grp, col) {
+    v <- d[[col]][d$group == grp]
+    if (length(v) == 0) NA else v[1]
+  }
+
+  output$fbox_combustion <- renderValueBox({
+    d <- tl_at()
+    valueBox(
+      paste0(format(round(tl_pick(d, "ct_combustion", "cum_mw") / 1000, 1),
+                    nsmall = 1), " GW"),
+      paste0("Yanma santralleri — ",
+             tl_pick(d, "ct_combustion", "cum_n"), " tesis"),
+      icon = icon("fire"), color = "orange")
+  })
+
+  output$fbox_renewable <- renderValueBox({
+    d <- tl_at()
+    valueBox(
+      paste0(format(round(tl_pick(d, "renewable", "cum_mw") / 1000, 1),
+                    nsmall = 1), " GW"),
+      paste0("Yenilenebilir — ", fmt_tr(tl_pick(d, "renewable", "cum_n")),
+             " tesis"),
+      icon = icon("leaf"), color = "green")
+  })
+
+  output$fbox_share <- renderValueBox({
+    d <- tl_at()
+    comb <- tl_pick(d, "ct_combustion", "cum_mw")
+    ren  <- tl_pick(d, "renewable", "cum_mw")
+    pct  <- if (is.na(comb) || is.na(ren) || (comb + ren) == 0) NA
+            else round(100 * ren / (comb + ren))
+    valueBox(
+      if (is.na(pct)) "—" else paste0("%", pct),
+      "Yenilenebilirin kümülatif güçteki payı",
+      icon = icon("percent"), color = "teal")
+  })
+
+  output$fbox_undated <- renderValueBox({
+    n <- sum(unique(fleet_timeline[, c("group", "undated_n")])$undated_n)
+    valueBox(fmt_tr(n),
+             "Tarihsiz — hiçbir yıla ait değil",
+             icon = icon("circle-question"), color = "yellow")
+  })
+
+
+  # --- the chart -------------------------------------------------------------
+  # Dual axis by design (decision 2c): gigawatts on the left, plant count on the
+  # right. The two diverging is itself the finding — renewables arrive in very
+  # large numbers of very small plants, and a single axis hides whichever half it
+  # is not scaled to.
+
+  output$fleet_plot <- renderPlot({
+    req(!is.null(fleet_timeline))
+    tl <- fleet_timeline
+    yrs <- sort(unique(tl$year))
+    mode <- if (is.null(input$fleet_chart_mode)) "cum" else input$fleet_chart_mode
+
+    mw_col <- if (mode == "cum") "cum_mw" else "added_mw"
+    n_col  <- if (mode == "cum") "cum_n"  else "added_n"
+
+    op <- par(mar = c(3.0, 4.2, 0.6, 4.2), cex.axis = .8, cex.lab = .85,
+              mgp = c(2.4, .6, 0), tcl = -.25, las = 1)
+    on.exit(par(op), add = TRUE)
+
+    mw_groups <- tl[tl$group %in% TL_HAS_MW, ]
+    ymax <- max(mw_groups[[mw_col]], tl$ember_total_gw * 1000, na.rm = TRUE)
+
+    plot(NA, xlim = range(yrs), ylim = c(0, ymax * 1.08),
+         xlab = "", ylab = "", xaxt = "n", yaxt = "n", bty = "n")
+    axis(1, at = seq(min(yrs), max(yrs), by = 4), col = "#ccc", col.axis = "#555")
+    axis(2, at = pretty(c(0, ymax)), labels = pretty(c(0, ymax)) / 1000,
+         col = "#888", col.axis = "#555")
+    mtext(if (mode == "cum") "Kümülatif GW" else "Yıllık eklenen GW",
+          side = 2, line = 2.7, cex = .8, col = "#555")
+    grid(nx = NA, ny = NULL, col = "#eee", lty = 1)
+
+    # The national reference. Dotted, neutral, and only on the cumulative view:
+    # Ember publishes a stock, so comparing it with annual additions would be a
+    # category error.
+    if (mode == "cum" && any(!is.na(tl$ember_total_gw))) {
+      e <- unique(tl[, c("year", "ember_total_gw")])
+      e <- e[!is.na(e$ember_total_gw), ]
+      lines(e$year, e$ember_total_gw * 1000, col = "#8B99A3",
+            lwd = 2, lty = 3)
+      text(max(e$year), max(e$ember_total_gw) * 1000, "Ember kurulu güç",
+           pos = 2, offset = .4, col = "#8B99A3", cex = .72, font = 3)
+    }
+
+    for (g in TL_HAS_MW) {
+      d <- tl[tl$group == g, ]
+      d <- d[order(d$year), ]
+      lines(d$year, d[[mw_col]], col = TL_COLOURS[[g]], lwd = 2.6)
+    }
+
+    # Right axis: plant counts, on their own scale.
+    par(new = TRUE)
+    nmax <- max(tl[[n_col]], na.rm = TRUE)
+    plot(NA, xlim = range(yrs), ylim = c(0, nmax * 1.08),
+         axes = FALSE, xlab = "", ylab = "", bty = "n")
+    axis(4, col = "#888", col.axis = "#555")
+    mtext(if (mode == "cum") "Kümülatif tesis sayısı" else "Yıllık eklenen tesis",
+          side = 4, line = 2.9, cex = .8, col = "#555")
+
+    for (g in names(TL_LABELS)) {
+      d <- tl[tl$group == g, ]
+      d <- d[order(d$year), ]
+      lines(d$year, d[[n_col]], col = TL_COLOURS[[g]], lwd = 1.4, lty = 2)
+    }
+
+    abline(v = fleet_year(), col = "#33333366", lwd = 1.5, lty = 3)
+  })
+
+  output$fleet_plot_note <- renderUI({
+    tags$p(
+      style = "font-size:12px; color:#666; margin:8px 0 0;",
+      tags$b("Kalın düz çizgi GW (sol eksen), ince kesik çizgi tesis sayısı ",
+             "(sağ eksen)."),
+      " Yenilenebilirin iki eğrisinin açılması bir bulgudur: çok sayıda, çok ",
+      "küçük santral. Sanayi ve kömür/petrol-gaz yalnızca sayılır — ",
+      "kapasiteleri ton ve varil cinsinden olduğu için megawatt eksenine ",
+      "girmez. Noktalı gri çizgi Ember'in gerçek ulusal kurulu gücüdür."
+    )
+  })
+
+  output$fleet_coverage_panel <- renderUI({
+    req(!is.null(fleet_coverage))
+    cv <- fleet_coverage[order(-fleet_coverage$share), ]
+
+    bar <- function(share, colour) {
+      tags$div(
+        style = "background:#e6eaec; height:7px; border-radius:2px; width:100%;",
+        tags$div(style = paste0("background:", colour, "; height:7px;",
+                                " border-radius:2px; width:",
+                                round(100 * share), "%;")))
+    }
+
+    tagList(
+      tags$p(style = "font-size:13px; margin:0 0 12px;",
+             "Bir tesis ancak devreye giriş yılı biliniyorsa bir yıla ",
+             "atanabilir. Bu oranlar gruplar arasında ",
+             tags$b("34 puan"), " fark ediyor, ve bu fark eğrilerin ",
+             "karşılaştırılabilirliğini doğrudan sınırlıyor."),
+      lapply(seq_len(nrow(cv)), function(i) {
+        g <- cv$group[i]
+        tags$div(
+          style = "margin-bottom:11px;",
+          tags$div(
+            style = "display:flex; justify-content:space-between; font-size:13px;",
+            tags$span(TL_LABELS[[g]]),
+            tags$span(style = "font-weight:600;",
+                      paste0(cv$n_dated[i], " / ", cv$n_total[i], " · %",
+                             round(100 * cv$share[i])))),
+          bar(cv$share[i], TL_COLOURS[[g]]))
+      }),
+      tags$p(
+        style = paste0("font-size:12px; color:#666; margin-top:14px;",
+                       " border-top:1px solid #eee; padding-top:10px;"),
+        tags$b("Yanma %59, yenilenebilir %93. "),
+        "İki eğriyi ham hâlde karşılaştırmak, yanmayı olduğundan küçük ve ",
+        "geçişi olduğundan keskin gösterir. Kapsama oranı burada gösteriliyor ",
+        "ki okuyucu kendi indirimini yapabilsin — dipnot yerine bant, çünkü ",
+        "dipnot okunmuyor."
       )
     )
   })

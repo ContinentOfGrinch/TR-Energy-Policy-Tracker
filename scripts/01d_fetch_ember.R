@@ -156,6 +156,74 @@ ember_emissions <- tr |>
 write_csv(generation, file.path(DIR_PROCESSED, "ember_generation.csv"))
 
 
+# --- Installed capacity, for the fleet timeline -------------------------------
+# WHY THIS IS HERE. The fleet timeline can only ever show CUMULATIVE
+# COMMISSIONING, never the net operating fleet: GEM records a retirement year for
+# 2 of 4,174 Turkish rows, so a plant that closed in 2015 stays on the curve for
+# ever. That is a hard limit of the source, not a modelling choice.
+#
+# Ember publishes actual installed capacity by fuel, in GW, from 2000. Drawing it
+# beside the cumulative curve turns the limitation into a measurement: the gap
+# between "everything ever commissioned" and "what is actually installed" IS the
+# retired fleet. The atlas cannot say which plants retired, but it can say how
+# much capacity did, and refusing to show that would hide a knowable quantity
+# behind an unknowable one.
+#
+# Split fossil from renewable because the two halves of the timeline retire at
+# very different rates — a coal plant from 1975 is a candidate for closure in a
+# way that a 2019 solar farm is not.
+
+message("      extracting installed capacity by fuel")
+
+capacity <- tr |>
+  filter(Category == "Capacity", Subcategory == "Fuel", Unit == "GW") |>
+  transmute(year = Year, fuel = Variable, capacity_gw = Value) |>
+  arrange(year, fuel)
+
+if (nrow(capacity) == 0) {
+  warning("Ember published no capacity rows for ", COUNTRY_ISO3,
+          ". The fleet timeline will have no national reference line.",
+          immediate. = TRUE)
+} else {
+  # Fuel names here are Ember's own. They are mapped to the atlas's two halves
+  # rather than reused verbatim, because Ember's "Other Renewables" covers
+  # geothermal, which GEM tracks as its own fuel.
+  EMBER_RENEWABLE <- c("Hydro", "Wind", "Solar", "Other Renewables")
+  EMBER_FOSSIL    <- c("Coal", "Gas", "Other Fossil")
+
+  capacity_summary <- capacity |>
+    group_by(year) |>
+    summarise(
+      total_gw      = sum(capacity_gw, na.rm = TRUE),
+      renewable_gw  = sum(capacity_gw[fuel %in% EMBER_RENEWABLE], na.rm = TRUE),
+      fossil_gw     = sum(capacity_gw[fuel %in% EMBER_FOSSIL], na.rm = TRUE),
+      bioenergy_gw  = sum(capacity_gw[fuel == "Bioenergy"], na.rm = TRUE),
+      nuclear_gw    = sum(capacity_gw[fuel == "Nuclear"], na.rm = TRUE),
+      .groups = "drop"
+    )
+
+  # Any fuel not in either bucket would vanish silently from the reference line,
+  # so it is named rather than dropped.
+  unclassified <- setdiff(unique(capacity$fuel),
+                          c(EMBER_RENEWABLE, EMBER_FOSSIL,
+                            "Bioenergy", "Nuclear"))
+  if (length(unclassified) > 0) {
+    warning("Ember capacity fuels not mapped to a bucket: ",
+            paste(unclassified, collapse = ", "),
+            ". They are in total_gw but in no subtotal.", immediate. = TRUE)
+  }
+
+  write_csv(capacity, file.path(DIR_PROCESSED, "ember_capacity.csv"))
+  write_csv(capacity_summary,
+            file.path(DIR_PROCESSED, "ember_capacity_summary.csv"))
+
+  message("      capacity ", min(capacity$year), "-", max(capacity$year),
+          ", ", nrow(capacity_summary), " years, ",
+          round(capacity_summary$total_gw[nrow(capacity_summary)], 1),
+          " GW in the last year")
+}
+
+
 # =============================================================================
 # 4. THREE INDEPENDENT ESTIMATES, SIDE BY SIDE
 # =============================================================================

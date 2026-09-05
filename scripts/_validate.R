@@ -522,6 +522,150 @@ gate_panel <- function(df, facilities = NULL) {
 
 
 # =============================================================================
+# The fleet timeline gate
+# =============================================================================
+# A cumulative series has one failure mode that looks entirely normal: it goes
+# down. Every other defect here is of the same family — a number that is the
+# right shape, the right type and quietly impossible.
+
+#' Validate the 2000-2026 fleet development series before it is written.
+#'
+#' @param df       the assembled timeline
+#' @param coverage the per-group coverage table, for cross-checking totals
+gate_fleet_timeline <- function(df, coverage = NULL) {
+
+  .gate_header(sprintf("fleet_timeline (%d rows)", nrow(df)))
+
+  required <- c("group", "year", "added_mw", "added_n", "cum_mw", "cum_n",
+                "undated_n")
+
+  failures <- c(
+    require_columns(df, required, "fleet_timeline"),
+    require_complete(df, c("group", "year", "cum_n"))
+  )
+
+  if (all(c("group", "year") %in% names(df))) {
+    dup <- sum(duplicated(df[c("group", "year")]))
+    if (dup > 0) {
+      failures <- c(failures, sprintf(
+        "group x year is not unique: %d duplicate pairs", dup))
+    }
+
+    # Every year in the window must be present for every group. A missing year
+    # breaks a line chart into segments, which reads as missing data rather than
+    # as a year in which nothing was built.
+    per_group <- df |> dplyr::count(group, name = "years")
+    if (dplyr::n_distinct(per_group$years) > 1) {
+      failures <- c(failures, sprintf(
+        "groups have different year counts (%s) — the series is not rectangular",
+        paste(sprintf("%s:%d", per_group$group, per_group$years),
+              collapse = ", ")))
+    }
+  }
+
+  # THE CUMULATIVE CHECK. A cumulative series cannot decrease. If it does, the
+  # sort order was lost or a group was mixed, and the resulting chart shows a
+  # fleet shrinking — which this data cannot express at all, because retirement
+  # is not modelled. It would be read as plants closing.
+  for (col in c("cum_mw", "cum_n")) {
+    if (!col %in% names(df)) next
+    # No `default =` on lag(): cum_n is integer and cum_mw is double, and a
+    # shared numeric default fails the type check on one of them. The first row
+    # of each group has no predecessor, which is not a decrease.
+    bad <- df |>
+      dplyr::filter(!is.na(.data[[col]])) |>
+      dplyr::arrange(group, year) |>
+      dplyr::group_by(group) |>
+      dplyr::mutate(.prev = dplyr::lag(.data[[col]])) |>
+      dplyr::filter(!is.na(.prev), .data[[col]] < .prev) |>
+      dplyr::ungroup()
+    if (nrow(bad) > 0) {
+      failures <- c(failures, sprintf(
+        paste0("`%s` decreases at %d points (first: %s %d). A cumulative ",
+               "series cannot fall, and retirement is not modelled here, so ",
+               "this would render as plants closing."),
+        col, nrow(bad), bad$group[1], bad$year[1]))
+    }
+  }
+
+  # Megawatts belong only to the groups measured in megawatts. A zero in the
+  # counted-only groups would read as "no capacity" rather than "not measured".
+  MW_GROUPS <- c("ct_combustion", "renewable")
+  if (all(c("group", "cum_mw") %in% names(df))) {
+    leaked <- df |> dplyr::filter(!group %in% MW_GROUPS, !is.na(cum_mw))
+    if (nrow(leaked) > 0) {
+      failures <- c(failures, sprintf(
+        paste0("%d rows carry megawatts for a group measured in tonnes or ",
+               "barrels (%s). Those capacities are not commensurable and must ",
+               "stay NA."),
+        nrow(leaked), paste(unique(leaked$group), collapse = ", ")))
+    }
+  }
+
+  .gate_stop(failures, "fleet_timeline")
+
+  # ---- WARN tier -----------------------------------------------------------
+  obs <- character(0)
+
+  # Coverage asymmetry. Not a defect — a property of the sources — but drawing
+  # two curves of very different completeness together is the mistake this whole
+  # view is most likely to make, so the numbers are printed on every build.
+  if (!is.null(coverage) && "share" %in% names(coverage)) {
+    mw_cov <- coverage[coverage$group %in% MW_GROUPS, ]
+    if (nrow(mw_cov) > 1) {
+      spread <- diff(range(mw_cov$share))
+      obs <- c(obs, sprintf(
+        "coverage across the megawatt groups differs by %.0f points (%s)",
+        100 * spread,
+        paste(sprintf("%s %.0f%%", mw_cov$group, 100 * mw_cov$share),
+              collapse = ", ")))
+      if (spread > 0.15) {
+        obs <- c(obs, paste0(
+          "that spread exceeds 15 points: the curves are NOT directly ",
+          "comparable and the view must show the coverage band, not a footnote."))
+      }
+    }
+  }
+
+  # Our cumulative against the national reference. Reported as a share rather
+  # than a difference, because the gap is coverage MINUS retirement and the two
+  # work in opposite directions — it cannot be attributed to either alone.
+  if (all(c("ember_total_gw", "cum_mw", "year") %in% names(df))) {
+    last_yr <- df |>
+      dplyr::filter(!is.na(ember_total_gw)) |>
+      dplyr::pull(year) |> max(na.rm = TRUE)
+
+    if (is.finite(last_yr)) {
+      ours <- sum(df$cum_mw[df$year == last_yr], na.rm = TRUE) / 1000
+      theirs <- df$ember_total_gw[df$year == last_yr][1]
+      if (!is.na(theirs) && theirs > 0) {
+        obs <- c(obs, sprintf(
+          paste0("%d: this atlas accounts for %.1f GW of Ember's %.1f GW ",
+                 "installed (%.0f%%). The shortfall is coverage minus ",
+                 "unmodelled retirement and cannot be attributed to either."),
+          last_yr, ours, theirs, 100 * ours / theirs))
+      }
+    }
+  }
+
+  if ("undated_n" %in% names(df)) {
+    und <- df |> dplyr::distinct(group, undated_n) |>
+      dplyr::filter(undated_n > 0)
+    for (i in seq_len(nrow(und))) {
+      obs <- c(obs, sprintf(
+        paste0("%s: %d facilities carry no commissioning year — they must be ",
+               "shown as their own state, never folded into a year"),
+        und$group[i], und$undated_n[i]))
+    }
+  }
+
+  .gate_warn(obs, "fleet_timeline")
+
+  invisible(df)
+}
+
+
+# =============================================================================
 # The policy parameter gate
 # =============================================================================
 # Policy files are hand-edited, and hand-edited JSON drifts. A renamed field, a

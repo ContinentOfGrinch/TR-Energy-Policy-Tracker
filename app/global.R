@@ -263,7 +263,25 @@ if (!is.null(panel)) {
 
 
 # =============================================================================
-# 4. DERIVED CONSTANTS
+# 4. NUMBER FORMATTING
+# =============================================================================
+# Turkish convention inverts the English one: "." groups thousands and ","
+# marks the decimal, so 1.234,5 is a thousand two hundred and thirty four point
+# five. Both marks must be passed together — supplying only `big.mark = "."`
+# leaves the decimal mark at its locale default, which on this machine is also
+# ".", and R warns that the result "could be confusing". It is right: 1.234
+# would be unreadable as either a thousand or as one point two three four.
+#
+# Defined once here rather than at each call site, because the two marks have to
+# agree and a call that sets one of them is always a bug.
+fmt_tr <- function(x, digits = 0) {
+  format(round(x, digits), big.mark = ".", decimal.mark = ",",
+         nsmall = digits, trim = TRUE, scientific = FALSE)
+}
+
+
+# =============================================================================
+# 5. DERIVED CONSTANTS
 # =============================================================================
 # Computed once here rather than inside a reactive, because they never change.
 
@@ -309,7 +327,7 @@ MAP_BOUNDS <- list(lng1 = 25.6, lat1 = 35.8, lng2 = 44.8, lat2 = 43.2)
 
 
 # =============================================================================
-# 5. FLEET CONTEXT — renewables, if built
+# 6. FLEET CONTEXT — renewables, if built
 # =============================================================================
 # A SEPARATE register with a different epistemic status, deliberately not merged
 # into `facilities`.
@@ -328,6 +346,52 @@ MAP_BOUNDS <- list(lng1 = 25.6, lat1 = 35.8, lng2 = 44.8, lat2 = 43.2)
 FLEET_PATH <- file.path(PROJECT_ROOT, "data", "processed", "fleet_renewables.rds")
 
 fleet_renewables <- if (file.exists(FLEET_PATH)) readRDS(FLEET_PATH) else NULL
+
+# The 2000–2026 development series, built by 04_build_fleet_timeline.R. Computed
+# in the pipeline rather than here because it is analysis — cumulative capacity
+# with coverage statistics — and the app computes no pipeline step.
+TIMELINE_PATH <- file.path(PROJECT_ROOT, "data", "processed",
+                           "fleet_timeline.csv")
+COVERAGE_PATH <- file.path(PROJECT_ROOT, "data", "processed",
+                           "fleet_timeline_coverage.csv")
+
+fleet_timeline <- if (file.exists(TIMELINE_PATH)) {
+  utils::read.csv(TIMELINE_PATH, fileEncoding = "UTF-8")
+} else NULL
+
+fleet_coverage <- if (file.exists(COVERAGE_PATH)) {
+  utils::read.csv(COVERAGE_PATH, fileEncoding = "UTF-8")
+} else NULL
+
+# The four groups the timeline splits into. Two are measured in megawatts and
+# two are counted only, and the distinction is carried in the vocabulary rather
+# than remembered at each call site: a cement plant's capacity is in tonnes of
+# cement and cannot join a megawatt axis.
+TL_LABELS <- c(
+  "ct_combustion" = "Yanma santralleri",
+  "renewable"     = "Yenilenebilir filo",
+  "industrial"    = "Sanayi tesisleri",
+  "energy_other"  = "Kömür ocağı, petrol-gaz"
+)
+
+TL_COLOURS <- c(
+  "ct_combustion" = "#FF8F6B",
+  "renewable"     = "#57D9A3",
+  "industrial"    = "#FF4D6D",
+  "energy_other"  = "#ADB5BD"
+)
+
+TL_HAS_MW <- c("ct_combustion", "renewable")
+
+TIMELINE_YEARS <- if (!is.null(fleet_timeline)) {
+  sort(unique(fleet_timeline$year))
+} else integer(0)
+
+# The timeline opens at its own last year rather than at the emissions panel's
+# default. This axis answers "how did the fleet get here", so the end of the
+# journey is the right place to start reading, and there is no projection
+# problem: a commissioning year is a record, not an estimate.
+TIMELINE_DEFAULT <- if (length(TIMELINE_YEARS) > 0) max(TIMELINE_YEARS) else NA
 
 FLEET_LABELS <- c(
   "hydropower"          = "Hidroelektrik",
